@@ -1,0 +1,40 @@
+enum Prefix {
+  MR
+  MRS
+  MISS
+}
+
+enum JobLevel {
+  S1
+  S2
+  M1
+  M2
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  RESIGNED
+}
+
+model Employee {
+  id           String         @id @default(cuid())
+  employee_no  String         @unique
+  prefix       Prefix
+  first_name   String
+  last_name    String
+  id_card_no   String?        @unique @db.Char(13)
+  hire_date    DateTime?      @db.Date
+  job_level    JobLevel
+  status       EmployeeStatus @default(ACTIVE)
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+
+  // Relations
+  // org_unit_id  String
+  // org_unit     OrgUnit        @relation(fields: [org_unit_id], references: [id])
+  
+  user         User?
+
+  @@index([employee_no])
+  @@map("employees")
+}

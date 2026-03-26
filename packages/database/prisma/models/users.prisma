@@ -1,0 +1,24 @@
+enum UserRole {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  role          UserRole  @default(EMPLOYEE)
+  refresh_token String?
+  google_id     String?   @unique
+  picture       String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relations
+  employee_id   String?   @unique
+  employee      Employee? @relation(fields: [employee_id], references: [id])
+
+  @@index([email])
+  @@map("users")
+}
