@@ -6,19 +6,66 @@ enum UserRole {
 
 model User {
   id            String    @id @default(cuid())
+  name          String
   email         String    @unique
-  password      String?
-  role          UserRole  @default(EMPLOYEE)
-  refresh_token String?
-  google_id     String?   @unique
-  picture       String?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // Relations
+  // Custom Fields
+  role          UserRole  @default(EMPLOYEE)
   employee_id   String?   @unique
   employee      Employee? @relation(fields: [employee_id], references: [id])
 
-  @@index([email])
+  // Relations ของ Better Auth
+  sessions      Session[]
+  accounts      Account[]
+
   @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime
+  updatedAt  DateTime
+
+  @@map("verifications")
 }
