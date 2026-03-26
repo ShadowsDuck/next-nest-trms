@@ -18,6 +18,7 @@ import { cn } from '@workspace/ui/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { authClient } from '@/lib/auth-client'
 import { API_URL } from '@/lib/constants'
 
 export function LoginForm({ className }: React.ComponentProps<'form'>) {
@@ -37,18 +38,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
 
   const onSubmit = async (data: Login) => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        return toast.error(result.message || `Error: ${response.status}`)
-      }
+      await authClient.signIn.email(data)
 
       toast.success('เข้าสู่ระบบสำเร็จ')
       router.push('/')

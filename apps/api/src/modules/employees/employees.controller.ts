@@ -1,5 +1,4 @@
 import { ZodResponse } from 'nestjs-zod';
-import { Roles } from 'src/common/decorators/roles.decorator';
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -21,7 +20,6 @@ import { EmployeesService } from './employees.service';
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
-  @Roles('ADMIN')
   @Post()
   @ApiOperation({ summary: 'สร้างพนักงานใหม่ (เฉพาะ Admin)' })
   @ZodResponse({
@@ -50,7 +48,6 @@ export class EmployeesController {
     return await this.employeesService.create(createEmployeeDto);
   }
 
-  @Roles('ADMIN')
   @Get()
   @ApiOperation({ summary: 'ดึงข้อมูลพนักงานทั้งหมด (เฉพาะ Admin)' })
   @ZodResponse({

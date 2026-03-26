@@ -19,6 +19,7 @@ import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
+import { authClient } from '@/lib/auth-client'
 import { API_URL } from '@/lib/constants'
 
 const SignupSchema = RegisterSchema.extend({
@@ -49,17 +50,11 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
 
   const onSubmit = async (data: Signup) => {
     try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      await authClient.signUp.email({
+        email: data.email,
+        password: data.password,
+        name: 'Tester',
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        return toast.error(result.message || `Error: ${response.status}`)
-      }
 
       toast.success('ลงทะเบียนสำเร็จ')
       formReset()
