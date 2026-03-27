@@ -1,39 +1,21 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
-import { Button } from '@workspace/ui/components/button'
-import { authClient } from '@/lib/auth-client'
+import Link from 'next/link'
+import { buttonVariants } from '@workspace/ui/components/button'
+import { Navbar } from '@/components/navbar'
 
 export default function HomePage() {
-  const { data: session, isPending: isLoading } = authClient.useSession()
-  const router = useRouter()
-
-  if (isLoading) {
-    return <div className="text-center">Loading...</div>
-  }
-
-  if (!session) {
-    return null
-  }
-
   return (
-    <main>
+    <main className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">
+      <Navbar />
+
       <div className="mx-auto max-w-7xl p-4">
         <h1 className="mb-4 text-2xl font-bold">Home Page</h1>
-        <p>You are logged in as: {session.user.name}</p>
-        <Button
-          onClick={() =>
-            authClient.signOut({
-              fetchOptions: {
-                onSuccess: () => {
-                  router.push('/auth/login')
-                },
-              },
-            })
-          }
+
+        <Link
+          href="/dashboard"
+          className={buttonVariants({ variant: 'outline' })}
         >
-          Logout
-        </Button>
+          Dashboard
+        </Link>
       </div>
     </main>
   )

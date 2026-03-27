@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RegisterSchema } from '@workspace/schemas'
-import { Button, buttonVariants } from '@workspace/ui/components/button'
+import { Button } from '@workspace/ui/components/button'
 import {
   Field,
   FieldDescription,
@@ -19,8 +18,8 @@ import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import { authClient } from '@/lib/auth-client'
-import { API_URL } from '@/lib/constants'
+import { GoogleButton } from '@/components/google-button'
+import { signUp } from '@/lib/auth-client'
 
 const SignupSchema = RegisterSchema.extend({
   confirmPassword: z.string().trim(),
@@ -50,15 +49,27 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
 
   const onSubmit = async (data: Signup) => {
     try {
-      await authClient.signUp.email({
-        email: data.email,
-        password: data.password,
-        name: 'Tester',
-      })
-
-      toast.success('ลงทะเบียนสำเร็จ')
-      formReset()
-      router.push('/')
+      await signUp.email(
+        {
+          email: data.email,
+          password: data.password,
+          name: '',
+        },
+        {
+          onSuccess: () => {
+            toast.success('สมัครสมาชิกสำเร็จ')
+            formReset()
+            router.push('/')
+          },
+          onError: (ctx) => {
+            if (ctx.error.status === 422) {
+              toast.error('อีเมลนี้ถูกใช้แล้ว กรุณาใช้อีเมลอื่น')
+            } else {
+              toast.error(ctx.error.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก')
+            }
+          },
+        }
+      )
     } catch {
       toast.error('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้')
     }
@@ -200,18 +211,8 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
         <FieldSeparator>หรือดำเนินการต่อผ่าน</FieldSeparator>
 
         <Field>
-          <Link
-            href={`${API_URL}/auth/google/login`}
-            className={buttonVariants({ variant: 'outline' })}
-          >
-            <Image
-              src="https://thesvg.org/icons/google/default.svg"
-              alt="Google"
-              width={18}
-              height={18}
-            />
-            เข้าสู่ระบบด้วย Google
-          </Link>
+          <GoogleButton />
+
           <FieldDescription className="px-6 text-center">
             มีบัญชีอยู่แล้ว?{' '}
             <Link href="/auth/login" className="underline">
