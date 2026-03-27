@@ -1,6 +1,34 @@
 import { prisma } from '@workspace/database';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { admin } from 'better-auth/plugins';
+import { createAccessControl } from 'better-auth/plugins/access';
+import { adminAc, defaultStatements } from 'better-auth/plugins/admin/access';
+
+const ac = createAccessControl({
+  // defaultStatements มีหน้าตาประมาณนี้
+  // {
+  //   user: ['create', 'list', 'set-role', 'ban', 'impersonate', 'delete', 'set-password'],
+  //   session: ['list', 'revoke', 'delete'],
+  // }
+  ...defaultStatements,
+  employee: ['create', 'read', 'update'],
+});
+
+const adminRole = ac.newRole({
+  // adminAc.statements — ใช้ใน ac.newRole()
+  // คือ "permission ที่ admin role ได้รับ" (full access ทุก action ใน defaultStatements)
+  ...adminAc.statements,
+  employee: ['create', 'read', 'update'],
+});
+
+const managerRole = ac.newRole({
+  employee: ['read'],
+});
+
+const employeeRole = ac.newRole({
+  user: ['list'],
+});
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -32,6 +60,18 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: process.env.ALLOWED_ORIGINS?.split(','),
+  plugins: [
+    admin({
+      ac,
+      defaultRole: 'EMPLOYEE',
+      adminRoles: ['ADMIN', 'MANAGER'],
+      roles: {
+        ADMIN: adminRole,
+        MANAGER: managerRole,
+        EMPLOYEE: employeeRole,
+      },
+    }) as any,
+  ],
 });
 
 export type Auth = typeof auth;

@@ -4,8 +4,15 @@ import { nextJsConfig } from '@workspace/eslint-config/next-js'
 export default [
   ...nextJsConfig,
   {
-    env: {
-      node: true,
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 ]

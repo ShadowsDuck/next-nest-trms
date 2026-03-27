@@ -1,4 +1,8 @@
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import {
+  Session,
+  UserHasPermission,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
 import { Controller, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 
@@ -6,6 +10,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UserHasPermission({ permission: { user: ['list'] } })
   @Get('me')
   getProfile(@Session() session: UserSession) {
     return session.user;

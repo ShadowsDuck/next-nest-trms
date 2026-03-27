@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Login, LoginSchema } from '@workspace/schemas'
-import { Button, buttonVariants } from '@workspace/ui/components/button'
+import { Button } from '@workspace/ui/components/button'
 import {
   Field,
   FieldDescription,
@@ -18,8 +17,8 @@ import { cn } from '@workspace/ui/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { authClient } from '@/lib/auth-client'
-import { API_URL } from '@/lib/constants'
+import { GoogleButton } from '@/components/google-button'
+import { signIn } from '@/lib/auth-client'
 
 export function LoginForm({ className }: React.ComponentProps<'form'>) {
   const router = useRouter()
@@ -28,6 +27,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
     control,
     handleSubmit,
     formState: { isSubmitting },
+    reset: formReset,
   } = useForm<Login>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -38,10 +38,20 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
 
   const onSubmit = async (data: Login) => {
     try {
-      await authClient.signIn.email(data)
-
-      toast.success('เข้าสู่ระบบสำเร็จ')
-      router.push('/')
+      await signIn.email(data, {
+        onSuccess: () => {
+          toast.success('เข้าสู่ระบบสำเร็จ')
+          formReset()
+          router.push('/')
+        },
+        onError: (ctx) => {
+          if (ctx.error.status === 401) {
+            toast.error('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+          } else {
+            toast.error(ctx.error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
+          }
+        },
+      })
     } catch {
       toast.error('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้')
     }
@@ -128,18 +138,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
         <FieldSeparator>หรือดำเนินการต่อผ่าน</FieldSeparator>
 
         <div className="flex flex-col gap-2">
-          <Link
-            href={`${API_URL}/auth/google/login`}
-            className={buttonVariants({ variant: 'outline' })}
-          >
-            <Image
-              src="https://thesvg.org/icons/google/default.svg"
-              alt="Google"
-              width={18}
-              height={18}
-            />
-            เข้าสู่ระบบด้วย Google
-          </Link>
+          <GoogleButton />
 
           <FieldDescription className="mt-2 text-center">
             ยังไม่มีบัญชี?{' '}
