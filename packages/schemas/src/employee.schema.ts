@@ -1,61 +1,36 @@
 import * as z from "zod"
 import { toArray } from "./lib/zod-helper"
 
-const PrefixEnum = z.enum(["MR", "MRS", "MISS"])
-const JobLevelEnum = z.enum(["S1", "S2", "M1", "M2"])
-const EmployeeStatusEnum = z.enum(["ACTIVE", "RESIGNED"])
+export const prefix = ["Mr", "Mrs", "Miss"] as const
+export const jobLevel = ["S1", "S2", "M1", "M2"] as const
+export const employeeStatus = ["Active", "Resigned"] as const
 
-// Base employee schema
-export const EmployeeSchema = z.object({
-  id: z.cuid(),
-  // org_unit_id: z.cuid(),
-  employee_no: z.string().min(1, "รหัสพนักงานห้ามว่าง"),
-  prefix: PrefixEnum,
-  first_name: z.string().min(1, "ชื่อห้ามว่าง"),
-  last_name: z.string().min(1, "นามสกุลห้ามว่าง"),
-  id_card_no: z
+// Employee schema
+export const employeeSchema = z.object({
+  employeeNo: z.string().min(1, { message: "รหัสพนักงานห้ามว่าง" }),
+  prefix: z.enum(prefix, { message: "คำนำหน้าไม่ถูกต้อง" }),
+  firstName: z.string().min(1, { message: "ชื่อห้ามว่าง" }),
+  lastName: z.string().min(1, { message: "นามสกุลห้ามว่าง" }),
+  idCardNo: z
     .string()
-    .length(13, "เลขบัตรประชาชนต้องมี 13 หลัก")
-    .regex(/^\d{13}$/, "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น")
-    .nullable()
+    .length(13, { message: "เลขบัตรประชาชนต้องมี 13 หลัก" })
+    .regex(/^\d{13}$/, { message: "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น" })
     .optional(),
-  hire_date: z.iso.date().nullable().optional(),
-  job_level: JobLevelEnum,
-  status: EmployeeStatusEnum.default("ACTIVE"),
-  created_at: z.iso.datetime(),
-  updated_at: z.iso.datetime(),
+  hireDate: z.iso.date().optional(),
+  jobLevel: z.enum(jobLevel, { message: "ระดับตำแหน่งไม่ถูกต้อง" }),
+  status: z.enum(employeeStatus, { message: "สถานะไม่ถูกต้อง" }),
 })
 
-export type Employee = z.infer<typeof EmployeeSchema>
-
-// Create employee schema
-export const CreateEmployeeSchema = EmployeeSchema.omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-}).meta({
-  example: {
-    employee_no: "EMP001",
-    prefix: "MR",
-    first_name: "สมชาย",
-    last_name: "สายลม",
-    id_card_no: "1234567890123",
-    hire_date: "2026-03-23",
-    job_level: "S1",
-    status: "ACTIVE",
-  },
+// Response schema
+export const employeeResponseSchema = employeeSchema.extend({
+  id: z.string(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
-
-export type CreateEmployee = z.infer<typeof CreateEmployeeSchema>
-
-// Update employee schema
-export const UpdateEmployeeSchema = CreateEmployeeSchema.partial()
-
-export type UpdateEmployee = z.infer<typeof UpdateEmployeeSchema>
 
 // Response paginated employees schema
-export const EmployeePaginationSchema = z.object({
-  data: z.array(EmployeeSchema),
+export const employeePaginationSchema = z.object({
+  data: z.array(employeeResponseSchema),
   meta: z.object({
     total: z.number(),
     page: z.number(),
@@ -64,16 +39,16 @@ export const EmployeePaginationSchema = z.object({
   }),
 })
 
-export type EmployeePagination = z.infer<typeof EmployeePaginationSchema>
-
-// Query params schema for filtering employees
-export const EmployeeQueryParamsSchema = z.object({
+// Query schema for filtering employees
+export const employeeQuerySchema = z.object({
   page: z.coerce.number().int().positive().catch(1),
   limit: z.coerce.number().int().positive().max(100).catch(10),
-  search: z.string().optional(), // employee_no, first_name, last_name, id_card_no
-  prefix: z.pipe(toArray, z.array(PrefixEnum)).optional(),
-  job_level: z.pipe(toArray, z.array(JobLevelEnum)).optional(),
-  status: z.pipe(toArray, z.array(EmployeeStatusEnum)).optional(),
+  search: z.string().optional(), // employeeNo, firstName, lastName, idCardNo
+  prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
+  jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
+  status: z.pipe(toArray, z.array(z.enum(employeeStatus))).optional(),
 })
 
-export type EmployeeQuery = z.infer<typeof EmployeeQueryParamsSchema>
+export type EmployeeSchemaType = z.infer<typeof employeeSchema>
+export type EmployeeSchemaResponse = z.infer<typeof employeeResponseSchema>
+export type EmployeeSchemaQuery = z.infer<typeof employeeQuerySchema>

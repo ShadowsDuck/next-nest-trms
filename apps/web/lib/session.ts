@@ -10,14 +10,28 @@ export const authSession = cache(async () => {
     },
   })
 
-  return session
+  return session.data
 })
 
-export const authIsRequired = cache(async () => {
+export const requireUser = cache(async () => {
   const session = await authSession()
 
   if (!session) {
-    redirect('/auth/login')
+    redirect('/login')
+  }
+
+  return session
+})
+
+export const requireAdmin = cache(async () => {
+  const session = await authSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  if (session.user.role !== 'Admin') {
+    redirect('/not-admin')
   }
 
   return session

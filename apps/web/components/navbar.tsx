@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button, buttonVariants } from '@workspace/ui/components/button'
 import { toast } from 'sonner'
-import { signOut } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
 import { ThemeToggle } from './theme-toggle'
 
 export function Navbar() {
@@ -14,7 +14,7 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     setIsSigningOut(true)
-    await signOut({
+    await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
           toast.success('ออกจากระบบสำเร็จ')
@@ -55,10 +55,7 @@ export function Navbar() {
           {isSigningOut ? 'กำลังออกจากระบบ...' : 'ออกจากระบบ'}
         </Button>
 
-        <Link
-          className={buttonVariants({ variant: 'outline' })}
-          href="/auth/login"
-        >
+        <Link className={buttonVariants({ variant: 'outline' })} href="/login">
           เข้าสู่ระบบ
         </Link>
 

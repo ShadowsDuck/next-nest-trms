@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
-import { EmployeeQueryParamsDto } from './dto/employee-query-params.dto';
-import { EmployeeResponseDto } from './dto/employee-response.dto';
+import { EmployeeQueryDto } from './dto/employee-query.dto';
+import { EmployeeResponseDto } from './dto/employee-response';
 
 @Injectable()
 export class EmployeesService {
@@ -20,7 +20,7 @@ export class EmployeesService {
     // เช็ครหัสพนักงานซ้ำ
     const existingEmployeeNo = await this.prismaService.employee.findUnique({
       where: {
-        employee_no: createEmployeeDto.employee_no,
+        employeeNo: createEmployeeDto.employeeNo,
       },
     });
     if (existingEmployeeNo) {
@@ -28,10 +28,10 @@ export class EmployeesService {
     }
 
     // เช็คเลขบัตรประชาชนซ้ำ (ถ้ามีการส่งมา)
-    if (createEmployeeDto.id_card_no) {
+    if (createEmployeeDto.idCardNo) {
       const existingIdCardNo = await this.prismaService.employee.findUnique({
         where: {
-          id_card_no: createEmployeeDto.id_card_no,
+          idCardNo: createEmployeeDto.idCardNo,
         },
       });
       if (existingIdCardNo) {
@@ -39,8 +39,8 @@ export class EmployeesService {
       }
     }
 
-    const hireDate = createEmployeeDto.hire_date
-      ? new Date(createEmployeeDto.hire_date)
+    const hireDate = createEmployeeDto.hireDate
+      ? new Date(createEmployeeDto.hireDate as string)
       : null;
 
     // ตรวจสอบว่า Date ที่แปลงมา "ใช้ได้จริงไหม" (ป้องกัน Invalid Date)
@@ -58,7 +58,7 @@ export class EmployeesService {
     const employee = await this.prismaService.employee.create({
       data: {
         ...createEmployeeDto,
-        hire_date: hireDate,
+        hireDate: hireDate,
       },
     });
 
@@ -66,9 +66,9 @@ export class EmployeesService {
   }
 
   async findAll(
-    queryDto: EmployeeQueryParamsDto,
+    queryDto: EmployeeQueryDto,
   ): Promise<EmployeePaginationResponseDto> {
-    const { page, limit, search, prefix, job_level, status } = queryDto;
+    const { page, limit, search, prefix, jobLevel, status } = queryDto;
 
     const where: Prisma.EmployeeWhereInput = {};
 
@@ -76,8 +76,8 @@ export class EmployeesService {
       where.prefix = { in: prefix };
     }
 
-    if (job_level && job_level.length > 0) {
-      where.job_level = { in: job_level };
+    if (jobLevel && jobLevel.length > 0) {
+      where.jobLevel = { in: jobLevel };
     }
 
     if (status && status.length > 0) {
@@ -87,16 +87,16 @@ export class EmployeesService {
     if (search) {
       where.OR = [
         {
-          employee_no: { contains: search, mode: 'insensitive' },
+          employeeNo: { contains: search, mode: 'insensitive' },
         },
         {
-          first_name: { contains: search, mode: 'insensitive' },
+          firstName: { contains: search, mode: 'insensitive' },
         },
         {
-          last_name: { contains: search, mode: 'insensitive' },
+          lastName: { contains: search, mode: 'insensitive' },
         },
         {
-          id_card_no: { contains: search, mode: 'insensitive' },
+          idCardNo: { contains: search, mode: 'insensitive' },
         },
       ];
     }
@@ -106,7 +106,7 @@ export class EmployeesService {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
       this.prismaService.employee.count({ where }),
     ]);
@@ -125,9 +125,9 @@ export class EmployeesService {
   private formatEmployee(employee: Employee): EmployeeResponseDto {
     return {
       ...employee,
-      hire_date: employee.hire_date?.toISOString().split('T')[0] || null,
-      created_at: employee.created_at.toISOString(),
-      updated_at: employee.updated_at.toISOString(),
+      hireDate: employee.hireDate?.toISOString().split('T')[0] || null,
+      createdAt: employee.createdAt.toISOString(),
+      updatedAt: employee.updatedAt.toISOString(),
     };
   }
 }

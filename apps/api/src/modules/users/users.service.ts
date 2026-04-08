@@ -23,7 +23,7 @@ export class UsersService {
   async assignEmployee(userId: string, employeeId: string) {
     return this.prismaService.user.update({
       where: { id: userId },
-      data: { employee_id: employeeId },
+      data: { employeeId: employeeId },
     });
   }
 
