@@ -1,4 +1,4 @@
-import { UpdateEmployeeSchema } from '@workspace/schemas';
+import { employeeSchema } from '@workspace/schemas';
 import { createZodDto } from 'nestjs-zod';
 
-export class UpdateEmployeeDto extends createZodDto(UpdateEmployeeSchema) {}
+export class UpdateEmployeeDto extends createZodDto(employeeSchema.partial()) {}

@@ -11,8 +11,8 @@ import {
 } from '@nestjs/swagger';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
-import { EmployeeQueryParamsDto } from './dto/employee-query-params.dto';
-import { EmployeeResponseDto } from './dto/employee-response.dto';
+import { EmployeeQueryDto } from './dto/employee-query.dto';
+import { EmployeeResponseDto } from './dto/employee-response';
 import { EmployeesService } from './employees.service';
 
 @Controller('employees')
@@ -65,7 +65,7 @@ export class EmployeesController {
     description: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์',
   })
   async findAll(
-    @Query() queryDto: EmployeeQueryParamsDto,
+    @Query() queryDto: EmployeeQueryDto,
   ): Promise<EmployeePaginationResponseDto> {
     return await this.employeesService.findAll(queryDto);
   }

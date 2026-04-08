@@ -1,6 +1,6 @@
 'use client'
 
-export default function Error() {
+export default function NotAdminPage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h2 className="text-xl font-bold">ขออภัย คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h2>

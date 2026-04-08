@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { RegisterSchema } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -19,16 +18,26 @@ import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
 import { GoogleButton } from '@/components/google-button'
-import { signUp } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
 
-const SignupSchema = RegisterSchema.extend({
-  confirmPassword: z.string().trim(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'รหัสผ่านไม่ตรงกัน',
-  path: ['confirmPassword'],
-})
+const signupSchema = z
+  .object({
+    email: z.email('รูปแบบอีเมลไม่ถูกต้อง'),
+    password: z
+      .string()
+      .min(8, 'รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร')
+      .regex(/[a-zA-Z]/, 'รหัสผ่านต้องมีตัวอักษร')
+      .regex(/[0-9]/, 'รหัสผ่านต้องมีตัวเลข')
+      .regex(/[^a-zA-Z0-9]/, 'รหัสผ่านต้องมีตัวอักษรพิเศษ')
+      .trim(),
+    confirmPassword: z.string().trim(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'รหัสผ่านไม่ตรงกัน',
+    path: ['confirmPassword'],
+  })
 
-type Signup = z.infer<typeof SignupSchema>
+type SignupType = z.infer<typeof signupSchema>
 
 export function SignupForm({ className }: React.ComponentProps<'form'>) {
   const router = useRouter()
@@ -38,8 +47,8 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
     handleSubmit,
     formState: { isSubmitting },
     reset: formReset,
-  } = useForm<Signup>({
-    resolver: zodResolver(SignupSchema),
+  } = useForm<SignupType>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -47,9 +56,9 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
     },
   })
 
-  const onSubmit = async (data: Signup) => {
+  const onSubmit = async (data: SignupType) => {
     try {
-      await signUp.email(
+      await authClient.signUp.email(
         {
           email: data.email,
           password: data.password,
@@ -215,7 +224,7 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
 
           <FieldDescription className="px-6 text-center">
             มีบัญชีอยู่แล้ว?{' '}
-            <Link href="/auth/login" className="underline">
+            <Link href="/login" className="underline">
               เข้าสู่ระบบ
             </Link>
           </FieldDescription>

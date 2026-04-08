@@ -34,7 +34,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
-  basePath: '/api/auth',
+  basePath: '/api',
   emailAndPassword: {
     enabled: true,
   },
@@ -49,7 +49,7 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: 'string',
-        defaultValue: 'EMPLOYEE',
+        defaultValue: 'Employee',
         input: false, // ไม่ให้ client ส่งมาเอง
       },
       employee_id: {
@@ -63,12 +63,12 @@ export const auth = betterAuth({
   plugins: [
     admin({
       ac,
-      defaultRole: 'EMPLOYEE',
-      adminRoles: ['ADMIN', 'MANAGER'],
+      defaultRole: 'Employee',
+      adminRoles: ['Admin', 'Manager'],
       roles: {
-        ADMIN: adminRole,
-        MANAGER: managerRole,
-        EMPLOYEE: employeeRole,
+        Admin: adminRole,
+        Manager: managerRole,
+        Employee: employeeRole,
       },
     }) as any,
   ],

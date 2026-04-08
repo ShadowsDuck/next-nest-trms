@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Login, LoginSchema } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -17,8 +16,16 @@ import { cn } from '@workspace/ui/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import * as z from 'zod'
 import { GoogleButton } from '@/components/google-button'
-import { signIn } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
+
+const loginSchema = z.object({
+  email: z.email('รูปแบบอีเมลไม่ถูกต้อง'),
+  password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
+})
+
+type LoginType = z.infer<typeof loginSchema>
 
 export function LoginForm({ className }: React.ComponentProps<'form'>) {
   const router = useRouter()
@@ -28,17 +35,17 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
     handleSubmit,
     formState: { isSubmitting },
     reset: formReset,
-  } = useForm<Login>({
-    resolver: zodResolver(LoginSchema),
+  } = useForm<LoginType>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   })
 
-  const onSubmit = async (data: Login) => {
+  const onSubmit = async (data: LoginType) => {
     try {
-      await signIn.email(data, {
+      await authClient.signIn.email(data, {
         onSuccess: () => {
           toast.success('เข้าสู่ระบบสำเร็จ')
           formReset()
@@ -142,7 +149,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
 
           <FieldDescription className="mt-2 text-center">
             ยังไม่มีบัญชี?{' '}
-            <Link href="/auth/sign-up" className="underline underline-offset-4">
+            <Link href="/sign-up" className="underline underline-offset-4">
               สมัครสมาชิก
             </Link>
           </FieldDescription>
