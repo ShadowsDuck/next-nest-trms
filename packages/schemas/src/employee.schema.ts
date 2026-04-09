@@ -52,3 +52,6 @@ export const employeeQuerySchema = z.object({
 export type EmployeeSchemaType = z.infer<typeof employeeSchema>
 export type EmployeeSchemaResponse = z.infer<typeof employeeResponseSchema>
 export type EmployeeSchemaQuery = z.infer<typeof employeeQuerySchema>
+export type EmployeeSchemaPaginationResponse = z.infer<
+  typeof employeePaginationSchema
+>

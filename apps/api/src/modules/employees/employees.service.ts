@@ -40,7 +40,7 @@ export class EmployeesService {
     }
 
     const hireDate = createEmployeeDto.hireDate
-      ? new Date(createEmployeeDto.hireDate as string)
+      ? new Date(createEmployeeDto.hireDate)
       : null;
 
     // ตรวจสอบว่า Date ที่แปลงมา "ใช้ได้จริงไหม" (ป้องกัน Invalid Date)
