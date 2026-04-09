@@ -27,9 +27,9 @@ async function bootstrap() {
     .build();
 
   const rawDocument = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, cleanupOpenApiDoc(rawDocument));
+  SwaggerModule.setup('docs', app, cleanupOpenApiDoc(rawDocument));
   app.use(
-    '/api/docs',
+    '/docs/api-reference',
     apiReference({
       content: cleanupOpenApiDoc(rawDocument),
       orderSchemaPropertiesBy: 'preserve',
