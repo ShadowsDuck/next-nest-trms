@@ -19,7 +19,8 @@
     "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../packages/ui/src/lib/compose-refs.ts"
   ],
   "exclude": ["node_modules"]
 }

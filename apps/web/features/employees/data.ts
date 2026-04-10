@@ -12,7 +12,7 @@ const serialize = createSerializer(employeeParsers)
 export async function fetchEmployees(
   params: EmployeeSchemaQuery
 ): Promise<EmployeeSchemaPaginationResponse> {
-  const url = `${env.API_URL}/api/employees${serialize(params)}`
+  const url = `${env.NEXT_PUBLIC_API_URL}/api/employees${serialize(params)}`
 
   const res = await fetch(url, {
     cache: 'no-store',
