@@ -3,6 +3,7 @@ import { Toaster } from '@workspace/ui/components/sonner'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 
 const fontKanit = Kanit({
@@ -29,7 +30,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <QueryProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+          </QueryProvider>
         </ThemeProvider>
         <Toaster closeButton />
       </body>

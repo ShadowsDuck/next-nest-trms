@@ -21,6 +21,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@diceui": "https://diceui.com/r/{name}.json"
+    "@niko-table": "https://niko-table.com/r/{name}.json"
   }
 }

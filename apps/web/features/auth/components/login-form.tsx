@@ -55,6 +55,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
           if (ctx.error.status === 401) {
             toast.error('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
           } else {
+            console.log(ctx.error)
             toast.error(ctx.error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
           }
         },
