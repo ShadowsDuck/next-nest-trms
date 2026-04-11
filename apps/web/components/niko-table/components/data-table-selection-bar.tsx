@@ -9,6 +9,8 @@ interface DataTableSelectionBarProps {
   onClear?: () => void
   children?: React.ReactNode
   className?: string
+  selectedText?: string
+  clearText?: string
 }
 
 /**
@@ -29,6 +31,8 @@ export const DataTableSelectionBar = React.memo(function DataTableSelectionBar({
   onClear,
   children,
   className,
+  selectedText,
+  clearText,
 }: DataTableSelectionBarProps) {
   if (selectedCount === 0) return null
 
@@ -38,7 +42,7 @@ export const DataTableSelectionBar = React.memo(function DataTableSelectionBar({
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{selectedCount}</Badge>
           <span className="text-sm text-muted-foreground">
-            {selectedCount === 1 ? 'row selected' : 'rows selected'}
+            {selectedText ?? (selectedCount === 1 ? 'row selected' : 'rows selected')}
           </span>
           {onClear && (
             <Button
@@ -47,7 +51,7 @@ export const DataTableSelectionBar = React.memo(function DataTableSelectionBar({
               onClick={onClear}
               className="h-7 px-2 text-xs"
             >
-              Clear
+              {clearText ?? 'Clear'}
             </Button>
           )}
         </div>
