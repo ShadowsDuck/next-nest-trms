@@ -1,12 +1,13 @@
-"use client"
+'use client'
+'use no memo'
 
-import { useDataTable } from "../core/data-table-context"
+import { useDataTable } from '../core/data-table-context'
 import {
   TableSortMenu,
   type TableSortMenuProps,
-} from "../filters/table-sort-menu"
+} from '../filters/table-sort-menu'
 
-type DataTableSortMenuProps<TData> = Omit<TableSortMenuProps<TData>, "table">
+type DataTableSortMenuProps<TData> = Omit<TableSortMenuProps<TData>, 'table'>
 
 /**
  * A sort menu component that automatically connects to the DataTable context
@@ -37,4 +38,4 @@ export function DataTableSortMenu<TData>(props: DataTableSortMenuProps<TData>) {
  * @see "feature-detection.ts"
  */
 
-DataTableSortMenu.displayName = "DataTableSortMenu"
+DataTableSortMenu.displayName = 'DataTableSortMenu'

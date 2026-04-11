@@ -1,17 +1,19 @@
-"use client"
-import React from "react"
-import { type Table } from "@tanstack/react-table"
-import { Button } from "@workspace/ui/components/button"
+'use client'
+'use no memo'
+
+import React from 'react'
+import { type Table } from '@tanstack/react-table'
+import { Button } from '@workspace/ui/components/button'
+import { Input } from '@workspace/ui/components/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select"
-import { Input } from "@workspace/ui/components/input"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Skeleton } from "@workspace/ui/components/skeleton"
+} from '@workspace/ui/components/select'
+import { Skeleton } from '@workspace/ui/components/skeleton'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export interface TablePaginationProps<TData> {
   table: Table<TData>
@@ -86,14 +88,10 @@ export function TablePagination<TData>({
   const canGoPrevious =
     !disablePreviousPage && !isDisabled && table.getCanPreviousPage()
 
-  // Set default page size on initial render
+  // Notify when pagination UI is ready (no table state mutations here).
   React.useEffect(() => {
-    if (pageSize !== defaultPageSize) {
-      table.setPageSize(defaultPageSize)
-    }
     onPaginationReady?.()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [onPaginationReady])
 
   const handlePageSizeChange = React.useCallback(
     (value: string) => {
@@ -102,18 +100,18 @@ export function TablePagination<TData>({
       table.setPageSize(newPageSize)
       onPageSizeChange?.(newPageSize, newPageIndex)
     },
-    [table, pageIndex, pageSize, onPageSizeChange],
+    [table, pageIndex, pageSize, onPageSizeChange]
   )
 
   const handlePageInputChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setPageInput(e.target.value)
     },
-    [],
+    []
   )
 
   const handlePageInputBlur = React.useCallback(() => {
-    const page = parseInt(pageInput ?? "", 10)
+    const page = parseInt(pageInput ?? '', 10)
     if (!Number.isNaN(page) && page >= 1 && page <= totalPages) {
       const newPageIndex = page - 1
       table.setPageIndex(newPageIndex)
@@ -124,11 +122,11 @@ export function TablePagination<TData>({
 
   const handlePageInputKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.currentTarget.blur()
       }
     },
-    [],
+    []
   )
 
   const handlePreviousPage = React.useCallback(() => {
@@ -192,7 +190,7 @@ export function TablePagination<TData>({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {pageSizeOptions?.map(size => (
+            {pageSizeOptions?.map((size) => (
               <SelectItem key={size} value={`${size}`}>
                 {size}
               </SelectItem>
@@ -208,7 +206,7 @@ export function TablePagination<TData>({
         aria-atomic="true"
       >
         {totalRows === 0
-          ? "0 items"
+          ? '0 items'
           : `${startItem}-${endItem} of ${totalRows} items`}
       </div>
 
@@ -272,4 +270,4 @@ export function TablePagination<TData>({
  * @see "feature-detection.ts"
  */
 
-TablePagination.displayName = "TablePagination"
+TablePagination.displayName = 'TablePagination'

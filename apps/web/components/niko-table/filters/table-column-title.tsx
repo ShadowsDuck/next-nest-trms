@@ -1,9 +1,10 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import type { Column } from "@tanstack/react-table"
-import { cn } from "@workspace/ui/lib/utils"
-import { useDerivedColumnTitle } from "../hooks/use-derived-column-title"
+import React from 'react'
+import type { Column } from '@tanstack/react-table'
+import { cn } from '@workspace/ui/lib/utils'
+import { useDerivedColumnTitle } from '../hooks/use-derived-column-title'
 
 /**
  * Renders the column title.
@@ -24,8 +25,8 @@ export function TableColumnTitle<TData, TValue>({
   return (
     <div
       className={cn(
-        "truncate py-0.5 text-sm font-semibold transition-colors",
-        className,
+        'truncate py-0.5 text-sm font-semibold transition-colors',
+        className
       )}
     >
       {children ?? derivedTitle}
@@ -33,4 +34,4 @@ export function TableColumnTitle<TData, TValue>({
   )
 }
 
-TableColumnTitle.displayName = "TableColumnTitle"
+TableColumnTitle.displayName = 'TableColumnTitle'

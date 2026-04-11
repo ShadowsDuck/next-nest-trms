@@ -1,10 +1,10 @@
 import {
   Children,
-  isValidElement,
-  type ReactNode,
   type ComponentType,
   type PropsWithChildren,
-} from "react"
+  type ReactNode,
+  isValidElement,
+} from 'react'
 
 /**
  * Feature requirements that components can declare
@@ -44,7 +44,7 @@ export interface FeatureRequirements {
  * WHAT: Caches detection results keyed by children structure.
  */
 const detectionCache =
-  typeof window !== "undefined" ? new Map<unknown, FeatureRequirements>() : null
+  typeof window !== 'undefined' ? new Map<unknown, FeatureRequirements>() : null
 
 /**
  * PERFORMANCE: Maximum cache size to prevent memory leaks
@@ -137,7 +137,7 @@ const COMPONENT_FEATURES: Record<string, FeatureRequirements> = {
  */
 export function detectFeaturesFromChildren(
   children: ReactNode,
-  columns?: Array<{ header?: unknown; enableColumnFilter?: boolean }>,
+  columns?: Array<{ header?: unknown; enableColumnFilter?: boolean }>
 ): FeatureRequirements {
   /**
    * PERFORMANCE: Conditional caching based on detection type
@@ -153,7 +153,7 @@ export function detectFeaturesFromChildren(
    * WHAT: Determines if we should use cache based on detection type.
    */
   const shouldCache =
-    detectionCache && !columns && children && typeof children === "object"
+    detectionCache && !columns && children && typeof children === 'object'
 
   if (shouldCache) {
     const cached = detectionCache.get(children)
@@ -170,7 +170,7 @@ export function detectFeaturesFromChildren(
     for (const child of childrenArray) {
       if (isValidElement(child)) {
         // Check if this component has feature requirements
-        if (typeof child.type === "function") {
+        if (typeof child.type === 'function') {
           const componentType = child.type as ComponentType<unknown> & {
             displayName?: string
           }
@@ -181,7 +181,7 @@ export function detectFeaturesFromChildren(
 
           if (componentFeatures) {
             // Merge requirements (any component requiring a feature enables it)
-            Object.keys(componentFeatures).forEach(key => {
+            Object.keys(componentFeatures).forEach((key) => {
               const featureKey = key as keyof FeatureRequirements
               if (componentFeatures[featureKey]) {
                 ;(requirements as Record<string, unknown>)[featureKey] = true
@@ -199,76 +199,13 @@ export function detectFeaturesFromChildren(
     }
   }
 
-  // Check columns for header components (like TableColumnHeader, TableColumnSortMenu)
+  // Check columns for static capabilities only. Do not execute header render
+  // functions here, because this utility can run during render and should stay pure.
   if (columns && Array.isArray(columns)) {
     for (const column of columns) {
       // Check if column has enableColumnFilter set
       if (column.enableColumnFilter) {
         requirements.enableFilters = true
-      }
-
-      if (column.header && typeof column.header === "function") {
-        try {
-          // Try to call the header function with mock context to get the rendered component
-          // Using unknown for the context type since we're creating a minimal mock
-          const headerFn = column.header as (context: {
-            column: Record<string, unknown>
-          }) => ReactNode
-          const headerResult = headerFn({
-            column: {
-              getCanSort: () => true,
-              getIsSorted: () => false,
-              toggleSorting: () => {},
-              clearSorting: () => {},
-              getCanHide: () => true,
-              getIsVisible: () => true,
-              toggleVisibility: () => {},
-              getCanPin: () => true,
-              getIsPinned: () => false,
-              pin: () => {},
-              columnDef: { meta: {} },
-              id: "mock",
-            },
-          })
-
-          // Recursively check the header result and all its children for feature components
-          const checkElementForFeatures = (element: ReactNode) => {
-            if (!isValidElement(element)) return
-
-            if (typeof element.type === "function") {
-              const componentType = element.type as ComponentType<unknown> & {
-                displayName?: string
-              }
-              const displayName = componentType.displayName
-              const componentFeatures = displayName
-                ? COMPONENT_FEATURES[displayName]
-                : undefined
-
-              if (componentFeatures) {
-                Object.keys(componentFeatures).forEach(key => {
-                  const featureKey = key as keyof FeatureRequirements
-                  if (componentFeatures[featureKey]) {
-                    ;(requirements as Record<string, unknown>)[featureKey] =
-                      true
-                  }
-                })
-              }
-            }
-
-            // Recursively check children
-            const propsWithChildren =
-              element.props as PropsWithChildren<unknown>
-            if (propsWithChildren?.children) {
-              Children.toArray(propsWithChildren.children).forEach(
-                checkElementForFeatures,
-              )
-            }
-          }
-
-          checkElementForFeatures(headerResult)
-        } catch {
-          // Ignore errors from calling header function
-        }
       }
     }
   }
@@ -297,7 +234,7 @@ export function detectFeaturesFromChildren(
  */
 export function registerComponentFeatures(
   displayName: string,
-  features: FeatureRequirements,
+  features: FeatureRequirements
 ) {
   COMPONENT_FEATURES[displayName] = features
 }

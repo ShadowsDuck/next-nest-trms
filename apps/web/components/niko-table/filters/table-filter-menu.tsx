@@ -1,4 +1,5 @@
 'use client'
+'use no memo'
 
 /**
  * Table filter menu component
@@ -545,7 +546,7 @@ function normalizeFilterJoinOperators<TData>(
     }
 
     // Get the previous filter in the new order
-    const previousFilter = reorderedFilters[newIndex - 1]
+    const previousFilter = reorderedFilters[newIndex - 1]!
 
     // Try to find original index using filterId first, then fallback to properties
     let currentOriginalIndex = originalIndexMapById.get(filter.filterId) ?? -1
@@ -580,14 +581,14 @@ function normalizeFilterJoinOperators<TData>(
         // Current came after previous in original - use current's original joinOperator
         return {
           ...filter,
-          joinOperator: originalFilters[currentOriginalIndex].joinOperator,
+          joinOperator: originalFilters[currentOriginalIndex]!.joinOperator,
         }
       } else {
         // Current came before previous in original - use previous's original joinOperator
         // (which determines how it joins with what was before it)
         return {
           ...filter,
-          joinOperator: originalFilters[previousOriginalIndex].joinOperator,
+          joinOperator: originalFilters[previousOriginalIndex]!.joinOperator,
         }
       }
     }

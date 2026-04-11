@@ -1,9 +1,10 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import { cn } from "@workspace/ui/lib/utils"
+import React from 'react'
+import { cn } from '@workspace/ui/lib/utils'
 
-export interface DataTableToolbarSectionProps extends React.ComponentProps<"div"> {
+export interface DataTableToolbarSectionProps extends React.ComponentProps<'div'> {
   children?: React.ReactNode
 }
 
@@ -49,7 +50,7 @@ const DataTableToolbarSectionInternal = React.forwardRef<
       ref={ref}
       role="toolbar"
       aria-orientation="horizontal"
-      className={cn("flex w-full flex-wrap items-center gap-2 p-1", className)}
+      className={cn('flex w-full flex-wrap items-center gap-2 p-1', className)}
       {...props}
     >
       {children}
@@ -57,7 +58,7 @@ const DataTableToolbarSectionInternal = React.forwardRef<
   )
 })
 
-DataTableToolbarSectionInternal.displayName = "DataTableToolbarSectionInternal"
+DataTableToolbarSectionInternal.displayName = 'DataTableToolbarSectionInternal'
 
 /**
  * PERFORMANCE: Toolbar section - memoized with React.memo
@@ -71,7 +72,7 @@ DataTableToolbarSectionInternal.displayName = "DataTableToolbarSectionInternal"
  * WHAT: Only re-renders when props (children, className, etc.) actually change.
  */
 export const DataTableToolbarSection = React.memo(
-  DataTableToolbarSectionInternal,
+  DataTableToolbarSectionInternal
 )
 
-DataTableToolbarSection.displayName = "DataTableToolbarSection"
+DataTableToolbarSection.displayName = 'DataTableToolbarSection'

@@ -1,11 +1,12 @@
-"use client"
+'use client'
+'use no memo'
 
-import type { Table } from "@tanstack/react-table"
-import * as React from "react"
-import { Input } from "@workspace/ui/components/input"
-import { Button } from "@workspace/ui/components/button"
-import { cn } from "@workspace/ui/lib/utils"
-import { Search, X } from "lucide-react"
+import * as React from 'react'
+import type { Table } from '@tanstack/react-table'
+import { Button } from '@workspace/ui/components/button'
+import { Input } from '@workspace/ui/components/input'
+import { cn } from '@workspace/ui/lib/utils'
+import { Search, X } from 'lucide-react'
 
 export interface TableSearchFilterProps<TData> {
   table: Table<TData>
@@ -19,7 +20,7 @@ export interface TableSearchFilterProps<TData> {
 export function TableSearchFilter<TData>({
   table,
   className,
-  placeholder = "Search...",
+  placeholder = 'Search...',
   showClearButton = true,
   onChange,
   value,
@@ -31,7 +32,7 @@ export function TableSearchFilter<TData>({
   const tableState = table.getState()
   const tableGlobalFilter = tableState.globalFilter
   const globalFilterValue =
-    typeof tableGlobalFilter === "string" ? tableGlobalFilter : ""
+    typeof tableGlobalFilter === 'string' ? tableGlobalFilter : ''
 
   // Use controlled value if provided, otherwise use table's globalFilter
   // The context will trigger re-renders when table state changes, so we don't need internal state
@@ -49,7 +50,7 @@ export function TableSearchFilter<TData>({
    * WHAT: Only creates new function when table or onChange prop changes.
    */
   const handleClear = React.useCallback(() => {
-    const emptyValue = ""
+    const emptyValue = ''
     table.setGlobalFilter(emptyValue)
     onChange?.(emptyValue)
   }, [table, onChange])
@@ -73,14 +74,14 @@ export function TableSearchFilter<TData>({
       table.setGlobalFilter(newValue)
       onChange?.(newValue)
     },
-    [table, onChange],
+    [table, onChange]
   )
 
   const hasValue = currentValue.length > 0
 
   return (
     <div
-      className={cn("relative flex flex-1 items-center", className)}
+      className={cn('relative flex flex-1 items-center', className)}
       role="search"
     >
       <Search
@@ -115,4 +116,4 @@ export function TableSearchFilter<TData>({
  * @required displayName is required for auto feature detection
  * @see src/components/niko-table/config/feature-detection.ts
  */
-TableSearchFilter.displayName = "TableSearchFilter"
+TableSearchFilter.displayName = 'TableSearchFilter'

@@ -1,4 +1,5 @@
 'use client'
+'use no memo'
 
 import React, {
   createContext,
@@ -208,18 +209,17 @@ export function DataTableProvider<TData>({
    * WHAT: Only creates new value object when table, columns, loading, or state changes.
    * tableStateKey ensures consumers update when table state (filter/sort/select) changes.
    */
-  const effectiveIsLoading = externalIsLoading !== undefined ? externalIsLoading : state.isLoading
-
   const value = React.useMemo(
     () =>
       ({
         table,
         columns:
           columns || (table.options.columns as DataTableColumnDef<TData>[]),
-        isLoading: effectiveIsLoading,
+        isLoading: state.isLoading,
         setIsLoading,
       }) as DataTableContextProps<TData>,
-    [table, columns, effectiveIsLoading, setIsLoading, tableStateKey]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table, columns, state.isLoading, setIsLoading, tableStateKey]
   )
 
   return (

@@ -1,14 +1,15 @@
-"use client"
+'use client'
+'use no memo'
 
-import { useDataTable } from "../core/data-table-context"
+import { useDataTable } from '../core/data-table-context'
 import {
   TablePagination,
   type TablePaginationProps,
-} from "../filters/table-pagination"
+} from '../filters/table-pagination'
 
 type DataTablePaginationProps<TData> = Omit<
   TablePaginationProps<TData>,
-  "table" | "isLoading"
+  'table' | 'isLoading'
 > & {
   /**
    * Override the loading state from context
@@ -33,4 +34,4 @@ export function DataTablePagination<TData>({
  * @see "feature-detection.ts"
  */
 
-DataTablePagination.displayName = "DataTablePagination"
+DataTablePagination.displayName = 'DataTablePagination'

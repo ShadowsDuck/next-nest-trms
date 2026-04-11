@@ -1,5 +1,5 @@
-import { ExampleSimpleTable } from '@/features/employees/components/example-simple-table'
+import SimpleTable from '@/features/employees/components/simple-table'
 
-export default async function CoursesPage() {
-  return <ExampleSimpleTable />
+export default function CoursesPage() {
+  return <SimpleTable />
 }

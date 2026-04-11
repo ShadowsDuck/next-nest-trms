@@ -1,12 +1,11 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import type { Table } from "@tanstack/react-table"
-
-import type { Option } from "../types"
-import { formatLabel } from "../lib/format"
-import { FILTER_VARIANTS } from "../lib/constants"
-import { getFilteredRowsExcludingColumn } from "../lib/filter-rows"
+import * as React from 'react'
+import type { Table } from '@tanstack/react-table'
+import { FILTER_VARIANTS } from '../lib/constants'
+import { getFilteredRowsExcludingColumn } from '../lib/filter-rows'
+import { formatLabel } from '../lib/format'
+import type { Option } from '../types'
 
 export interface GenerateOptionsConfig {
   /**
@@ -46,7 +45,7 @@ export interface GenerateOptionsConfig {
  */
 export function useGeneratedOptions<TData>(
   table: Table<TData>,
-  config: GenerateOptionsConfig = {},
+  config: GenerateOptionsConfig = {}
 ): Record<string, Option[]> {
   const {
     showCounts = true,
@@ -73,10 +72,10 @@ export function useGeneratedOptions<TData>(
    * this memo recomputes. The `table` reference alone is stable across renders
    * and would cause stale column data.
    */
-   
+
   const columns = React.useMemo(
     () => table.getAllColumns(),
-    [table, table.options.columns],
+    [table, table.options.columns]
   )
 
   /**
@@ -88,8 +87,8 @@ export function useGeneratedOptions<TData>(
   const coreRows = table.getCoreRowModel().rows
 
   // Normalize array deps to stable strings for React hook linting
-  const includeKey = includeColumns?.join(",") ?? ""
-  const excludeKey = excludeColumns?.join(",") ?? ""
+  const includeKey = includeColumns?.join(',') ?? ''
+  const excludeKey = excludeColumns?.join(',') ?? ''
 
   /**
    * PERFORMANCE: Memoize option generation - expensive computation
@@ -155,7 +154,7 @@ export function useGeneratedOptions<TData>(
             coreRows,
             colId,
             columnFilters,
-            globalFilter,
+            globalFilter
           )
         : coreRows
 
@@ -165,12 +164,12 @@ export function useGeneratedOptions<TData>(
             coreRows,
             colId,
             columnFilters,
-            globalFilter,
+            globalFilter
           )
         : coreRows
 
       // If we have static options with augment strategy, we use static options and only calculate counts
-      if (meta.options && meta.options.length > 0 && colMerge === "augment") {
+      if (meta.options && meta.options.length > 0 && colMerge === 'augment') {
         // Calculate counts from countSourceRows for all static options
         const countMap = new Map<string, number>()
         for (const row of countSourceRows) {
@@ -179,7 +178,7 @@ export function useGeneratedOptions<TData>(
           for (const v of values) {
             if (v === null || v === undefined) continue
             const str = String(v)
-            if (str.trim() === "") continue
+            if (str.trim() === '') continue
             countMap.set(str, (countMap.get(str) ?? 0) + 1)
           }
         }
@@ -198,7 +197,7 @@ export function useGeneratedOptions<TData>(
             }
           }
           filteredStaticOptions = meta.options.filter((opt: Option) =>
-            occurrenceMap.has(opt.value),
+            occurrenceMap.has(opt.value)
           )
         }
 
@@ -212,8 +211,8 @@ export function useGeneratedOptions<TData>(
         continue
       }
 
-      // For auto-generated options, generate from optionSourceRows
-      const counts = new Map<string, number>()
+      // For auto-generated options, discover from optionSourceRows
+      const optionValues = new Set<string>()
       for (const row of optionSourceRows) {
         const raw = row.getValue(colId as string) as unknown
 
@@ -223,43 +222,65 @@ export function useGeneratedOptions<TData>(
         for (const v of values) {
           if (v === null || v === undefined) continue
           const str = String(v)
-          if (str.trim() === "") continue
-          counts.set(str, (counts.get(str) ?? 0) + 1)
+          if (str.trim() === '') continue
+          optionValues.add(str)
         }
       }
 
       // If we couldn't derive anything, skip (caller may still have static options)
-      if (counts.size === 0) {
+      if (optionValues.size === 0) {
         result[colId] = []
         continue
       }
 
-      const options: Option[] = Array.from(counts.entries())
-        .map(([value, count]) => ({
+      // Compute counts from countSourceRows
+      const counts = new Map<string, number>()
+      for (const row of countSourceRows) {
+        const raw = row.getValue(colId as string) as unknown
+        const values: unknown[] = Array.isArray(raw) ? raw : [raw]
+        for (const v of values) {
+          if (v === null || v === undefined) continue
+          const str = String(v)
+          if (str.trim() === '') continue
+          if (optionValues.has(str)) {
+            counts.set(str, (counts.get(str) ?? 0) + 1)
+          }
+        }
+      }
+
+      const options: Option[] = Array.from(optionValues)
+        .map((value) => ({
           value,
           label: colAutoOptionsFormat ? formatLabel(value) : value,
-          count: colShowCounts ? count : undefined,
+          count: colShowCounts ? (counts.get(value) ?? 0) : undefined,
         }))
         .sort((a, b) => a.label.localeCompare(b.label))
 
       const finalOptions =
-        typeof limitPerColumn === "number" && limitPerColumn > 0
+        typeof limitPerColumn === 'number' && limitPerColumn > 0
           ? options.slice(0, limitPerColumn)
           : options
 
-      // If static options exist and strategy is preserve, keep as-is (but respect limitToFilteredRows)
+      // If static options exist and strategy is preserve, keep them untouched.
+      // Per docs, `preserve` returns user-defined options as-is; counts are only
+      // injected by `augment`. We still respect limitToFilteredRows to hide
+      // options whose value is not present in the current option-source rows.
       if (
         meta.options &&
         meta.options.length > 0 &&
-        (!colMerge || colMerge === "preserve")
+        (!colMerge || colMerge === 'preserve')
       ) {
         if (limitToFilteredRows) {
-          const occurrenceMap = new Map<string, boolean>()
-          // counts map already has keys from optionSourceRows
-          counts.forEach((_, key) => occurrenceMap.set(key, true))
-
+          const availableOptions = new Set<string>()
+          for (const row of optionSourceRows) {
+            const raw = row.getValue(colId as string) as unknown
+            const values: unknown[] = Array.isArray(raw) ? raw : [raw]
+            for (const v of values) {
+              if (v != null) availableOptions.add(String(v))
+            }
+          }
           result[colId] = meta.options.filter((opt: Option) =>
-            occurrenceMap.has(opt.value),
+            availableOptions.has(opt.value)
           )
         } else {
           result[colId] = meta.options
@@ -297,7 +318,7 @@ export function useGeneratedOptions<TData>(
 export function useGeneratedOptionsForColumn<TData>(
   table: Table<TData>,
   columnId: string,
-  config?: GenerateOptionsConfig,
+  config?: GenerateOptionsConfig
 ): Option[] {
   const map = useGeneratedOptions(table, {
     ...config,
