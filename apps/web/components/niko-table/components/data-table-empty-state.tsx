@@ -1,7 +1,8 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import { cn } from "@workspace/ui/lib/utils"
+import React from 'react'
+import { cn } from '@workspace/ui/lib/utils'
 
 // ============================================================================
 // Context for Empty State
@@ -18,7 +19,7 @@ function useDataTableEmptyState() {
   const context = React.useContext(DataTableEmptyStateContext)
   if (!context) {
     throw new Error(
-      "Empty state components must be used within DataTableEmptyState",
+      'Empty state components must be used within DataTableEmptyState'
     )
   }
   return context
@@ -49,8 +50,8 @@ export function DataTableEmptyState({
     <DataTableEmptyStateContext.Provider value={{ isFiltered }}>
       <div
         className={cn(
-          "flex flex-col items-center justify-center gap-3 py-4",
-          className,
+          'flex flex-col items-center justify-center gap-3 py-4',
+          className
         )}
       >
         {children}
@@ -89,11 +90,11 @@ export const DataTableEmptyIcon = React.memo(function DataTableEmptyIcon({
   className,
 }: DataTableEmptyIconProps) {
   return (
-    <div className={cn("text-muted-foreground/50", className)}>{children}</div>
+    <div className={cn('text-muted-foreground/50', className)}>{children}</div>
   )
 })
 
-DataTableEmptyIcon.displayName = "DataTableEmptyIcon"
+DataTableEmptyIcon.displayName = 'DataTableEmptyIcon'
 
 // ============================================================================
 // Empty State Message
@@ -133,8 +134,8 @@ export const DataTableEmptyMessage = React.memo(function DataTableEmptyMessage({
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-1 text-center text-muted-foreground",
-        className,
+        'flex flex-col items-center gap-1 text-center text-muted-foreground',
+        className
       )}
     >
       {children}
@@ -142,7 +143,7 @@ export const DataTableEmptyMessage = React.memo(function DataTableEmptyMessage({
   )
 })
 
-DataTableEmptyMessage.displayName = "DataTableEmptyMessage"
+DataTableEmptyMessage.displayName = 'DataTableEmptyMessage'
 
 // ============================================================================
 // Empty State Filtered Message
@@ -180,17 +181,17 @@ export const DataTableEmptyFilteredMessage = React.memo(
     return (
       <div
         className={cn(
-          "flex flex-col items-center gap-1 text-center text-muted-foreground",
-          className,
+          'flex flex-col items-center gap-1 text-center text-muted-foreground',
+          className
         )}
       >
         {children}
       </div>
     )
-  },
+  }
 )
 
-DataTableEmptyFilteredMessage.displayName = "DataTableEmptyFilteredMessage"
+DataTableEmptyFilteredMessage.displayName = 'DataTableEmptyFilteredMessage'
 
 // ============================================================================
 // Empty State Actions
@@ -215,10 +216,10 @@ export const DataTableEmptyActions = React.memo(function DataTableEmptyActions({
   children,
   className,
 }: DataTableEmptyActionsProps) {
-  return <div className={cn("mt-2 flex gap-2", className)}>{children}</div>
+  return <div className={cn('mt-2 flex gap-2', className)}>{children}</div>
 })
 
-DataTableEmptyActions.displayName = "DataTableEmptyActions"
+DataTableEmptyActions.displayName = 'DataTableEmptyActions'
 
 // ============================================================================
 // Convenience Components
@@ -246,10 +247,10 @@ export const DataTableEmptyTitle = React.memo(function DataTableEmptyTitle({
   children,
   className,
 }: DataTableEmptyTitleProps) {
-  return <p className={cn("font-semibold", className)}>{children}</p>
+  return <p className={cn('font-semibold', className)}>{children}</p>
 })
 
-DataTableEmptyTitle.displayName = "DataTableEmptyTitle"
+DataTableEmptyTitle.displayName = 'DataTableEmptyTitle'
 
 export interface DataTableEmptyDescriptionProps {
   children: React.ReactNode
@@ -275,11 +276,11 @@ export const DataTableEmptyDescription = React.memo(
     className,
   }: DataTableEmptyDescriptionProps) {
     return (
-      <p className={cn("text-sm text-muted-foreground", className)}>
+      <p className={cn('text-sm text-muted-foreground', className)}>
         {children}
       </p>
     )
-  },
+  }
 )
 
-DataTableEmptyDescription.displayName = "DataTableEmptyDescription"
+DataTableEmptyDescription.displayName = 'DataTableEmptyDescription'

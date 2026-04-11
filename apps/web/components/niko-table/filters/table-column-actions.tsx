@@ -1,16 +1,16 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import { MoreVertical } from "lucide-react"
-
-import { Button } from "@workspace/ui/components/button"
+import React from 'react'
+import { Button } from '@workspace/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
-import { cn } from "@workspace/ui/lib/utils"
+} from '@workspace/ui/components/dropdown-menu'
+import { cn } from '@workspace/ui/lib/utils'
+import { MoreVertical } from 'lucide-react'
 
 export interface TableColumnActionsProps {
   children: React.ReactNode
@@ -32,7 +32,7 @@ export interface TableColumnActionsProps {
    * Alignment of the dropdown content.
    * @default "end"
    */
-  align?: "start" | "center" | "end"
+  align?: 'start' | 'center' | 'end'
 }
 
 /**
@@ -58,10 +58,10 @@ export interface TableColumnActionsProps {
 export function TableColumnActions({
   children,
   className,
-  label = "Column Actions",
+  label = 'Column Actions',
   isActive = false,
   trigger,
-  align = "end",
+  align = 'end',
 }: TableColumnActionsProps) {
   return (
     <DropdownMenu>
@@ -71,9 +71,9 @@ export function TableColumnActions({
             variant="ghost"
             size="icon"
             className={cn(
-              "size-7 transition-opacity group-hover:opacity-100 dark:text-muted-foreground",
-              isActive ? "text-primary opacity-100" : "opacity-0",
-              className,
+              'size-7 transition-opacity group-hover:opacity-100 dark:text-muted-foreground',
+              isActive ? 'text-primary opacity-100' : 'opacity-0',
+              className
             )}
           >
             <MoreVertical className="size-4" />
@@ -91,4 +91,4 @@ export function TableColumnActions({
   )
 }
 
-TableColumnActions.displayName = "TableColumnActions"
+TableColumnActions.displayName = 'TableColumnActions'

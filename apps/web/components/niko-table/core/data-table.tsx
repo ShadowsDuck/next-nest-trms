@@ -1,8 +1,9 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import { cn } from "@workspace/ui/lib/utils"
-import { TableComponent } from "@workspace/ui/components/table"
+import React from 'react'
+import { TableComponent } from '@workspace/ui/components/table'
+import { cn } from '@workspace/ui/lib/utils'
 
 /**
  * Extracts height from Tailwind arbitrary values (e.g., h-[600px], max-h-[400px]).
@@ -35,7 +36,7 @@ function parseHeightFromClassName(className?: string) {
   return {
     height,
     maxHeight,
-    safeClassName: remainingClasses.join(" "),
+    safeClassName: remainingClasses.join(' '),
   }
 }
 
@@ -104,7 +105,7 @@ export function DataTable({
   // Parse height from className if not provided via props
   const parsed = React.useMemo(
     () => parseHeightFromClassName(className),
-    [className],
+    [className]
   )
 
   const finalHeight = height ?? parsed.height
@@ -114,18 +115,18 @@ export function DataTable({
     <div
       data-slot="table-container"
       className={cn(
-        "relative w-full overflow-auto rounded-lg border",
+        'relative w-full overflow-auto rounded-lg border',
         // Custom scrollbar styling to match ScrollArea aesthetic
         // Scrollbar visible but subtle by default, more prominent on hover
-        "[&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5",
-        "[&::-webkit-scrollbar-track]:bg-transparent",
-        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border/40",
-        "hover:[&::-webkit-scrollbar-thumb]:bg-border",
-        "[&::-webkit-scrollbar-thumb:hover]:bg-border/80!",
+        '[&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5',
+        '[&::-webkit-scrollbar-track]:bg-transparent',
+        '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border/40',
+        'hover:[&::-webkit-scrollbar-thumb]:bg-border',
+        '[&::-webkit-scrollbar-thumb:hover]:bg-border/80!',
         // Firefox scrollbar styling
-        "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/40",
-        "hover:scrollbar-thumb-border",
-        parsed.safeClassName,
+        'scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/40',
+        'hover:scrollbar-thumb-border',
+        parsed.safeClassName
       )}
       style={{
         height: finalHeight,
@@ -137,4 +138,4 @@ export function DataTable({
   )
 }
 
-DataTable.displayName = "DataTable"
+DataTable.displayName = 'DataTable'

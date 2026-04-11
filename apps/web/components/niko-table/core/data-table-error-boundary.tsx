@@ -1,9 +1,14 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert"
-import { Button } from "@workspace/ui/components/button"
+import React from 'react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@workspace/ui/components/alert'
+import { Button } from '@workspace/ui/components/button'
+import { AlertCircle } from 'lucide-react'
 
 export interface DataTableErrorBoundaryProps {
   /**
@@ -84,7 +89,7 @@ export class DataTableErrorBoundary extends React.Component<
   DataTableErrorBoundaryProps,
   DataTableErrorBoundaryState
 > {
-  static displayName = "DataTableErrorBoundary"
+  static displayName = 'DataTableErrorBoundary'
 
   constructor(props: DataTableErrorBoundaryProps) {
     super(props)
@@ -96,7 +101,7 @@ export class DataTableErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("DataTable Error Boundary caught an error:", error, errorInfo)
+    console.error('DataTable Error Boundary caught an error:', error, errorInfo)
     this.props.onError?.(error, errorInfo)
   }
 
@@ -111,7 +116,7 @@ export class DataTableErrorBoundary extends React.Component<
         return this.props.fallback
       }
 
-      const { showResetButton = true, resetButtonText = "Try Again" } =
+      const { showResetButton = true, resetButtonText = 'Try Again' } =
         this.props
 
       // Default error UI
@@ -122,7 +127,7 @@ export class DataTableErrorBoundary extends React.Component<
           <AlertDescription className="mt-2 flex flex-col gap-2">
             <p>
               {this.state.error?.message ||
-                "Something went wrong while displaying the table."}
+                'Something went wrong while displaying the table.'}
             </p>
             {showResetButton && (
               <Button

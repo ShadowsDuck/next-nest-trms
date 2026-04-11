@@ -1,16 +1,14 @@
-"use client"
+'use client'
+'use no memo'
 
 /**
  * Table sort menu component
  * @description A sort menu component for DataTable that allows users to manage multiple sorting criteria. Users can add, remove, and reorder sorting fields, as well as select sort directions.
  */
-
-import type { ColumnSort, SortDirection, Table } from "@tanstack/react-table"
-import { ArrowDownUp, Trash2, CircleHelp } from "lucide-react"
-import * as React from "react"
-
-import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
+import * as React from 'react'
+import type { ColumnSort, SortDirection, Table } from '@tanstack/react-table'
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
 import {
   Command,
   CommandEmpty,
@@ -18,38 +16,38 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@workspace/ui/components/command"
+} from '@workspace/ui/components/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@workspace/ui/components/popover"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/components/tooltip"
+} from '@workspace/ui/components/popover'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select"
+} from '@workspace/ui/components/select'
 import {
   Sortable,
   SortableContent,
   SortableItem,
   SortableItemHandle,
   SortableOverlay,
-} from "@workspace/ui/components/sortable"
-import { useKeyboardShortcut } from "../hooks/use-keyboard-shortcut"
-import { cn } from "@workspace/ui/lib/utils"
-import { ChevronsUpDown, Grip } from "lucide-react"
-
+} from '@workspace/ui/components/sortable'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@workspace/ui/components/tooltip'
+import { cn } from '@workspace/ui/lib/utils'
+import { ArrowDownUp, CircleHelp, Trash2 } from 'lucide-react'
+import { ChevronsUpDown, Grip } from 'lucide-react'
 // Import sort labels from TableColumnHeader for consistency
-import { SORT_LABELS } from "../config/data-table"
-import { FILTER_VARIANTS } from "../lib/constants"
+import { SORT_LABELS } from '../config/data-table'
+import { useKeyboardShortcut } from '../hooks/use-keyboard-shortcut'
+import { FILTER_VARIANTS } from '../lib/constants'
 
 interface TableSortItemProps {
   sort: ColumnSort
@@ -90,12 +88,12 @@ function TableSortItem({
         return
       }
 
-      if (["backspace", "delete"].includes(event.key.toLowerCase())) {
+      if (['backspace', 'delete'].includes(event.key.toLowerCase())) {
         event.preventDefault()
         onSortRemove(sort.id)
       }
     },
-    [sort.id, showFieldSelector, showDirectionSelector, onSortRemove],
+    [sort.id, showFieldSelector, showDirectionSelector, onSortRemove]
   )
 
   // Try to get the column's variant for sort label
@@ -143,11 +141,11 @@ function TableSortItem({
               <CommandList>
                 <CommandEmpty>No fields found.</CommandEmpty>
                 <CommandGroup>
-                  {columns.map(column => (
+                  {columns.map((column) => (
                     <CommandItem
                       key={column.id}
                       value={column.id}
-                      onSelect={value => onSortUpdate(sort.id, { id: value })}
+                      onSelect={(value) => onSortUpdate(sort.id, { id: value })}
                     >
                       <span className="truncate">{column.label}</span>
                     </CommandItem>
@@ -160,9 +158,9 @@ function TableSortItem({
         <Select
           open={showDirectionSelector}
           onOpenChange={setShowDirectionSelector}
-          value={sort.desc ? "desc" : "asc"}
+          value={sort.desc ? 'desc' : 'asc'}
           onValueChange={(value: SortDirection) =>
-            onSortUpdate(sort.id, { desc: value === "desc" })
+            onSortUpdate(sort.id, { desc: value === 'desc' })
           }
         >
           <SelectTrigger
@@ -227,7 +225,7 @@ export function TableSortMenu<TData>({
   // (This is a workaround for passing table to deeply nested TableSortItem)
   // @ts-expect-error: Assigning table instance to window for deep sort label access
   // eslint-disable-next-line react-hooks/immutability
-  if (typeof window !== "undefined") window.__tableSortMenuTable = table
+  if (typeof window !== 'undefined') window.__tableSortMenuTable = table
   // ============================================================================
   // State & Refs
   // ============================================================================
@@ -246,10 +244,10 @@ export function TableSortMenu<TData>({
     (updater: React.SetStateAction<ColumnSort[]>) => {
       table.setSorting(updater)
       const newSorting =
-        typeof updater === "function" ? updater(sorting) : updater
+        typeof updater === 'function' ? updater(sorting) : updater
       externalOnSortingChange?.(newSorting)
     },
-    [table, sorting, externalOnSortingChange],
+    [table, sorting, externalOnSortingChange]
   )
 
   // ============================================================================
@@ -257,7 +255,7 @@ export function TableSortMenu<TData>({
   // ============================================================================
   const { columnLabels, columns } = React.useMemo(() => {
     const labels = new Map<string, string>()
-    const sortingIds = new Set(sorting.map(s => s.id))
+    const sortingIds = new Set(sorting.map((s) => s.id))
     const availableColumns: { id: string; label: string }[] = []
 
     for (const column of table.getAllColumns()) {
@@ -284,7 +282,7 @@ export function TableSortMenu<TData>({
     const firstColumn = columns[0]
     if (!firstColumn) return
 
-    onSortingChange(prevSorting => [
+    onSortingChange((prevSorting) => [
       ...prevSorting,
       { id: firstColumn.id, desc: false },
     ])
@@ -292,28 +290,28 @@ export function TableSortMenu<TData>({
 
   const onSortUpdate = React.useCallback(
     (sortId: string, updates: Partial<ColumnSort>) => {
-      onSortingChange(prevSorting => {
+      onSortingChange((prevSorting) => {
         if (!prevSorting) return prevSorting
-        return prevSorting.map(sort =>
-          sort.id === sortId ? { ...sort, ...updates } : sort,
+        return prevSorting.map((sort) =>
+          sort.id === sortId ? { ...sort, ...updates } : sort
         )
       })
     },
-    [onSortingChange],
+    [onSortingChange]
   )
 
   const onSortRemove = React.useCallback(
     (sortId: string) => {
-      onSortingChange(prevSorting =>
-        prevSorting.filter(item => item.id !== sortId),
+      onSortingChange((prevSorting) =>
+        prevSorting.filter((item) => item.id !== sortId)
       )
     },
-    [onSortingChange],
+    [onSortingChange]
   )
 
   const onSortingReset = React.useCallback(
     () => onSortingChange(table.initialState.sorting),
-    [onSortingChange, table.initialState.sorting],
+    [onSortingChange, table.initialState.sorting]
   )
 
   // ============================================================================
@@ -321,13 +319,13 @@ export function TableSortMenu<TData>({
   // ============================================================================
   // Toggle sort menu with 'S' key
   useKeyboardShortcut({
-    key: "s",
-    onTrigger: () => setOpen(prev => !prev),
+    key: 's',
+    onTrigger: () => setOpen((prev) => !prev),
   })
 
   // Reset sorting with Shift+S
   useKeyboardShortcut({
-    key: "s",
+    key: 's',
     requireShift: true,
     onTrigger: () => onSortingReset(),
     condition: () => sorting.length > 0,
@@ -337,14 +335,14 @@ export function TableSortMenu<TData>({
   const onTriggerKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (
-        ["backspace", "delete"].includes(event.key.toLowerCase()) &&
+        ['backspace', 'delete'].includes(event.key.toLowerCase()) &&
         sorting.length > 0
       ) {
         event.preventDefault()
         onSortingReset()
       }
     },
-    [sorting.length, onSortingReset],
+    [sorting.length, onSortingReset]
   )
 
   // ============================================================================
@@ -355,7 +353,7 @@ export function TableSortMenu<TData>({
     <Sortable
       value={sorting}
       onValueChange={onSortingChange}
-      getItemValue={item => item.id}
+      getItemValue={(item) => item.id}
     >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -386,7 +384,7 @@ export function TableSortMenu<TData>({
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <h4 id={labelId} className="leading-none font-medium">
-                {sorting.length > 0 ? "Sort by" : "No sorting applied"}
+                {sorting.length > 0 ? 'Sort by' : 'No sorting applied'}
               </h4>
               {sorting.length > 1 && (
                 <Tooltip>
@@ -402,19 +400,19 @@ export function TableSortMenu<TData>({
             <p
               id={descriptionId}
               className={cn(
-                "text-sm text-muted-foreground",
-                sorting.length > 0 && "sr-only",
+                'text-sm text-muted-foreground',
+                sorting.length > 0 && 'sr-only'
               )}
             >
               {sorting.length > 0
-                ? "Modify sorting to organize your rows."
-                : "Add sorting to organize your rows."}
+                ? 'Modify sorting to organize your rows.'
+                : 'Add sorting to organize your rows.'}
             </p>
           </div>
           {sorting.length > 0 && (
             <SortableContent asChild>
               <ul className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1">
-                {sorting.map(sort => (
+                {sorting.map((sort) => (
                   <TableSortItem
                     key={sort.id}
                     sort={sort}
@@ -467,4 +465,4 @@ export function TableSortMenu<TData>({
  * @required displayName is required for auto feature detection
  * @see "feature-detection.ts"
  */
-TableSortMenu.displayName = "TableSortMenu"
+TableSortMenu.displayName = 'TableSortMenu'

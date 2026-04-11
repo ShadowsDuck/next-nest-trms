@@ -23,6 +23,16 @@ import type {
   Updater,
   VisibilityState,
 } from '@tanstack/react-table'
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
+import { Card, CardContent } from '@workspace/ui/components/card'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@workspace/ui/components/tabs'
+import { TooltipProvider } from '@workspace/ui/components/tooltip'
 import { AlertCircle, Loader2, SearchX, UserSearch } from 'lucide-react'
 import {
   parseAsInteger,
@@ -71,10 +81,6 @@ import type {
   DataTableColumnDef,
   ExtendedColumnFilter,
 } from '@/components/niko-table/types'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type Todo = {
   userId: number
@@ -254,6 +260,7 @@ function filterProductsByParams(
 async function fetchProducts(
   params: FetchParams
 ): Promise<ServerResponse<Product>> {
+  // eslint-disable-next-line no-useless-catch
   try {
     const response = await fetch('https://jsonplaceholder.typicode.com/todos')
     if (!response.ok) {
@@ -738,7 +745,7 @@ function ServerSideStateTableContent() {
   // entirely, avoiding stale memo issues with table.getAllColumns().
   const dynamicColumns = useMemo(() => {
     const userOpts = facets?.userId
-      ? userOptions.filter((opt) => facets.userId.includes(opt.value))
+      ? userOptions.filter((opt) => facets.userId?.includes(opt.value))
       : userOptions
 
     return columns.map((col) => {

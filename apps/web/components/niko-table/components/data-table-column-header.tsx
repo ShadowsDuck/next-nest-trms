@@ -1,9 +1,10 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-import type { Column } from "@tanstack/react-table"
-
-import { cn } from "@workspace/ui/lib/utils"
+import React from 'react'
+import type { Column } from '@tanstack/react-table'
+import { TooltipProvider } from '@workspace/ui/components/tooltip'
+import { cn } from '@workspace/ui/lib/utils'
 
 // ============================================================================
 // CONTEXT
@@ -18,10 +19,10 @@ const TableColumnHeaderContext = React.createContext<
 >(undefined)
 
 export function useColumnHeaderContext<TData, TValue>(
-  required: true,
+  required: true
 ): TableColumnHeaderContextValue<TData, TValue>
 export function useColumnHeaderContext<TData, TValue>(
-  required: false,
+  required: false
 ): TableColumnHeaderContextValue<TData, TValue> | undefined
 export function useColumnHeaderContext<TData, TValue>(required = true) {
   const context = React.useContext(TableColumnHeaderContext) as
@@ -30,7 +31,7 @@ export function useColumnHeaderContext<TData, TValue>(required = true) {
 
   if (required && !context) {
     throw new Error(
-      "useColumnHeaderContext must be used within DataTableColumnHeaderRoot",
+      'useColumnHeaderContext must be used within DataTableColumnHeaderRoot'
     )
   }
   return context
@@ -75,17 +76,19 @@ export function DataTableColumnHeader({
   ...props
 }: DataTableColumnHeaderProps) {
   return (
-    <div
-      className={cn(
-        "group flex w-full items-center justify-between gap-1",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </div>
+    <TooltipProvider>
+      <div
+        className={cn(
+          'group flex w-full items-center justify-between gap-1',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    </TooltipProvider>
   )
 }
 
-DataTableColumnHeaderRoot.displayName = "DataTableColumnHeaderRoot"
-DataTableColumnHeader.displayName = "DataTableColumnHeader"
+DataTableColumnHeaderRoot.displayName = 'DataTableColumnHeaderRoot'
+DataTableColumnHeader.displayName = 'DataTableColumnHeader'

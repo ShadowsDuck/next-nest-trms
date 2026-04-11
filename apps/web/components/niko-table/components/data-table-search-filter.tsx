@@ -1,14 +1,15 @@
-"use client"
+'use client'
+'use no memo'
 
-import { useDataTable } from "../core/data-table-context"
+import { useDataTable } from '../core/data-table-context'
 import {
   TableSearchFilter,
   type TableSearchFilterProps,
-} from "../filters/table-search-filter"
+} from '../filters/table-search-filter'
 
 type DataTableSearchFilterProps<TData> = Omit<
   TableSearchFilterProps<TData>,
-  "table"
+  'table'
 >
 
 /**
@@ -37,7 +38,7 @@ type DataTableSearchFilterProps<TData> = Omit<
  * />
  */
 export function DataTableSearchFilter<TData>(
-  props: DataTableSearchFilterProps<TData>,
+  props: DataTableSearchFilterProps<TData>
 ) {
   const { table } = useDataTable<TData>()
   return <TableSearchFilter table={table} {...props} />
@@ -47,4 +48,4 @@ export function DataTableSearchFilter<TData>(
  * @required displayName is required for auto feature detection
  * @see "feature-detection.ts"
  */
-DataTableSearchFilter.displayName = "DataTableSearchFilter"
+DataTableSearchFilter.displayName = 'DataTableSearchFilter'

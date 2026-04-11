@@ -1,4 +1,5 @@
 'use client'
+'use no memo'
 
 import React from 'react'
 import {
@@ -40,14 +41,6 @@ import {
 } from '../lib/filter-functions'
 import { type DataTableColumnDef, type GlobalFilter } from '../types'
 import { DataTableProvider } from './data-table-context'
-
-function defaultGetRowId<TData>(originalRow: TData, index: number): string {
-  const rowWithId = originalRow as { id?: string | number }
-  if (rowWithId.id !== undefined && rowWithId.id !== null) {
-    return String(rowWithId.id)
-  }
-  return String(index)
-}
 
 export interface DataTableConfig {
   // Feature toggles
@@ -330,6 +323,16 @@ function DataTableRootInternal<TData, TValue>({
       10,
   })
 
+  // Guard state updates from async table internals before mount/after unmount
+  // (especially visible in React Strict Mode double-invocation in development).
+  const isMountedRef = React.useRef(false)
+  React.useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   /**
    * PERFORMANCE: Memoize global filter change handler with useCallback
    *
@@ -344,6 +347,7 @@ function DataTableRootInternal<TData, TValue>({
    */
   const handleGlobalFilterChange = React.useCallback(
     (value: GlobalFilter) => {
+      if (!isMountedRef.current) return
       // Always update local state to keep it in sync with table
       // Preserve both string and object values (object values are used for complex filters)
       setGlobalFilter(value)
@@ -399,6 +403,7 @@ function DataTableRootInternal<TData, TValue>({
    */
   const handleRowSelectionChange = React.useCallback(
     (valueFn: Updater<RowSelectionState>) => {
+      if (!isMountedRef.current) return
       if (typeof valueFn === 'function') {
         const updatedRowSelection = valueFn(rowSelection)
         setRowSelection(updatedRowSelection)
@@ -426,6 +431,7 @@ function DataTableRootInternal<TData, TValue>({
    */
   const handleColumnPinningChange = React.useCallback(
     (updater: Updater<ColumnPinningState>) => {
+      if (!isMountedRef.current) return
       setColumnPinning((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
         return {
@@ -433,6 +439,51 @@ function DataTableRootInternal<TData, TValue>({
           right: next.right ?? [],
         }
       })
+    },
+    []
+  )
+
+  const safeSetSorting = React.useCallback((updater: Updater<SortingState>) => {
+    if (!isMountedRef.current) return
+    setSorting(updater)
+  }, [])
+
+  const safeSetColumnFilters = React.useCallback(
+    (updater: Updater<ColumnFiltersState>) => {
+      if (!isMountedRef.current) return
+      setColumnFilters(updater)
+    },
+    []
+  )
+
+  const safeSetColumnVisibility = React.useCallback(
+    (updater: Updater<VisibilityState>) => {
+      if (!isMountedRef.current) return
+      setColumnVisibility(updater)
+    },
+    []
+  )
+
+  const safeSetColumnOrder = React.useCallback(
+    (updater: Updater<ColumnOrderState>) => {
+      if (!isMountedRef.current) return
+      setColumnOrder(updater)
+    },
+    []
+  )
+
+  const safeSetExpanded = React.useCallback(
+    (updater: Updater<ExpandedState>) => {
+      if (!isMountedRef.current) return
+      setExpanded(updater)
+    },
+    []
+  )
+
+  const safeSetPagination = React.useCallback(
+    (updater: Updater<PaginationState>) => {
+      if (!isMountedRef.current) return
+      setPagination(updater)
     },
     []
   )
@@ -626,93 +677,149 @@ function DataTableRootInternal<TData, TValue>({
    * All state values and callbacks are in the dependency array to ensure
    * proper reactivity when any table state changes.
    *
-   * WHAT: Creates new options object on every render. useReactTable() handles
-   * its own internal memoization via setOptions(), so external memoization
-   * is redundant and can cause stale data bugs.
+   * WHAT: Creates new options object only when data, columns, or state changes.
    */
-  const tableOptions: TableOptions<TData> = {
-    ...rest,
-    data,
-    columns: processedColumns,
-    defaultColumn,
-    state: {
-      ...rest.state,
-      // Always use our local state as the source of truth
-      // External state (rest.state) takes precedence only if explicitly provided
-      sorting: controlledSorting,
-      columnVisibility: controlledColumnVisibility,
-      columnPinning: finalColumnPinning,
-      columnOrder: controlledColumnOrder,
-      rowSelection: controlledRowSelection,
-      columnFilters: controlledColumnFilters,
-      globalFilter: controlledGlobalFilter,
-      expanded: controlledExpanded,
-      pagination: controlledPagination,
-    },
-    enableRowSelection: detectFeatures.enableRowSelection,
-    enableFilters: detectFeatures.enableFilters,
-    enableSorting: detectFeatures.enableSorting,
-    enableMultiSort: detectFeatures.enableMultiSort,
-    enableGrouping: detectFeatures.enableGrouping,
-    enableExpanding: detectFeatures.enableExpanding,
-    manualSorting: detectFeatures.manualSorting,
-    manualPagination: detectFeatures.manualPagination,
-    manualFiltering: detectFeatures.manualFiltering,
-    // Enable auto-reset behaviors by default (standard TanStack Table behavior)
-    // Can be overridden via config
-    autoResetPageIndex: finalConfig.autoResetPageIndex,
-    autoResetExpanded: finalConfig.autoResetExpanded,
-    onGlobalFilterChange: handleGlobalFilterChange,
-    onRowSelectionChange: onRowSelectionChange ?? handleRowSelectionChange,
-    onSortingChange: onSortingChange ?? setSorting,
-    onColumnFiltersChange: onColumnFiltersChange ?? setColumnFilters,
-    onColumnVisibilityChange: onColumnVisibilityChange ?? setColumnVisibility,
-    onColumnPinningChange: onColumnPinningChange ?? handleColumnPinningChange,
-    onColumnOrderChange: onColumnOrderChange ?? setColumnOrder,
-    onExpandedChange: onExpandedChange ?? setExpanded,
-    onPaginationChange: onPaginationChange ?? setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getFacetedRowModel: detectFeatures.enableFilters
-      ? getFacetedRowModel()
-      : undefined,
-    getFacetedUniqueValues: detectFeatures.enableFilters
-      ? getFacetedUniqueValues()
-      : undefined,
-    getFacetedMinMaxValues: detectFeatures.enableFilters
-      ? getFacetedMinMaxValues()
-      : undefined,
-    getFilteredRowModel: detectFeatures.enableFilters
-      ? getFilteredRowModel()
-      : undefined,
-    getSortedRowModel: detectFeatures.enableSorting
-      ? getSortedRowModel()
-      : undefined,
-    getPaginationRowModel: detectFeatures.enablePagination
-      ? getPaginationRowModel()
-      : undefined,
-    getExpandedRowModel: detectFeatures.enableExpanding
-      ? getExpandedRowModel()
-      : undefined,
-    filterFns: {
-      extended: extendedFilter,
-      numberRange: numberRangeFilter,
-      dateRange: dateRangeFilter,
-    },
-    // Allow globalFilterFn to be overridden via rest props, otherwise use default
-    globalFilterFn:
-      (rest.globalFilterFn as FilterFn<TData>) ??
-      (globalFilterFn as unknown as FilterFn<TData>),
-    // Use provided getRowId or fallback to checking for 'id' property, then index
-    getRowId: getRowId ?? defaultGetRowId,
-    pageCount: (() => {
-      if (!detectFeatures.manualPagination) return undefined
-      return finalConfig.pageCount !== undefined
-        ? finalConfig.pageCount
-        : detectFeatures.pageCount !== undefined
-          ? detectFeatures.pageCount
-          : -1
-    })(),
-  }
+  const tableOptions = React.useMemo<TableOptions<TData>>(
+    () => ({
+      ...rest,
+      data,
+      columns: processedColumns,
+      defaultColumn,
+      state: {
+        ...rest.state,
+        // Always use our local state as the source of truth
+        // External state (rest.state) takes precedence only if explicitly provided
+        sorting: controlledSorting,
+        columnVisibility: controlledColumnVisibility,
+        columnPinning: finalColumnPinning,
+        columnOrder: controlledColumnOrder,
+        rowSelection: controlledRowSelection,
+        columnFilters: controlledColumnFilters,
+        globalFilter: controlledGlobalFilter,
+        expanded: controlledExpanded,
+        pagination: controlledPagination,
+      },
+      enableRowSelection: detectFeatures.enableRowSelection,
+      enableFilters: detectFeatures.enableFilters,
+      enableSorting: detectFeatures.enableSorting,
+      enableMultiSort: detectFeatures.enableMultiSort,
+      enableGrouping: detectFeatures.enableGrouping,
+      enableExpanding: detectFeatures.enableExpanding,
+      manualSorting: detectFeatures.manualSorting,
+      manualPagination: detectFeatures.manualPagination,
+      manualFiltering: detectFeatures.manualFiltering,
+      // Enable auto-reset behaviors by default (standard TanStack Table behavior)
+      // Can be overridden via config
+      autoResetPageIndex: finalConfig.autoResetPageIndex,
+      autoResetExpanded: finalConfig.autoResetExpanded,
+      onGlobalFilterChange: handleGlobalFilterChange,
+      onRowSelectionChange: onRowSelectionChange ?? handleRowSelectionChange,
+      onSortingChange: onSortingChange ?? safeSetSorting,
+      onColumnFiltersChange: onColumnFiltersChange ?? safeSetColumnFilters,
+      onColumnVisibilityChange:
+        onColumnVisibilityChange ?? safeSetColumnVisibility,
+      onColumnPinningChange: onColumnPinningChange ?? handleColumnPinningChange,
+      onColumnOrderChange: onColumnOrderChange ?? safeSetColumnOrder,
+      onExpandedChange: onExpandedChange ?? safeSetExpanded,
+      onPaginationChange: onPaginationChange ?? safeSetPagination,
+      getCoreRowModel: getCoreRowModel(),
+      getFacetedRowModel: detectFeatures.enableFilters
+        ? getFacetedRowModel()
+        : undefined,
+      getFacetedUniqueValues: detectFeatures.enableFilters
+        ? getFacetedUniqueValues()
+        : undefined,
+      getFacetedMinMaxValues: detectFeatures.enableFilters
+        ? getFacetedMinMaxValues()
+        : undefined,
+      getFilteredRowModel: detectFeatures.enableFilters
+        ? getFilteredRowModel()
+        : undefined,
+      getSortedRowModel: detectFeatures.enableSorting
+        ? getSortedRowModel()
+        : undefined,
+      getPaginationRowModel: detectFeatures.enablePagination
+        ? getPaginationRowModel()
+        : undefined,
+      getExpandedRowModel: detectFeatures.enableExpanding
+        ? getExpandedRowModel()
+        : undefined,
+      filterFns: {
+        extended: extendedFilter,
+        numberRange: numberRangeFilter,
+        dateRange: dateRangeFilter,
+      },
+      // Allow globalFilterFn to be overridden via rest props, otherwise use default
+      globalFilterFn:
+        (rest.globalFilterFn as FilterFn<TData>) ??
+        (globalFilterFn as unknown as FilterFn<TData>),
+      // Use provided getRowId or fallback to checking for 'id' property, then index
+      getRowId:
+        getRowId ??
+        ((originalRow, index) => {
+          // Try to use 'id' property if it exists
+          const rowWithId = originalRow as { id?: string | number }
+          if (rowWithId.id !== undefined && rowWithId.id !== null) {
+            return String(rowWithId.id)
+          }
+          // Fallback to index
+          return String(index)
+        }),
+      pageCount: (() => {
+        if (!detectFeatures.manualPagination) return undefined
+        return finalConfig.pageCount !== undefined
+          ? finalConfig.pageCount
+          : detectFeatures.pageCount !== undefined
+            ? detectFeatures.pageCount
+            : -1
+      })(),
+    }),
+    // Dependencies: state values and stable callbacks
+    // Note: processedColumns is already memoized, so it's safe to include here
+    // Note: Callbacks like setSorting, setExpanded are stable from useState
+    // External callbacks (onSortingChange, etc.) should be memoized by consumer
+    // Note: 'rest' is included because it's spread into tableOptions
+    // Consumers should memoize rest props if they change frequently
+    // IMPORTANT: When using controlled state (rest.state), we need to include those values
+    // in the dependency array so the table updates when external state changes
+    [
+      rest,
+      data,
+      processedColumns,
+      defaultColumn,
+      detectFeatures,
+      finalConfig,
+      handleGlobalFilterChange,
+      onRowSelectionChange,
+      handleRowSelectionChange,
+      onSortingChange,
+      safeSetSorting,
+      safeSetColumnFilters,
+      onColumnFiltersChange,
+      safeSetColumnVisibility,
+      onColumnVisibilityChange,
+      onColumnPinningChange,
+      handleColumnPinningChange,
+      onColumnOrderChange,
+      safeSetColumnOrder,
+      safeSetExpanded,
+      onExpandedChange,
+      safeSetPagination,
+      onPaginationChange,
+      getRowId,
+      // Use controlled state values - these update when either external or local state changes
+      controlledSorting,
+      controlledColumnVisibility,
+      controlledRowSelection,
+      controlledColumnFilters,
+      controlledGlobalFilter,
+      controlledColumnOrder,
+      controlledExpanded,
+      controlledPagination,
+      // Add column pinning state to dependencies so the table updates when it changes
+      finalColumnPinning,
+    ]
+  )
 
   // Create table instance - TanStack Table automatically updates when options change
   // The table instance reference stays the same, but internal state updates
@@ -720,8 +827,8 @@ function DataTableRootInternal<TData, TValue>({
   // Note: React Compiler will show a warning here about incompatible library.
   // This is expected and safe - TanStack Table manages its own memoization internally.
   // React Compiler correctly skips memoization for this hook, which is the intended behavior.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<TData>(tableOptions)
-
 
   return (
     <DataTableProvider
@@ -764,32 +871,9 @@ export function DataTableRoot<TData, TValue>({
     )
   }
 
-  // Generate a stable key based on data content to force DataTableRootInternal
-  // to remount (creating a fresh useReactTable instance) when data changes.
-  //
-  // WHY THIS IS NECESSARY:
-  // TanStack Table's useReactTable creates a table instance via useState (once per mount).
-  // Row model factories (getCoreRowModel, etc.) are lazily created and cached internally.
-  // These caches compare table.options.data by reference via internal memos.
-  // When React Query returns cached data (structuralSharing), the reference can be
-  // the same even though the query key changed, causing the row models to return stale rows.
-  // Removing all external memoization (useMemo on tableOptions, context value) does NOT
-  // fix this because the stale cache lives INSIDE useReactTable's table instance itself.
-  // The only guaranteed fix is to force a complete remount via key change.
-  const dataKey = React.useMemo(() => {
-    if (!data || data.length === 0) return 'empty'
-    // Use first and last item IDs + length as a lightweight content fingerprint
-    const first = data[0] as Record<string, unknown>
-    const last = data[data.length - 1] as Record<string, unknown>
-    const firstId = String(first?.id ?? first?.employeeNo ?? '0')
-    const lastId = String(last?.id ?? last?.employeeNo ?? '0')
-    return `${data.length}-${firstId}-${lastId}`
-  }, [data])
-
   // Otherwise, delegate to the internal component that handles hooks
   return (
     <DataTableRootInternal
-      key={dataKey}
       columns={columns}
       data={data}
       className={className}

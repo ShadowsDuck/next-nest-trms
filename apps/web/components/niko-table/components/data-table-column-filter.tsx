@@ -1,8 +1,8 @@
-"use client"
+'use client'
+'use no memo'
 
-import React from "react"
-
-import { cn } from "@workspace/ui/lib/utils"
+import React from 'react'
+import { cn } from '@workspace/ui/lib/utils'
 
 /**
  * Wrapper for groups of column filters.
@@ -15,9 +15,9 @@ export function DataTableColumnFilter({
   className?: string
 }) {
   if (children) {
-    return <div className={cn("flex items-center", className)}>{children}</div>
+    return <div className={cn('flex items-center', className)}>{children}</div>
   }
   return null
 }
 
-DataTableColumnFilter.displayName = "DataTableColumnFilter"
+DataTableColumnFilter.displayName = 'DataTableColumnFilter'
