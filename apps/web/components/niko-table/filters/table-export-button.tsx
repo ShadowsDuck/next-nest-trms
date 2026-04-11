@@ -47,6 +47,13 @@ export interface ExportTableToCSVOptions<TData> {
    * @default false
    */
   useHeaderLabels?: boolean
+  /**
+   * Optional per-column value transformers before writing CSV.
+   * Useful for mapping enum codes to display labels (e.g. "Active" -> "ทำงาน").
+   */
+  valueTransformers?: Partial<
+    Record<string, (value: unknown, row: TData) => unknown>
+  >
 }
 
 /**
@@ -79,6 +86,7 @@ export function exportTableToCSV<TData>(
     excludeColumns = [],
     onlySelected = false,
     useHeaderLabels = false,
+    valueTransformers,
   } = opts
 
   // Retrieve columns, filtering out excluded ones
@@ -108,7 +116,15 @@ export function exportTableToCSV<TData>(
     : table.getRowModel().rows
 
   const dataRows = rows.map((row) =>
-    columnIds.map((id) => escapeCsvValue(row.getValue(id))).join(',')
+    columnIds
+      .map((id) => {
+        const rawValue = row.getValue(id)
+        const transformedValue = valueTransformers?.[id]
+          ? valueTransformers[id](rawValue, row.original)
+          : rawValue
+        return escapeCsvValue(transformedValue)
+      })
+      .join(',')
   )
 
   const csvContent = [headerRow, ...dataRows].join('\n')
@@ -151,6 +167,12 @@ export interface TableExportButtonProps<TData> {
    * @default false
    */
   useHeaderLabels?: boolean
+  /**
+   * Optional per-column value transformers before writing CSV.
+   */
+  valueTransformers?: Partial<
+    Record<string, (value: unknown, row: TData) => unknown>
+  >
   /**
    * Button variant
    * @default "outline"
@@ -199,6 +221,7 @@ export function TableExportButton<TData>({
   excludeColumns,
   onlySelected = false,
   useHeaderLabels = false,
+  valueTransformers,
   variant = 'outline',
   size = 'sm',
   label = 'Export CSV',
@@ -211,8 +234,16 @@ export function TableExportButton<TData>({
       excludeColumns,
       onlySelected,
       useHeaderLabels,
+      valueTransformers,
     })
-  }, [table, filename, excludeColumns, onlySelected, useHeaderLabels])
+  }, [
+    table,
+    filename,
+    excludeColumns,
+    onlySelected,
+    useHeaderLabels,
+    valueTransformers,
+  ])
 
   return (
     <Button

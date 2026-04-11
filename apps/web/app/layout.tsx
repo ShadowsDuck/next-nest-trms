@@ -3,7 +3,6 @@ import { Toaster } from '@workspace/ui/components/sonner'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
 import Provider from '@/components/provider'
-import { ThemeProvider } from '@/components/theme-provider'
 
 const fontKanit = Kanit({
   variable: '--font-kanit',
@@ -23,14 +22,7 @@ export default function RootLayout({
       className={cn('antialiased', 'font-sans', fontKanit.variable)}
     >
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Provider>{children}</Provider>
-        </ThemeProvider>
+        <Provider>{children}</Provider>
         <Toaster closeButton />
       </body>
     </html>

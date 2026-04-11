@@ -25,7 +25,7 @@ import {
 } from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
-import { Check, PlusCircle, XCircle } from 'lucide-react'
+import { Check, PlusCircle, XCircle, XIcon } from 'lucide-react'
 import {
   FILTER_OPERATORS,
   FILTER_VARIANTS,
@@ -267,7 +267,7 @@ export function TableFacetedFilterContent({
     <Command>
       <CommandInput placeholder={title} className="pl-2" />
       <CommandList className="max-h-full">
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>ไม่พบข้อมูล</CommandEmpty>
         <CommandGroup className="max-h-75 overflow-x-hidden overflow-y-auto">
           {options.map((option) => {
             const isSelected = selectedValues.has(option.value)
@@ -306,7 +306,8 @@ export function TableFacetedFilterContent({
                 onSelect={() => onReset()}
                 className="justify-center text-center [&>svg:last-child]:hidden"
               >
-                Clear filters
+                <XIcon />
+                ล้างตัวกรอง
               </CommandItem>
             </CommandGroup>
           </>

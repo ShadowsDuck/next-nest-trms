@@ -77,7 +77,7 @@ export function TableViewMenu<TData>({
           role="combobox"
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 lg:flex"
+          className="ml-auto hidden h-9 lg:flex"
         >
           <Settings2 />
           View

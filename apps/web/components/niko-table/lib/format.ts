@@ -1,18 +1,18 @@
 export function formatDate(
   date: Date | string | number | undefined,
-  opts: Intl.DateTimeFormatOptions = {},
+  opts: Intl.DateTimeFormatOptions = {}
 ) {
-  if (!date) return ""
+  if (!date) return ''
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: opts.month ?? "long",
-      day: opts.day ?? "numeric",
-      year: opts.year ?? "numeric",
+    return new Intl.DateTimeFormat('en-US', {
+      month: opts.month ?? 'long',
+      day: opts.day ?? 'numeric',
+      year: opts.year ?? 'numeric',
       ...opts,
     }).format(new Date(date))
   } catch {
-    return ""
+    return ''
   }
 }
 
@@ -29,14 +29,14 @@ export function formatDate(
  */
 export function formatLabel(value: string): string {
   // Handle boolean values
-  if (value === "true") return "Yes"
-  if (value === "false") return "No"
+  if (value === 'true') return 'Yes'
+  if (value === 'false') return 'No'
 
   return value
-    .replace(/[-_]/g, " ")
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ")
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 /**
@@ -75,7 +75,7 @@ export function daysAgo(days: number): Date {
  */
 export function formatQueryString(
   urlParams: Record<string, unknown>,
-  urlKeys: Record<string, string>,
+  urlKeys: Record<string, string>
 ): string {
   const parts: string[] = []
 
@@ -96,15 +96,15 @@ export function formatQueryString(
         return `[{...}] (${obj.length} items)`
       }
       // For objects, show structure
-      if (typeof obj === "object" && obj !== null) {
+      if (typeof obj === 'object' && obj !== null) {
         const keys = Object.keys(obj)
         if (keys.length > 0) {
-          const firstKey = keys[0]
+          const firstKey = keys[0]!
           const firstValue = (obj as Record<string, unknown>)[firstKey]
           if (Array.isArray(firstValue)) {
             return `{${firstKey}: [...], ...}`
           }
-          if (typeof firstValue === "object" && firstValue !== null) {
+          if (typeof firstValue === 'object' && firstValue !== null) {
             return `{${firstKey}: {...}, ...}`
           }
           return `{${firstKey}: ${String(firstValue)}, ...}`
@@ -139,29 +139,29 @@ export function formatQueryString(
     // Show full JSON for filters
     parts.push(`${urlKeys.filters}=${formatJson(urlParams.filters, true)}`)
   }
-  if (urlParams.search && typeof urlParams.search === "string") {
+  if (urlParams.search && typeof urlParams.search === 'string') {
     parts.push(`${urlKeys.search}=${urlParams.search}`)
   }
   // Only include globalFilter if it's an object (complex filters)
   // Show full JSON for global filter
   if (
     urlParams.globalFilter &&
-    typeof urlParams.globalFilter === "object" &&
+    typeof urlParams.globalFilter === 'object' &&
     urlParams.globalFilter !== null &&
-    "filters" in urlParams.globalFilter
+    'filters' in urlParams.globalFilter
   ) {
     parts.push(
-      `${urlKeys.globalFilter}=${formatJson(urlParams.globalFilter, true)}`,
+      `${urlKeys.globalFilter}=${formatJson(urlParams.globalFilter, true)}`
     )
   }
   if (
     urlParams.columnVisibility &&
-    typeof urlParams.columnVisibility === "object" &&
+    typeof urlParams.columnVisibility === 'object' &&
     urlParams.columnVisibility !== null &&
     Object.keys(urlParams.columnVisibility).length > 0
   ) {
     parts.push(
-      `${urlKeys.columnVisibility}=${formatJson(urlParams.columnVisibility)}`,
+      `${urlKeys.columnVisibility}=${formatJson(urlParams.columnVisibility)}`
     )
   }
   if (
@@ -170,12 +170,12 @@ export function formatQueryString(
     urlParams.inlineFilters.length > 0
   ) {
     parts.push(
-      `${urlKeys.inlineFilters}=${formatJson(urlParams.inlineFilters)}`,
+      `${urlKeys.inlineFilters}=${formatJson(urlParams.inlineFilters)}`
     )
   }
-  if (urlParams.filterMode && urlParams.filterMode !== "standard") {
+  if (urlParams.filterMode && urlParams.filterMode !== 'standard') {
     parts.push(`${urlKeys.filterMode}=${urlParams.filterMode}`)
   }
 
-  return parts.length > 0 ? `?${parts.join("&")}` : "No query params"
+  return parts.length > 0 ? `?${parts.join('&')}` : 'No query params'
 }
