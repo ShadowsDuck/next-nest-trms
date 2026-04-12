@@ -110,10 +110,12 @@ export function exportTableToCSV<TData>(
   // Column IDs for value lookup
   const columnIds = columns.map((column) => column.id)
 
-  // Build data rows
+  // Build data rows.
+  // Keep export order aligned with the table view (sorting/filtering/pagination).
+  const visibleRows = table.getRowModel().rows
   const rows = onlySelected
-    ? table.getFilteredSelectedRowModel().rows
-    : table.getRowModel().rows
+    ? visibleRows.filter((row) => row.getIsSelected())
+    : visibleRows
 
   const dataRows = rows.map((row) =>
     columnIds
