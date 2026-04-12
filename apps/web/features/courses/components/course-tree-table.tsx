@@ -3,7 +3,6 @@
 
 import { useMemo, useState } from 'react'
 import type { RowSelectionState } from '@tanstack/react-table'
-import type { EmployeeSchemaResponse } from '@workspace/schemas'
 import { cn } from '@workspace/ui/lib/utils'
 import { DataTablePagination } from '@/components/niko-table/components/data-table-pagination'
 import { DataTableSelectionBar } from '@/components/niko-table/components/data-table-selection-bar'
@@ -16,23 +15,56 @@ import {
   DataTableSkeleton,
 } from '@/components/niko-table/core/data-table-structure'
 import { TableExportButton } from '@/components/niko-table/filters/table-export-button'
+import type { ExportTableToCSVOptions } from '@/components/niko-table/filters/table-export-button'
 import { SYSTEM_COLUMN_IDS } from '@/components/niko-table/lib/constants'
 import { useLockPageScroll } from '@/hooks/use-lock-page-scroll'
-import { useEmployeeTableController } from '../hooks/use-employee-table-controller'
-import { employeeExportValueTransformers } from '../lib/export-value-transformers'
-import { employeeParsers } from '../lib/search-params'
-import { employeeTableColumns } from './columns'
-import { EmployeeTableEmptyState } from './empty-state'
-import { EmployeeTableFilterToolbar } from './filter-toolbar'
+import { useCourseTreeTableController } from '../hooks/use-course-tree-table-controller'
+import { courseExportValueTransformers } from '../lib/export-value-transformers'
+import { courseParsers } from '../lib/search-params'
+import { type EmployeeTreeRow, courseTreeColumns } from './course-tree-columns'
+import { CourseTreeEmptyState } from './empty-state'
+import { CourseTreeFilterToolbar } from './filter-toolbar'
 
-function EmployeeSelectionActions({
+function buildEmployeeTree(rows: EmployeeTreeRow[]): EmployeeTreeRow[] {
+  const byPrefix = new Map<string, EmployeeTreeRow[]>()
+
+  for (const row of rows) {
+    const group = byPrefix.get(row.prefix) ?? []
+    group.push(row)
+    byPrefix.set(row.prefix, group)
+  }
+
+  const treeRows: EmployeeTreeRow[] = []
+
+  for (const groupedRows of byPrefix.values()) {
+    if (groupedRows.length === 0) {
+      continue
+    }
+
+    if (groupedRows.length <= 1) {
+      treeRows.push(groupedRows[0]!)
+      continue
+    }
+
+    const parent = groupedRows[0]!
+    const children = groupedRows.slice(1)
+    treeRows.push({
+      ...parent,
+      subRows: children,
+    })
+  }
+
+  return treeRows
+}
+
+function CourseTreeSelectionActions({
   selectedCount,
   onClear,
 }: {
   selectedCount: number
   onClear: () => void
 }) {
-  const { table } = useDataTable<EmployeeSchemaResponse>()
+  const { table } = useDataTable<EmployeeTreeRow>()
 
   return (
     <DataTableSelectionBar
@@ -44,30 +76,33 @@ function EmployeeSelectionActions({
       <TableExportButton
         table={table}
         label="ส่งออกข้อมูล"
-        filename={`ข้อมูลพนักงาน-${new Date().toISOString().split('T')[0]}`}
+        filename={`ข้อมูลพนักงานแบบต้นไม้-${new Date().toISOString().split('T')[0]}`}
         onlySelected
         useHeaderLabels
-        valueTransformers={employeeExportValueTransformers}
+        valueTransformers={
+          courseExportValueTransformers as NonNullable<
+            ExportTableToCSVOptions<EmployeeTreeRow>['valueTransformers']
+          >
+        }
         excludeColumns={
-          [
-            SYSTEM_COLUMN_IDS.SELECT,
-          ] as unknown as (keyof EmployeeSchemaResponse)[]
+          [SYSTEM_COLUMN_IDS.SELECT] as unknown as (keyof EmployeeTreeRow)[]
         }
       />
     </DataTableSelectionBar>
   )
 }
 
-/**
- * Employee table page component.
- * All data/pagination/filter logic is delegated to `useEmployeeTableController`
- * so this component stays focused on rendering.
- */
-export default function EmployeeTable() {
+export default function CourseTreeTable() {
   useLockPageScroll()
 
-  const controller = useEmployeeTableController()
+  const controller = useCourseTreeTableController()
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+
+  const treeRows = useMemo(
+    () => buildEmployeeTree(controller.employees as EmployeeTreeRow[]),
+    [controller.employees]
+  )
+
   const selectedCount = useMemo(
     () => Object.values(rowSelection).filter(Boolean).length,
     [rowSelection]
@@ -75,8 +110,10 @@ export default function EmployeeTable() {
 
   return (
     <DataTableRoot
-      data={controller.employees}
-      columns={employeeTableColumns}
+      data={treeRows}
+      columns={courseTreeColumns}
+      getSubRows={(row) => row.subRows}
+      getRowCanExpand={(row) => Boolean(row.original.subRows?.length)}
       getRowId={(row) => row.employeeNo}
       state={{
         pagination: controller.pagination,
@@ -85,7 +122,8 @@ export default function EmployeeTable() {
         rowSelection,
       }}
       config={{
-        initialPageSize: Number(employeeParsers.limit),
+        initialPageSize: Number(courseParsers.limit),
+        enableExpanding: true,
         manualPagination: true,
         manualFiltering: true,
         pageCount: controller.meta.totalPages,
@@ -96,8 +134,8 @@ export default function EmployeeTable() {
       onRowSelectionChange={setRowSelection}
       isLoading={controller.isInitialLoading}
     >
-      <EmployeeTableFilterToolbar />
-      <EmployeeSelectionActions
+      <CourseTreeFilterToolbar />
+      <CourseTreeSelectionActions
         selectedCount={selectedCount}
         onClear={() => setRowSelection({})}
       />
@@ -119,7 +157,7 @@ export default function EmployeeTable() {
           <DataTableHeader />
           <DataTableBody>
             <DataTableSkeleton rows={controller.params.limit} />
-            <EmployeeTableEmptyState
+            <CourseTreeEmptyState
               visible={
                 !controller.isInitialLoading &&
                 controller.employees.length === 0

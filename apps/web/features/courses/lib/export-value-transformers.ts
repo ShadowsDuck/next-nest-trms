@@ -9,7 +9,7 @@ const statusLabelMap = new Map<string, string>(
   statusOptions.map((item) => [item.value, item.label])
 )
 
-export const employeeExportValueTransformers: NonNullable<
+export const courseExportValueTransformers: NonNullable<
   ExportTableToCSVOptions<EmployeeSchemaResponse>['valueTransformers']
 > = {
   prefix: (value) =>
