@@ -1,0 +1,23 @@
+enum AuditAction {
+  Create
+  Update
+  Delete
+  Import
+  Export
+}
+
+model AuditLog {
+  id        Int             @id @default(autoincrement())
+  action    AuditAction     @map("action")
+  table     String
+  recordId  String?         @map("record_id")
+  changes   Json?
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  // Relations
+  userId    String          @map("user_id")
+  user      User            @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}

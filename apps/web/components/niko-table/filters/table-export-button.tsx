@@ -54,6 +54,54 @@ export interface ExportTableToCSVOptions<TData> {
   valueTransformers?: Partial<
     Record<string, (value: unknown, row: TData) => unknown>
   >
+  /**
+   * Optional row exploder for nested data (e.g. employee -> courses[]).
+   * Produces one CSV row per child item.
+   */
+  explodeRows?: {
+    /** Return child items for a parent row. */
+    getSubRows: (row: TData) => unknown[] | undefined | null
+    /**
+     * Columns that should be sourced from each child item.
+     * Example: ["courseName"]
+     */
+    childColumnIds: string[]
+    /**
+     * Parent value rendering for exploded rows:
+     * - "repeat": repeat parent values in every child row
+     * - "first-only": write parent values only on first child row
+     * @default "repeat"
+     */
+    parentRowMode?: 'repeat' | 'first-only'
+    /**
+     * Resolve value for child columns from a child item.
+     */
+    getChildValue: (args: {
+      child: unknown
+      childIndex: number
+      columnId: string
+      row: TData
+    }) => unknown
+    /**
+     * Optional summary row appended after all child rows of each parent.
+     * Useful for totals such as total course duration per employee.
+     */
+    summaryRow?: {
+      /**
+       * Build summary values by column id.
+       * Return null/undefined to skip summary row for this parent.
+       */
+      getValues: (args: {
+        row: TData
+        children: unknown[]
+      }) => Partial<Record<string, unknown>> | null | undefined
+      /**
+       * Also render summary row when there are no children.
+       * @default false
+       */
+      includeWhenNoChildren?: boolean
+    }
+  }
 }
 
 /**
@@ -87,6 +135,7 @@ export function exportTableToCSV<TData>(
     onlySelected = false,
     useHeaderLabels = false,
     valueTransformers,
+    explodeRows,
   } = opts
 
   // Retrieve columns, filtering out excluded ones
@@ -117,17 +166,95 @@ export function exportTableToCSV<TData>(
     ? visibleRows.filter((row) => row.getIsSelected())
     : visibleRows
 
-  const dataRows = rows.map((row) =>
-    columnIds
+  const dataRows = rows.flatMap((row) => {
+    if (!explodeRows) {
+      const rowCsv = columnIds
+        .map((id) => {
+          const rawValue = row.getValue(id)
+          const transformedValue = valueTransformers?.[id]
+            ? valueTransformers[id](rawValue, row.original)
+            : rawValue
+          return escapeCsvValue(transformedValue)
+        })
+        .join(',')
+      return [rowCsv]
+    }
+
+    const {
+      getSubRows,
+      childColumnIds,
+      getChildValue,
+      parentRowMode = 'repeat',
+      summaryRow,
+    } = explodeRows
+
+    const children = getSubRows(row.original) ?? []
+    const items = children.length > 0 ? children : [null]
+
+    const explodedDataRows = items.map((child, childIndex) =>
+      columnIds
+        .map((id) => {
+          const isChildColumn = childColumnIds.includes(id)
+
+          let rawValue: unknown
+
+          if (isChildColumn) {
+            rawValue =
+              child == null
+                ? ''
+                : getChildValue({
+                    child,
+                    childIndex,
+                    columnId: id,
+                    row: row.original,
+                  })
+          } else {
+            const parentValue = row.getValue(id)
+            rawValue =
+              parentRowMode === 'first-only' && childIndex > 0
+                ? ''
+                : parentValue
+          }
+
+          const transformedValue = valueTransformers?.[id]
+            ? valueTransformers[id](rawValue, row.original)
+            : rawValue
+
+          return escapeCsvValue(transformedValue)
+        })
+        .join(',')
+    )
+
+    const shouldIncludeSummary =
+      Boolean(summaryRow) &&
+      (children.length > 0 || summaryRow?.includeWhenNoChildren)
+
+    if (!shouldIncludeSummary || !summaryRow) {
+      return explodedDataRows
+    }
+
+    const summaryValues = summaryRow.getValues({
+      row: row.original,
+      children,
+    })
+
+    if (!summaryValues) {
+      return explodedDataRows
+    }
+
+    const summaryCsvRow = columnIds
       .map((id) => {
-        const rawValue = row.getValue(id)
+        const hasValue = Object.prototype.hasOwnProperty.call(summaryValues, id)
+        const rawValue = hasValue ? summaryValues[id] : ''
         const transformedValue = valueTransformers?.[id]
           ? valueTransformers[id](rawValue, row.original)
           : rawValue
         return escapeCsvValue(transformedValue)
       })
       .join(',')
-  )
+
+    return [...explodedDataRows, summaryCsvRow]
+  })
 
   const csvContent = [headerRow, ...dataRows].join('\n')
 
@@ -175,6 +302,10 @@ export interface TableExportButtonProps<TData> {
   valueTransformers?: Partial<
     Record<string, (value: unknown, row: TData) => unknown>
   >
+  /**
+   * Optional row exploder for nested data (e.g. employee -> courses[]).
+   */
+  explodeRows?: ExportTableToCSVOptions<TData>['explodeRows']
   /**
    * Button variant
    * @default "outline"
@@ -224,6 +355,7 @@ export function TableExportButton<TData>({
   onlySelected = false,
   useHeaderLabels = false,
   valueTransformers,
+  explodeRows,
   variant = 'outline',
   size = 'sm',
   label = 'Export CSV',
@@ -237,6 +369,7 @@ export function TableExportButton<TData>({
       onlySelected,
       useHeaderLabels,
       valueTransformers,
+      explodeRows,
     })
   }, [
     table,
@@ -245,6 +378,7 @@ export function TableExportButton<TData>({
     onlySelected,
     useHeaderLabels,
     valueTransformers,
+    explodeRows,
   ])
 
   return (

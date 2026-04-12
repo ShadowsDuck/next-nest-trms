@@ -2,8 +2,8 @@ import {
   Prefix,
   JobLevel,
   EmployeeStatus,
-} from "../src/generated/prisma/client"
-import { prisma } from "../src/client"
+} from "../../src/generated/prisma/client"
+import { prisma } from "../../src/client"
 
 const thaiFirstNames: Record<Prefix, string[]> = {
   Mr: [

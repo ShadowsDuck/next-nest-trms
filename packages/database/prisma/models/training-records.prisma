@@ -1,0 +1,22 @@
+model TrainingRecord {
+  id               String   @id @default(cuid())
+  certFilePath     String?  @map("cert_file_path")
+  createdByUserId  String?  @map("created_by_user_id")
+  updatedByUserId  String?  @map("updated_by_user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  employeeId       String   @map("employee_id")
+  employee         Employee @relation(fields: [employeeId], references: [id])
+
+  courseId         String   @map("course_id")
+  course           Course   @relation(fields: [courseId], references: [id])
+
+  createdByUser    User?    @relation("TrainingRecordCreatedBy", fields: [createdByUserId], references: [id])
+  updatedByUser    User?    @relation("TrainingRecordUpdatedBy", fields: [updatedByUserId], references: [id])
+
+  @@unique([employeeId, courseId], name: "uq_training_record")
+  @@index([employeeId, courseId])
+  @@map("training_records")
+}
