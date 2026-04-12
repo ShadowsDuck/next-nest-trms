@@ -1,0 +1,37 @@
+enum CourseType {
+  Internal
+  External
+}
+
+enum AccreditationStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+model Course {
+  id                    String              @id @default(cuid())
+  title                 String
+  type                  CourseType
+  startDate             DateTime            @map("start_date") @db.Date
+  endDate               DateTime            @map("end_date") @db.Date
+  startTime             DateTime?           @map("start_time") @db.Time(0)
+  endTime               DateTime?           @map("end_time") @db.Time(0)
+  duration              Decimal             @db.Decimal(5, 2)
+  lecturer              String?
+  institute             String?
+  expense               Decimal             @default(0) @db.Decimal(12, 2)
+  accreditationStatus   AccreditationStatus @default(Pending) @map("accreditation_status")
+  accreditationFilePath String?             @map("accreditation_file_path")
+  attendanceFilePath    String?             @map("attendance_file_path")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  tagId String @map("tag_id")
+  tag   Tag    @relation(fields: [tagId], references: [id])
+
+  trainingRecords TrainingRecord[]
+
+  @@map("courses")
+}

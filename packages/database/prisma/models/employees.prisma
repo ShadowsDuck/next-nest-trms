@@ -32,9 +32,10 @@ model Employee {
   // Relations
   user         User?
   
-  // org_unit_id  String
-  // org_unit     OrgUnit        @relation(fields: [org_unit_id], references: [id])
+  // orgUnitId    String           @map("org_unit_id")
+  // orgUnit      OrganizationUnit @relation(fields: [orgUnitId], references: [id])
+
+  trainingRecords TrainingRecord[]
   
-  @@index([employeeNo])
   @@map("employees")
 }
