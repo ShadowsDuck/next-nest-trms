@@ -2,7 +2,7 @@
 'use no memo'
 
 import { useMemo, useState } from 'react'
-import type { RowSelectionState } from '@tanstack/react-table'
+import type { RowSelectionState, VisibilityState } from '@tanstack/react-table'
 import type { EmployeeSchemaResponse } from '@workspace/schemas'
 import { cn } from '@workspace/ui/lib/utils'
 import { DataTablePagination } from '@/components/niko-table/components/data-table-pagination'
@@ -68,6 +68,9 @@ export default function EmployeeTable() {
 
   const controller = useEmployeeTableController()
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    prefix: false,
+  })
   const selectedCount = useMemo(
     () => Object.values(rowSelection).filter(Boolean).length,
     [rowSelection]
@@ -83,9 +86,10 @@ export default function EmployeeTable() {
         globalFilter: controller.params.search,
         columnFilters: controller.columnFilters,
         rowSelection,
+        columnVisibility,
       }}
       config={{
-        initialPageSize: Number(employeeParsers.limit),
+        initialPageSize: employeeParsers.limit.defaultValue,
         manualPagination: true,
         manualFiltering: true,
         pageCount: controller.meta.totalPages,
@@ -94,6 +98,7 @@ export default function EmployeeTable() {
       onGlobalFilterChange={controller.handleGlobalFilterChange}
       onColumnFiltersChange={controller.handleColumnFiltersChange}
       onRowSelectionChange={setRowSelection}
+      onColumnVisibilityChange={setColumnVisibility}
       isLoading={controller.isInitialLoading}
     >
       <EmployeeTableFilterToolbar />

@@ -55,8 +55,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
       },
     },
     {
-      id: 'fullName',
-      accessorFn: (row) => `${row.firstName} ${row.lastName}`,
+      accessorKey: 'fullName',
       header: () => (
         <DataTableColumnHeader>
           <DataTableColumnTitle />
@@ -66,26 +65,29 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
       meta: {
         label: 'ชื่อ-นามสกุล',
       },
+      cell: ({ row }) => {
+        const { prefix, firstName, lastName } = row.original
+        const prefixLabel =
+          prefixOptions.find((opt) => opt.value === prefix)?.label ?? prefix
+
+        return `${prefixLabel} ${firstName} ${lastName}`
+      },
     },
     {
       accessorKey: 'prefix',
-      header: () => (
-        <DataTableColumnHeader>
-          <DataTableColumnTitle />
-          <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
-        </DataTableColumnHeader>
-      ),
+      header: () => null,
       meta: {
         label: 'คำนำหน้า',
         options: prefixOptions,
-        mergeStrategy: 'preserve',
       },
       cell: ({ row }) => {
-        const value = row.getValue('prefix') as string
-        const option = prefixOptions.find((opt) => opt.value === value)
-        return <span>{option?.label ?? value}</span>
+        const prefix = row.getValue('prefix') as string
+        return (
+          prefixOptions.find((opt) => opt.value === prefix)?.label ?? prefix
+        )
       },
       enableColumnFilter: true,
+      enableSorting: false,
     },
     {
       accessorKey: 'jobLevel',
@@ -96,7 +98,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
         </DataTableColumnHeader>
       ),
       meta: {
-        label: 'ระดับ',
+        label: 'ระดับงาน',
         options: jobLevelOptions,
         mergeStrategy: 'preserve',
       },
@@ -123,25 +125,6 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
             {option?.label ?? status}
           </Badge>
         )
-      },
-      enableColumnFilter: true,
-    },
-    {
-      accessorKey: 'hireDate',
-      header: () => (
-        <DataTableColumnHeader>
-          <DataTableColumnTitle />
-          <DataTableColumnSortMenu />
-        </DataTableColumnHeader>
-      ),
-      meta: {
-        label: 'วันที่เริ่มงาน',
-        variant: 'date_range',
-      },
-      cell: ({ row }) => {
-        const date = row.getValue('hireDate') as string | undefined
-        if (!date) return <span>-</span>
-        return <span>{new Date(date).toLocaleDateString()}</span>
       },
       enableColumnFilter: true,
     },

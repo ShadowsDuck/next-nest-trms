@@ -9,7 +9,7 @@ import {
 
 export const employeeParsers = {
   page: parseAsInteger.withDefault(1),
-  limit: parseAsInteger.withDefault(25),
+  limit: parseAsInteger.withDefault(25).withOptions({ clearOnDefault: false }),
   search: parseAsString.withDefault(''),
   prefix: parseAsArrayOf(parseAsStringEnum([...prefix])).withDefault([]),
   jobLevel: parseAsArrayOf(parseAsStringEnum([...jobLevel])).withDefault([]),

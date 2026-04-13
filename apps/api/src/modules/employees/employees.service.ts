@@ -106,7 +106,9 @@ export class EmployeesService {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: {
+          employeeNo: 'asc',
+        },
       }),
       this.prismaService.employee.count({ where }),
     ]);

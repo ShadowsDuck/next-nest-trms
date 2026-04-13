@@ -42,7 +42,7 @@ export const employeePaginationSchema = z.object({
 // Query schema for filtering employees
 export const employeeQuerySchema = z.object({
   page: z.coerce.number().int().positive().catch(1),
-  limit: z.coerce.number().int().positive().max(100).catch(10),
+  limit: z.coerce.number().int().positive().max(100).catch(25),
   search: z.string().optional(), // employeeNo, firstName, lastName, idCardNo
   prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
   jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
