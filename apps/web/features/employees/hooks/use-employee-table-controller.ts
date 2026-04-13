@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import type {
   ColumnFiltersState,
@@ -74,6 +74,32 @@ function buildColumnFiltersFromParams(
 }
 
 /**
+ * Stable key for shallow equality checks between filter arrays.
+ */
+function columnFiltersKey(filters: ColumnFiltersState): string {
+  return filters
+    .map((filter) => {
+      const raw = filter.value as unknown
+
+      if (Array.isArray(raw)) {
+        return `${filter.id}:${raw.map(String).join(',')}`
+      }
+
+      if (raw && typeof raw === 'object' && 'value' in raw) {
+        const nested = (raw as { value: unknown }).value
+        if (Array.isArray(nested)) {
+          return `${filter.id}:${nested.map(String).join(',')}`
+        }
+        return `${filter.id}:${nested == null ? '' : String(nested)}`
+      }
+
+      return `${filter.id}:${raw == null ? '' : String(raw)}`
+    })
+    .sort()
+    .join('|')
+}
+
+/**
  * Assign value to a single filter key with safe TypeScript inference.
  */
 function setFilterParam<K extends MultiFilterKey>(
@@ -133,40 +159,66 @@ export function useEmployeeTableController() {
   /**
    * Update filter/search params and always reset to page 1.
    */
-  function setFilter(partial: Partial<Omit<typeof params, 'page' | 'limit'>>) {
-    void setParams({ ...partial, page: 1 })
-  }
+  const setFilter = useCallback(
+    (partial: Partial<Omit<typeof params, 'page' | 'limit'>>) => {
+      void setParams({ ...partial, page: 1 })
+    },
+    [setParams]
+  )
 
   /**
    * Update current page in URL params.
    */
-  function setPage(page: number) {
-    void setParams({ page })
-  }
+  const setPage = useCallback(
+    (page: number) => {
+      void setParams({ page })
+    },
+    [setParams]
+  )
 
   /**
    * Update page size and reset to page 1.
    */
-  function setLimit(limit: number) {
-    void setParams({ limit, page: 1 })
-  }
+  const setLimit = useCallback(
+    (limit: number) => {
+      void setParams({ limit, page: 1 })
+    },
+    [setParams]
+  )
+
+  const queryKey = useMemo(
+    () => [
+      'employees',
+      params.page,
+      params.limit,
+      params.search,
+      params.prefix.join(','),
+      params.jobLevel.join(','),
+      params.status.join(','),
+    ],
+    [params]
+  )
 
   /**
    * Load employees from API (keep previous rows during refetch).
    */
   const query = useQuery({
-    queryKey: ['employees', params],
+    queryKey,
     queryFn: () => fetchEmployees(params),
     placeholderData: keepPreviousData,
   })
 
   const employees = query.data?.data ?? []
-  const meta = query.data?.meta ?? {
-    total: 0,
-    page: params.page,
-    limit: params.limit,
-    totalPages: 1,
-  }
+  const meta = useMemo(
+    () =>
+      query.data?.meta ?? {
+        total: 0,
+        page: params.page,
+        limit: params.limit,
+        totalPages: 1,
+      },
+    [query.data?.meta, params.page, params.limit]
+  )
 
   /**
    * First load = no data yet and request is in-flight.
@@ -182,54 +234,79 @@ export function useEmployeeTableController() {
   /**
    * TanStack pagination is 0-based, API params are 1-based.
    */
-  const pagination: PaginationState = {
-    pageIndex: params.page - 1,
-    pageSize: params.limit,
-  }
+  const pagination: PaginationState = useMemo(
+    () => ({
+      pageIndex: params.page - 1,
+      pageSize: params.limit,
+    }),
+    [params.page, params.limit]
+  )
 
   /**
    * Sync URL params -> filter UI state, so F5 keeps selected filters visible.
    */
-  const filtersFromParams = buildColumnFiltersFromParams(params)
+  const filtersFromParams = useMemo(
+    () => buildColumnFiltersFromParams(params),
+    [params]
+  )
+  const currentFiltersKey = useMemo(
+    () => columnFiltersKey(columnFilters),
+    [columnFilters]
+  )
+  const filtersFromParamsKey = useMemo(
+    () => columnFiltersKey(filtersFromParams),
+    [filtersFromParams]
+  )
 
   useEffect(() => {
-    if (JSON.stringify(columnFilters) !== JSON.stringify(filtersFromParams)) {
+    if (currentFiltersKey !== filtersFromParamsKey) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setColumnFilters(filtersFromParams)
     }
-  }, [columnFilters, filtersFromParams])
+  }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
 
   /**
    * Handle page/pageSize changes from the table component.
    */
-  function handlePaginationChange(updater: Updater<PaginationState>) {
-    const next = typeof updater === 'function' ? updater(pagination) : updater
+  const handlePaginationChange = useCallback(
+    (updater: Updater<PaginationState>) => {
+      const next = typeof updater === 'function' ? updater(pagination) : updater
 
-    if (next.pageSize !== params.limit) {
-      setLimit(next.pageSize)
-      return
-    }
+      if (next.pageSize !== params.limit) {
+        setLimit(next.pageSize)
+        return
+      }
 
-    setPage(next.pageIndex + 1)
-  }
+      setPage(next.pageIndex + 1)
+    },
+    [pagination, params.limit, setLimit, setPage]
+  )
 
   /**
    * Handle search input from DataTableSearchFilter.
    */
-  function handleGlobalFilterChange(value: string | object) {
-    setFilter({ search: typeof value === 'string' ? value : '' })
-  }
+  const handleGlobalFilterChange = useCallback(
+    (value: string | object) => {
+      setFilter({ search: typeof value === 'string' ? value : '' })
+    },
+    [setFilter]
+  )
 
   /**
    * Handle faceted filters, then write normalized values back to URL params.
    */
-  function handleColumnFiltersChange(updater: Updater<ColumnFiltersState>) {
-    const next =
-      typeof updater === 'function' ? updater(columnFilters) : updater
+  const handleColumnFiltersChange = useCallback(
+    (updater: Updater<ColumnFiltersState>) => {
+      const next =
+        typeof updater === 'function' ? updater(columnFilters) : updater
 
-    setColumnFilters(next)
-    setFilter(buildFilterParamsFromColumnFilters(next))
-  }
+      setColumnFilters(next)
+      setFilter(buildFilterParamsFromColumnFilters(next))
+    },
+    [columnFilters, setFilter]
+  )
+
+  const hasFilters = useMemo(() => hasActiveFilters(params), [params])
 
   return {
     params,
@@ -240,7 +317,7 @@ export function useEmployeeTableController() {
     isInitialLoading,
     isBackgroundFetching,
     isListFetching: query.isFetching || isParamsTransitioning,
-    hasActiveFilters: hasActiveFilters(params),
+    hasActiveFilters: hasFilters,
     handlePaginationChange,
     handleGlobalFilterChange,
     handleColumnFiltersChange,

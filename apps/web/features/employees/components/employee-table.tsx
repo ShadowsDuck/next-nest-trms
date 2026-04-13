@@ -28,9 +28,11 @@ import { EmployeeTableFilterToolbar } from './filter-toolbar'
 function EmployeeSelectionActions({
   selectedCount,
   onClear,
+  filename,
 }: {
   selectedCount: number
   onClear: () => void
+  filename: string
 }) {
   const { table } = useDataTable<EmployeeSchemaResponse>()
 
@@ -44,7 +46,7 @@ function EmployeeSelectionActions({
       <TableExportButton
         table={table}
         label="ส่งออกข้อมูล"
-        filename={`ข้อมูลพนักงาน-${new Date().toISOString().split('T')[0]}`}
+        filename={filename}
         onlySelected
         useHeaderLabels
         valueTransformers={employeeExportValueTransformers}
@@ -71,9 +73,42 @@ export default function EmployeeTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     prefix: false,
   })
+  const exportDate = useMemo(
+    () => new Date().toISOString().split('T')[0],
+    []
+  )
+  const selectedExportFilename = useMemo(
+    () => `ข้อมูลพนักงาน-${exportDate}`,
+    [exportDate]
+  )
   const selectedCount = useMemo(
     () => Object.values(rowSelection).filter(Boolean).length,
     [rowSelection]
+  )
+  const tableState = useMemo(
+    () => ({
+      pagination: controller.pagination,
+      globalFilter: controller.params.search,
+      columnFilters: controller.columnFilters,
+      rowSelection,
+      columnVisibility,
+    }),
+    [
+      controller.pagination,
+      controller.params.search,
+      controller.columnFilters,
+      rowSelection,
+      columnVisibility,
+    ]
+  )
+  const tableConfig = useMemo(
+    () => ({
+      initialPageSize: employeeParsers.limit.defaultValue,
+      manualPagination: true,
+      manualFiltering: true,
+      pageCount: controller.meta.totalPages,
+    }),
+    [controller.meta.totalPages]
   )
 
   return (
@@ -81,19 +116,8 @@ export default function EmployeeTable() {
       data={controller.employees}
       columns={employeeTableColumns}
       getRowId={(row) => row.employeeNo}
-      state={{
-        pagination: controller.pagination,
-        globalFilter: controller.params.search,
-        columnFilters: controller.columnFilters,
-        rowSelection,
-        columnVisibility,
-      }}
-      config={{
-        initialPageSize: employeeParsers.limit.defaultValue,
-        manualPagination: true,
-        manualFiltering: true,
-        pageCount: controller.meta.totalPages,
-      }}
+      state={tableState}
+      config={tableConfig}
       onPaginationChange={controller.handlePaginationChange}
       onGlobalFilterChange={controller.handleGlobalFilterChange}
       onColumnFiltersChange={controller.handleColumnFiltersChange}
@@ -105,6 +129,7 @@ export default function EmployeeTable() {
       <EmployeeSelectionActions
         selectedCount={selectedCount}
         onClear={() => setRowSelection({})}
+        filename={selectedExportFilename}
       />
 
       <div

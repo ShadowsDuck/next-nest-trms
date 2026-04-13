@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { EmployeeSchemaResponse } from '@workspace/schemas'
 import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
@@ -22,6 +23,11 @@ import {
  */
 export function EmployeeTableFilterToolbar() {
   const { table } = useDataTable<EmployeeSchemaResponse>()
+  const exportDate = useMemo(() => new Date().toISOString().split('T')[0], [])
+  const allExportFilename = useMemo(
+    () => `ข้อมูลพนักงานทั้งหมด-${exportDate}`,
+    [exportDate]
+  )
 
   return (
     <DataTableToolbarSection className="w-full flex-col justify-between gap-2">
@@ -30,7 +36,7 @@ export function EmployeeTableFilterToolbar() {
         <div className="flex items-center gap-2">
           <TableExportButton
             table={table}
-            filename={`ข้อมูลพนักงานทั้งหมด-${new Date().toISOString().split('T')[0]}`}
+            filename={allExportFilename}
             label="ส่งออกข้อมูลทั้งหมด"
             useHeaderLabels
             valueTransformers={employeeExportValueTransformers}

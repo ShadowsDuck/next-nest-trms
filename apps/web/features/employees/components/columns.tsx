@@ -17,6 +17,14 @@ import {
   statusOptions,
 } from '../lib/filter-options'
 
+const prefixLabelByValue = new Map<string, string>(
+  prefixOptions.map((option) => [option.value, option.label] as const)
+)
+
+const statusLabelByValue = new Map<string, string>(
+  statusOptions.map((option) => [option.value, option.label] as const)
+)
+
 export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] =
   [
     {
@@ -67,8 +75,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
       },
       cell: ({ row }) => {
         const { prefix, firstName, lastName } = row.original
-        const prefixLabel =
-          prefixOptions.find((opt) => opt.value === prefix)?.label ?? prefix
+        const prefixLabel = prefixLabelByValue.get(prefix) ?? prefix
 
         return `${prefixLabel} ${firstName} ${lastName}`
       },
@@ -82,9 +89,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
       },
       cell: ({ row }) => {
         const prefix = row.getValue('prefix') as string
-        return (
-          prefixOptions.find((opt) => opt.value === prefix)?.label ?? prefix
-        )
+        return prefixLabelByValue.get(prefix) ?? prefix
       },
       enableColumnFilter: true,
       enableSorting: false,
@@ -119,10 +124,9 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
       },
       cell: ({ row }) => {
         const status = row.getValue('status') as string
-        const option = statusOptions.find((opt) => opt.value === status)
         return (
           <Badge variant={status === 'Active' ? 'default' : 'secondary'}>
-            {option?.label ?? status}
+            {statusLabelByValue.get(status) ?? status}
           </Badge>
         )
       },
