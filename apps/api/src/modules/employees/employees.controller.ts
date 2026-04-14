@@ -13,7 +13,7 @@ import {
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
-import { EmployeeResponseDto } from './dto/employee-response';
+import { EmployeeResponseDto } from './dto/employee-response.dto';
 import { EmployeesService } from './employees.service';
 
 @AllowAnonymous()

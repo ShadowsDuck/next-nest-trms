@@ -26,7 +26,7 @@ function getCourseTime(
   }
 }
 
-async function main() {
+export async function seedCourses() {
   // ── Tags ──────────────────────────────────────────────
   const [tagSafety, tagIT, tagManagement, tagHR, tagFinance] =
     await Promise.all([
@@ -446,7 +446,8 @@ async function main() {
   )
 }
 
-main()
+if (require.main === module) {
+  seedCourses()
   .catch((e) => {
     console.error(e)
     process.exit(1)
@@ -454,3 +455,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+}

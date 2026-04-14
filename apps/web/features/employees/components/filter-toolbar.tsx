@@ -6,7 +6,6 @@ import { DataTableClearFilter } from '@/components/niko-table/components/data-ta
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
 import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
-import { DataTableViewMenu } from '@/components/niko-table/components/data-table-view-menu'
 import { useDataTable } from '@/components/niko-table/core/data-table-context'
 import { TableExportButton } from '@/components/niko-table/filters/table-export-button'
 import { SYSTEM_COLUMN_IDS } from '@/components/niko-table/lib/constants'
@@ -46,7 +45,6 @@ export function EmployeeTableFilterToolbar() {
               ] as unknown as (keyof EmployeeSchemaResponse)[]
             }
           />
-          <DataTableViewMenu />
         </div>
       </DataTableToolbarSection>
 
@@ -55,16 +53,19 @@ export function EmployeeTableFilterToolbar() {
           accessorKey="prefix"
           options={prefixOptions}
           multiple
+          showCounts={false}
         />
         <DataTableFacetedFilter
           accessorKey="jobLevel"
           options={jobLevelOptions}
           multiple
+          showCounts={false}
         />
         <DataTableFacetedFilter
           accessorKey="status"
           options={statusOptions}
           multiple
+          showCounts={false}
         />
         <DataTableClearFilter />
       </DataTableToolbarSection>

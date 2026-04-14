@@ -1,5 +1,6 @@
 import * as z from "zod"
 import { toArray } from "./lib/zod-helper"
+import { trainingRecordResponseSchema } from "./training-record.schema"
 
 export const prefix = ["Mr", "Mrs", "Miss"] as const
 export const jobLevel = ["S1", "S2", "M1", "M2"] as const
@@ -26,6 +27,7 @@ export const employeeResponseSchema = employeeSchema.extend({
   id: z.string(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  trainingRecords: z.array(trainingRecordResponseSchema),
 })
 
 // Response paginated employees schema

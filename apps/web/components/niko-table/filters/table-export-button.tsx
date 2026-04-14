@@ -4,7 +4,7 @@
 import * as React from 'react'
 import type { Table } from '@tanstack/react-table'
 import { Button } from '@workspace/ui/components/button'
-import { Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
 
 /**
  * Escape a cell value for CSV output.
@@ -388,7 +388,7 @@ export function TableExportButton<TData>({
       onClick={handleExport}
       className={className}
     >
-      {showIcon && <Download className="mr-2 h-4 w-4" />}
+      {showIcon && <Upload className="mr-2 h-4 w-4" />}
       {label}
     </Button>
   )

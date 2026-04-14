@@ -1,4 +1,5 @@
-import { Employee, Prisma } from '@workspace/database';
+import { Employee, Prisma, TrainingRecord } from '@workspace/database';
+import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BadRequestException,
@@ -8,7 +9,7 @@ import {
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
-import { EmployeeResponseDto } from './dto/employee-response';
+import { EmployeeResponseDto } from './dto/employee-response.dto';
 
 @Injectable()
 export class EmployeesService {
@@ -103,6 +104,9 @@ export class EmployeesService {
 
     const [employees, total] = await Promise.all([
       this.prismaService.employee.findMany({
+        include: {
+          trainingRecords: true,
+        },
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -124,12 +128,21 @@ export class EmployeesService {
     };
   }
 
-  private formatEmployee(employee: Employee): EmployeeResponseDto {
+  private formatEmployee(
+    employee: Employee & { trainingRecords?: TrainingRecord[] },
+  ): EmployeeResponseDto {
     return {
       ...employee,
-      hireDate: employee.hireDate?.toISOString().split('T')[0] || null,
-      createdAt: employee.createdAt.toISOString(),
-      updatedAt: employee.updatedAt.toISOString(),
+      hireDate: toIsoDate(employee.hireDate),
+      createdAt: toIsoDateTime(employee.createdAt),
+      updatedAt: toIsoDateTime(employee.updatedAt),
+      trainingRecords: (employee.trainingRecords ?? []).map(
+        (trainingRecord) => ({
+          ...trainingRecord,
+          createdAt: toIsoDateTime(trainingRecord.createdAt),
+          updatedAt: toIsoDateTime(trainingRecord.updatedAt),
+        }),
+      ),
     };
   }
 }

@@ -145,7 +145,7 @@ function randomHireDate(): Date {
 const prefixes: Prefix[] = ["Mr", "Mr", "Mr", "Mrs", "Miss", "Miss"] // weight: more Mr
 const jobLevels: JobLevel[] = ["S1", "S1", "S2", "S2", "M1", "M2"] // weight: more S-level
 
-async function main() {
+export async function seedEmployees() {
   console.log("🌱 Seeding employees...")
 
   // Clear existing data
@@ -178,7 +178,8 @@ async function main() {
   console.log(`✅ Seeded ${employees.length} employees`)
 }
 
-main()
+if (require.main === module) {
+  seedEmployees()
   .catch((e) => {
     console.error(e)
     process.exit(1)
@@ -186,3 +187,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+}

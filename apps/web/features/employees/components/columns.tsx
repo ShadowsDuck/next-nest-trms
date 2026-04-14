@@ -30,6 +30,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
     {
       id: SYSTEM_COLUMN_IDS.SELECT,
       size: 40,
+      minSize: 40,
       header: ({ table }) => (
         <Checkbox
           checked={
@@ -52,6 +53,8 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
     },
     {
       accessorKey: 'employeeNo',
+      size: 250,
+      minSize: 250,
       header: () => (
         <DataTableColumnHeader>
           <DataTableColumnTitle />
@@ -64,6 +67,8 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
     },
     {
       accessorKey: 'fullName',
+      size: 500,
+      minSize: 500,
       header: () => (
         <DataTableColumnHeader>
           <DataTableColumnTitle />
@@ -96,6 +101,8 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
     },
     {
       accessorKey: 'jobLevel',
+      size: 200,
+      minSize: 200,
       header: () => (
         <DataTableColumnHeader>
           <DataTableColumnTitle />
@@ -111,6 +118,8 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeSchemaResponse>[] 
     },
     {
       accessorKey: 'status',
+      size: 200,
+      minSize: 200,
       header: () => (
         <DataTableColumnHeader>
           <DataTableColumnTitle />
