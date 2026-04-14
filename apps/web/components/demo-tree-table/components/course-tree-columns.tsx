@@ -1,6 +1,6 @@
 'use client'
 
-import type { EmployeeSchemaResponse } from '@workspace/schemas'
+import type { EmployeeResponse } from '@workspace/schemas'
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Checkbox } from '@workspace/ui/components/checkbox'
@@ -19,7 +19,7 @@ import {
   statusOptions,
 } from '../lib/filter-options'
 
-export type EmployeeTreeRow = EmployeeSchemaResponse & {
+export type EmployeeTreeRow = EmployeeResponse & {
   subRows?: EmployeeTreeRow[]
 }
 

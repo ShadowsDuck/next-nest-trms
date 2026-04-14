@@ -10,7 +10,7 @@ import { Upload } from 'lucide-react'
  * Escape a cell value for CSV output.
  * Handles strings, numbers, booleans, dates, arrays, null, and undefined.
  */
-function escapeCsvValue(value: unknown): string {
+export function escapeCsvValue(value: unknown): string {
   if (value === null || value === undefined) return ''
 
   if (value instanceof Date) {
@@ -388,7 +388,7 @@ export function TableExportButton<TData>({
       onClick={handleExport}
       className={className}
     >
-      {showIcon && <Upload className="mr-2 h-4 w-4" />}
+      {showIcon && <Upload className="mr-1 size-4" />}
       {label}
     </Button>
   )

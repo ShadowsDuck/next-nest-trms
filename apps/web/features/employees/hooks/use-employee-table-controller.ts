@@ -8,13 +8,13 @@ import type {
   Updater,
 } from '@tanstack/react-table'
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
-import type { EmployeeSchemaQuery } from '@workspace/schemas'
+import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
 import { fetchEmployees } from '../data'
 import { employeeParsers } from '../lib/search-params'
 
 type MultiFilterKey = 'prefix' | 'jobLevel' | 'status'
-type MultiFilterParams = Pick<EmployeeSchemaQuery, MultiFilterKey>
+type MultiFilterParams = Pick<EmployeeQuery, MultiFilterKey>
 
 const FILTER_KEYS = ['prefix', 'jobLevel', 'status'] as const
 
@@ -136,7 +136,7 @@ function buildFilterParamsFromColumnFilters(
 /**
  * Check if any search/filter is active for empty-state mode.
  */
-function hasActiveFilters(params: EmployeeSchemaQuery): boolean {
+function hasActiveFilters(params: EmployeeQuery): boolean {
   return (
     Boolean(params.search) ||
     FILTER_KEYS.some((key) => (params[key]?.length ?? 0) > 0)

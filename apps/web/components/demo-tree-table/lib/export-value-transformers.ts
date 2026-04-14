@@ -1,4 +1,4 @@
-import { type EmployeeSchemaResponse } from '@workspace/schemas'
+import type { EmployeeResponse } from '@workspace/schemas'
 import type { ExportTableToCSVOptions } from '@/components/niko-table/filters/table-export-button'
 import { prefixOptions, statusOptions } from './filter-options'
 
@@ -10,7 +10,7 @@ const statusLabelMap = new Map<string, string>(
 )
 
 export const courseExportValueTransformers: NonNullable<
-  ExportTableToCSVOptions<EmployeeSchemaResponse>['valueTransformers']
+  ExportTableToCSVOptions<EmployeeResponse>['valueTransformers']
 > = {
   prefix: (value) =>
     typeof value === 'string' ? (prefixLabelMap.get(value) ?? value) : value,

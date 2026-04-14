@@ -1,7 +1,7 @@
 import {
-  type EmployeeSchemaPaginationResponse,
-  type EmployeeSchemaQuery,
-  employeePaginationSchema,
+  type EmployeePaginationResponse,
+  type EmployeeQuery,
+  employeePaginationResponseSchema,
 } from '@workspace/schemas'
 import { createSerializer } from 'nuqs/server'
 import { env } from '@/lib/env'
@@ -10,8 +10,8 @@ import { employeeParsers } from './lib/search-params'
 const serialize = createSerializer(employeeParsers)
 
 export async function fetchEmployees(
-  params: EmployeeSchemaQuery
-): Promise<EmployeeSchemaPaginationResponse> {
+  params: EmployeeQuery
+): Promise<EmployeePaginationResponse> {
   const url = `${env.NEXT_PUBLIC_API_URL}/api/employees${serialize(params)}`
 
   const res = await fetch(url, {
@@ -20,5 +20,21 @@ export async function fetchEmployees(
 
   if (!res.ok) throw new Error(`fetchEmployees failed: ${res.status}`)
 
-  return employeePaginationSchema.parse(await res.json())
+  return employeePaginationResponseSchema.parse(await res.json())
+}
+
+export async function fetchEmployeesForExport(
+  params: EmployeeQuery
+): Promise<EmployeePaginationResponse> {
+  const baseQuery = serialize(params)
+  const separator = baseQuery.includes('?') ? '&' : '?'
+  const url = `${env.NEXT_PUBLIC_API_URL}/api/employees${baseQuery}${separator}includeTrainingRecords=true`
+
+  const res = await fetch(url, {
+    cache: 'no-store',
+  })
+
+  if (!res.ok) throw new Error(`fetchEmployeesForExport failed: ${res.status}`)
+
+  return employeePaginationResponseSchema.parse(await res.json())
 }

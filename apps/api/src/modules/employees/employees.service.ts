@@ -1,4 +1,4 @@
-import { Employee, Prisma, TrainingRecord } from '@workspace/database';
+import { Course, Employee, Prisma, TrainingRecord } from '@workspace/database';
 import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -69,7 +69,15 @@ export class EmployeesService {
   async findAll(
     queryDto: EmployeeQueryDto,
   ): Promise<EmployeePaginationResponseDto> {
-    const { page, limit, search, prefix, jobLevel, status } = queryDto;
+    const {
+      page,
+      limit,
+      search,
+      prefix,
+      jobLevel,
+      status,
+      includeTrainingRecords,
+    } = queryDto;
 
     const where: Prisma.EmployeeWhereInput = {};
 
@@ -104,9 +112,17 @@ export class EmployeesService {
 
     const [employees, total] = await Promise.all([
       this.prismaService.employee.findMany({
-        include: {
-          trainingRecords: true,
-        },
+        ...(includeTrainingRecords
+          ? {
+              include: {
+                trainingRecords: {
+                  include: {
+                    course: true,
+                  },
+                },
+              },
+            }
+          : {}),
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -129,7 +145,11 @@ export class EmployeesService {
   }
 
   private formatEmployee(
-    employee: Employee & { trainingRecords?: TrainingRecord[] },
+    employee: Employee & {
+      trainingRecords?: (TrainingRecord & {
+        course?: Course;
+      })[];
+    },
   ): EmployeeResponseDto {
     return {
       ...employee,
@@ -141,6 +161,23 @@ export class EmployeesService {
           ...trainingRecord,
           createdAt: toIsoDateTime(trainingRecord.createdAt),
           updatedAt: toIsoDateTime(trainingRecord.updatedAt),
+          course: trainingRecord.course
+            ? {
+                ...trainingRecord.course,
+                startDate: toIsoDate(trainingRecord.course.startDate),
+                endDate: toIsoDate(trainingRecord.course.endDate),
+                startTime: trainingRecord.course.startTime
+                  ? trainingRecord.course.startTime.toISOString().slice(11, 19)
+                  : null,
+                endTime: trainingRecord.course.endTime
+                  ? trainingRecord.course.endTime.toISOString().slice(11, 19)
+                  : null,
+                duration: Number(trainingRecord.course.duration),
+                expense: Number(trainingRecord.course.expense),
+                createdAt: toIsoDateTime(trainingRecord.course.createdAt),
+                updatedAt: toIsoDateTime(trainingRecord.course.updatedAt),
+              }
+            : undefined,
         }),
       ),
     };

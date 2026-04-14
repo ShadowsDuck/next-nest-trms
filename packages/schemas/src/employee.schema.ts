@@ -31,7 +31,7 @@ export const employeeResponseSchema = employeeSchema.extend({
 })
 
 // Response paginated employees schema
-export const employeePaginationSchema = z.object({
+export const employeePaginationResponseSchema = z.object({
   data: z.array(employeeResponseSchema),
   meta: z.object({
     total: z.number(),
@@ -49,11 +49,12 @@ export const employeeQuerySchema = z.object({
   prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
   jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
   status: z.pipe(toArray, z.array(z.enum(employeeStatus))).optional(),
+  includeTrainingRecords: z.coerce.boolean().optional(),
 })
 
-export type EmployeeSchemaType = z.infer<typeof employeeSchema>
-export type EmployeeSchemaResponse = z.infer<typeof employeeResponseSchema>
-export type EmployeeSchemaQuery = z.infer<typeof employeeQuerySchema>
-export type EmployeeSchemaPaginationResponse = z.infer<
-  typeof employeePaginationSchema
+export type EmployeeType = z.infer<typeof employeeSchema>
+export type EmployeeResponse = z.infer<typeof employeeResponseSchema>
+export type EmployeeQuery = z.infer<typeof employeeQuerySchema>
+export type EmployeePaginationResponse = z.infer<
+  typeof employeePaginationResponseSchema
 >

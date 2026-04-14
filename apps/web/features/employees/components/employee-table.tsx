@@ -3,8 +3,10 @@
 
 import { useMemo, useState } from 'react'
 import type { RowSelectionState, VisibilityState } from '@tanstack/react-table'
-import type { EmployeeSchemaResponse } from '@workspace/schemas'
+import type { EmployeeQuery, EmployeeResponse } from '@workspace/schemas'
+import { Button } from '@workspace/ui/components/button'
 import { cn } from '@workspace/ui/lib/utils'
+import { Upload } from 'lucide-react'
 import { DataTablePagination } from '@/components/niko-table/components/data-table-pagination'
 import { DataTableSelectionBar } from '@/components/niko-table/components/data-table-selection-bar'
 import { DataTable } from '@/components/niko-table/core/data-table'
@@ -19,6 +21,7 @@ import { TableExportButton } from '@/components/niko-table/filters/table-export-
 import { SYSTEM_COLUMN_IDS } from '@/components/niko-table/lib/constants'
 import { useLockPageScroll } from '@/hooks/use-lock-page-scroll'
 import { useEmployeeTableController } from '../hooks/use-employee-table-controller'
+import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses'
 import { employeeExportValueTransformers } from '../lib/export-value-transformers'
 import { employeeParsers } from '../lib/search-params'
 import { employeeTableColumns } from './columns'
@@ -29,12 +32,32 @@ function EmployeeSelectionActions({
   selectedCount,
   onClear,
   filename,
+  params,
 }: {
   selectedCount: number
   onClear: () => void
   filename: string
+  params: EmployeeQuery
 }) {
-  const { table } = useDataTable<EmployeeSchemaResponse>()
+  const { table } = useDataTable<EmployeeResponse>()
+  const [isExportingCourses, setIsExportingCourses] = useState(false)
+
+  async function handleExportSelectedEmployeesWithCourses() {
+    try {
+      setIsExportingCourses(true)
+      const selectedEmployeeNos = Object.entries(table.getState().rowSelection)
+        .filter(([, selected]) => Boolean(selected))
+        .map(([rowId]) => rowId)
+
+      await exportEmployeesWithCoursesCSV({
+        params,
+        filename: `${filename}-พร้อมหลักสูตร`,
+        selectedEmployeeNos,
+      })
+    } finally {
+      setIsExportingCourses(false)
+    }
+  }
 
   return (
     <DataTableSelectionBar
@@ -53,9 +76,23 @@ function EmployeeSelectionActions({
         excludeColumns={
           [
             SYSTEM_COLUMN_IDS.SELECT,
-          ] as unknown as (keyof EmployeeSchemaResponse)[]
+            'prefix',
+          ] as unknown as (keyof EmployeeResponse)[]
         }
       />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          void handleExportSelectedEmployeesWithCourses()
+        }}
+        disabled={isExportingCourses}
+      >
+        <Upload className="mr-1 size-4" />
+        {isExportingCourses
+          ? 'กำลังส่งออกข้อมูล...'
+          : 'ส่งออกข้อมูลพร้อมหลักสูตร'}
+      </Button>
     </DataTableSelectionBar>
   )
 }
@@ -73,13 +110,15 @@ export default function EmployeeTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     prefix: false,
   })
-  const exportDate = useMemo(
-    () => new Date().toISOString().split('T')[0],
-    []
-  )
+  const exportTimestamp = useMemo(() => {
+    const now = new Date()
+    const date = now.toISOString().split('T')[0] ?? ''
+    const time = (now.toTimeString().split(' ')[0] ?? '').replace(/:/g, '-')
+    return `${date}_${time}`
+  }, [])
   const selectedExportFilename = useMemo(
-    () => `ข้อมูลพนักงาน-${exportDate}`,
-    [exportDate]
+    () => `ข้อมูลพนักงาน-${exportTimestamp}`,
+    [exportTimestamp]
   )
   const selectedCount = useMemo(
     () => Object.values(rowSelection).filter(Boolean).length,
@@ -125,11 +164,12 @@ export default function EmployeeTable() {
       onColumnVisibilityChange={setColumnVisibility}
       isLoading={controller.isInitialLoading}
     >
-      <EmployeeTableFilterToolbar />
+      <EmployeeTableFilterToolbar params={controller.params} />
       <EmployeeSelectionActions
         selectedCount={selectedCount}
         onClear={() => setRowSelection({})}
         filename={selectedExportFilename}
+        params={controller.params}
       />
 
       <div
