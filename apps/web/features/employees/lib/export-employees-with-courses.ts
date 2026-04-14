@@ -1,6 +1,6 @@
 import type { EmployeeQuery, EmployeeResponse } from '@workspace/schemas'
 import { escapeCsvValue } from '@/components/niko-table/filters/table-export-button'
-import { fetchEmployeesForExport } from '../data'
+import { getAllEmployeesExport } from '../data/get-all-employees-export'
 import { prefixOptions, statusOptions } from './filter-options'
 
 const prefixLabelMap = new Map<string, string>(
@@ -133,7 +133,7 @@ export async function exportEmployeesWithCoursesCSV({
   filename: string
   selectedEmployeeNos?: string[]
 }) {
-  const response = await fetchEmployeesForExport(params)
+  const response = await getAllEmployeesExport(params)
   const selectedSet =
     selectedEmployeeNos && selectedEmployeeNos.length > 0
       ? new Set(selectedEmployeeNos)

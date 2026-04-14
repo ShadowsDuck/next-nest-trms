@@ -1,6 +1,7 @@
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
 import {
   createSearchParamsCache,
+  createSerializer,
   parseAsArrayOf,
   parseAsInteger,
   parseAsString,
@@ -20,3 +21,5 @@ export const employeeParsers = {
 
 export const employeeSearchParamsCache =
   createSearchParamsCache(employeeParsers)
+
+export const serializeEmployeeParams = createSerializer(employeeParsers)

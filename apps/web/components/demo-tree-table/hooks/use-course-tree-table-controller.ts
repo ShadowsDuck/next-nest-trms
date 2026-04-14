@@ -10,7 +10,7 @@ import type {
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
 import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { fetchEmployees } from '../../../features/employees/data'
+import { getAllEmployees } from '@/features/employees/data/get-all-employees'
 import { courseParsers } from '../lib/search-params'
 
 type MultiFilterKey = 'prefix' | 'jobLevel' | 'status'
@@ -120,7 +120,7 @@ export function useCourseTreeTableController() {
 
   const query = useQuery({
     queryKey: ['course-tree-employees', params],
-    queryFn: () => fetchEmployees(params),
+    queryFn: () => getAllEmployees(params),
     placeholderData: keepPreviousData,
   })
 

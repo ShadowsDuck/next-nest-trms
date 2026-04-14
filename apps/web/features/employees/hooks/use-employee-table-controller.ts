@@ -10,7 +10,7 @@ import type {
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
 import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { fetchEmployees } from '../data'
+import { getAllEmployees } from '../data/get-all-employees'
 import { employeeParsers } from '../lib/search-params'
 
 type MultiFilterKey = 'prefix' | 'jobLevel' | 'status'
@@ -204,7 +204,7 @@ export function useEmployeeTableController() {
    */
   const query = useQuery({
     queryKey,
-    queryFn: () => fetchEmployees(params),
+    queryFn: () => getAllEmployees(params),
     placeholderData: keepPreviousData,
   })
 
