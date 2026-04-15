@@ -7,6 +7,7 @@ import { auth } from './auth/auth';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ZodValidationExceptionFilter } from './filters/zod-validation-exception.filter';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -16,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
     BetterAuthModule.forRoot({ auth }), // Global Guard (ทุก route protected by default)
     PrismaModule,
     EmployeesModule,
+    OrganizationUnitsModule,
     UsersModule,
   ],
   providers: [

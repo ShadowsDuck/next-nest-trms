@@ -18,6 +18,7 @@ model TrainingRecord {
   updatedByUser    User     @relation("TrainingRecordUpdatedBy", fields: [updatedByUserId], references: [id])
 
   @@unique([employeeId, courseId], name: "uq_training_record")
-  @@index([employeeId, courseId])
+  @@index([employeeId])
+  @@index([courseId])
   @@map("training_records")
 }

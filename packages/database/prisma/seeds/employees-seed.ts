@@ -2,6 +2,7 @@ import {
   Prefix,
   JobLevel,
   EmployeeStatus,
+  OrgUnitLevel,
 } from "../../src/generated/prisma/client"
 import { prisma } from "../../src/client"
 
@@ -151,6 +152,16 @@ export async function seedEmployees() {
   // Clear existing data
   await prisma.employee.deleteMany()
 
+  const departments = await prisma.organizationUnit.findMany({
+    where: { level: OrgUnitLevel.Department },
+    select: { id: true },
+    orderBy: { name: "asc" },
+  })
+
+  if (departments.length === 0) {
+    throw new Error("No Department organization units found. Seed organization units first.")
+  }
+
   const employees = Array.from({ length: 100 }, (_, i) => {
     const index = i + 1
     const prefix = prefixes[index % prefixes.length]
@@ -170,6 +181,7 @@ export async function seedEmployees() {
       hireDate: randomHireDate(),
       jobLevel,
       status,
+      orgUnitId: randomFrom(departments).id,
     }
   })
 

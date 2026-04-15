@@ -1,6 +1,7 @@
 import { prisma } from "../src/client"
 import { seedCourses } from "./seeds/courses-seed"
 import { seedEmployees } from "./seeds/employees-seed"
+import { seedOrganizationUnits } from "./seeds/organization-units-seed"
 import { seedTrainingRecords } from "./seeds/training-records-seed"
 
 async function main() {
@@ -8,7 +9,10 @@ async function main() {
 
   // Clear child table first to avoid FK constraint errors
   await prisma.trainingRecord.deleteMany()
+  await prisma.employee.deleteMany()
+  await prisma.organizationUnit.deleteMany()
 
+  await seedOrganizationUnits()
   await seedEmployees()
   await seedCourses()
   await seedTrainingRecords()

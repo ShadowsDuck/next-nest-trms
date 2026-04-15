@@ -1,19 +1,26 @@
-// enum OrgType {
-//   Company
-// }
+enum OrgUnitLevel {
+  Plant
+  BU
+  Function
+  Division
+  Department
+}
 
-// model OrganizationUnit {
-//   id        String      @id @default(cuid())
-//   orgType   OrgType     @map("org_type")
-//   name      String
-//   parentId  String?     @map("parent_id")
-//   createdAt DateTime    @default(now()) @map("created_at")
-//   updatedAt DateTime    @updatedAt @map("updated_at")
+model OrganizationUnit {
+  id        String       @id @default(cuid())
+  name      String
+  level     OrgUnitLevel
+  parentId  String?      @map("parent_id")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
 
-//   parent   OrganizationUnit?  @relation("OrgHierarchy", fields: [parentId], references: [id])
-//   children OrganizationUnit[] @relation("OrgHierarchy")
+  parent    OrganizationUnit?  @relation("OrgHierarchy", fields: [parentId], references: [id])
+  children  OrganizationUnit[] @relation("OrgHierarchy")
 
-//   employees Employee[]
+  employees Employee[]
 
-//   @@map("organization_units")
-// }
+  @@unique([parentId, name])
+  @@index([parentId])
+  @@index([level])
+  @@map("organization_units")
+}

@@ -20,6 +20,7 @@ export const employeeSchema = z.object({
   hireDate: z.iso.date().optional(),
   jobLevel: z.enum(jobLevel, { message: "ระดับตำแหน่งไม่ถูกต้อง" }),
   status: z.enum(employeeStatus, { message: "สถานะไม่ถูกต้อง" }),
+  orgUnitId: z.string().min(1, { message: "รหัสหน่วยงานห้ามว่าง" }).optional(),
 })
 
 // Response schema

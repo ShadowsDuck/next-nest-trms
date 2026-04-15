@@ -31,9 +31,9 @@ model Employee {
 
   // Relations
   user         User?
-  
-  // orgUnitId    String           @map("org_unit_id")
-  // orgUnit      OrganizationUnit @relation(fields: [orgUnitId], references: [id])
+
+  orgUnitId    String?          @map("org_unit_id")
+  orgUnit      OrganizationUnit? @relation(fields: [orgUnitId], references: [id])
 
   trainingRecords TrainingRecord[]
   

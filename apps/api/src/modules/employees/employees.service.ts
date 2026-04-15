@@ -1,10 +1,17 @@
-import { Course, Employee, Prisma, TrainingRecord } from '@workspace/database';
+import {
+  Course,
+  Employee,
+  OrgUnitLevel,
+  Prisma,
+  TrainingRecord,
+} from '@workspace/database';
 import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
@@ -54,7 +61,7 @@ export class EmployeesService {
     }
 
     // เช็คแผนก/สังกัด (Foreign Key org_unit_id)
-    // สิ่งที่ต้องทำ: ต้อง Query ไปที่ตาราง OrgUnit เพื่อเช็คว่า ID แผนกที่ส่งมานั้น "มีอยู่จริงในระบบ" หรือไม่ ถ้าไม่มีต้องโยน Error (เช่น NotFoundException 404) ครับ
+    await this.validateDepartmentOrgUnit(createEmployeeDto.orgUnitId);
 
     const employee = await this.prismaService.employee.create({
       data: {
@@ -181,5 +188,32 @@ export class EmployeesService {
         }),
       ),
     };
+  }
+
+  private async validateDepartmentOrgUnit(orgUnitId?: string) {
+    if (!orgUnitId) {
+      return;
+    }
+
+    const organizationUnit =
+      await this.prismaService.organizationUnit.findUnique({
+        where: {
+          id: orgUnitId,
+        },
+        select: {
+          id: true,
+          level: true,
+        },
+      });
+
+    if (!organizationUnit) {
+      throw new NotFoundException('ไม่พบหน่วยงานที่ระบุ');
+    }
+
+    if (organizationUnit.level !== OrgUnitLevel.Department) {
+      throw new BadRequestException(
+        'พนักงานต้องถูกผูกกับหน่วยงานระดับ Department เท่านั้น',
+      );
+    }
   }
 }

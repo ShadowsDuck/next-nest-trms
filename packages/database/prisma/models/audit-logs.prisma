@@ -18,6 +18,7 @@ model AuditLog {
   userId    String          @map("user_id")
   user      User            @relation(fields: [userId], references: [id])
 
-  @@index([userId, createdAt])
+  @@index([userId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
