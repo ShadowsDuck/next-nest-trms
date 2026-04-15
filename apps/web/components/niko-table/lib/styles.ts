@@ -1,21 +1,21 @@
-import { type Column } from "@tanstack/react-table"
-import type React from "react"
+import type React from 'react'
+import { type Column } from '@tanstack/react-table'
 
 export const getCommonPinningStyles = <TData>(
   column: Column<TData>,
-  isHeader: boolean = false,
+  isHeader: boolean = false
 ): React.CSSProperties => {
   const isPinned = column.getIsPinned()
   if (!isPinned) return {}
 
-  const isLeft = isPinned === "left"
+  const isLeft = isPinned === 'left'
   const columnSize = column.getSize()
 
   return {
-    position: "sticky",
+    position: 'sticky',
     top: isHeader ? 0 : undefined,
-    left: isLeft ? `${column.getStart("left")}px` : undefined,
-    right: !isLeft ? `${column.getAfter("right")}px` : undefined,
+    left: isLeft ? `${column.getStart('left')}px` : undefined,
+    right: !isLeft ? `${column.getAfter('right')}px` : undefined,
     opacity: 1,
     width: columnSize,
     minWidth: columnSize, // Prevent column from shrinking
@@ -24,10 +24,10 @@ export const getCommonPinningStyles = <TData>(
     // Headers: z-20 to stay above other headers and body.
     // Body: z-10 to stay above other body cells.
     zIndex: isHeader ? 20 : 10,
-    backgroundColor: "var(--background)", // Ensure opaque background
+    backgroundColor: 'var(--background)', // Ensure opaque background
     // Create a visual separation for pinned columns
     boxShadow: isLeft
-      ? "1px 0 0 var(--border)" // Right border for left pinned
-      : "-1px 0 0 var(--border)", // Left border for right pinned
+      ? '1px 0 0 var(--border)' // Right border for left pinned
+      : '-1px 0 0 var(--border)', // Left border for right pinned
   }
 }

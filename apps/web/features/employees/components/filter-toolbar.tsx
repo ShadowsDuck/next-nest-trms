@@ -91,9 +91,9 @@ export function EmployeeTableFilterToolbar({
             <DropdownMenuContent
               align="end"
               sideOffset={8}
-              className="w-64 min-w-64 rounded-xl border border-border/70 bg-popover/95 p-1.5 shadow-xl backdrop-blur"
+              className="border-border/70 bg-popover/95 w-64 min-w-64 rounded-xl border p-1.5 shadow-xl backdrop-blur"
             >
-              <DropdownMenuLabel className="px-2.5 pb-1 text-[11px] tracking-wide text-muted-foreground">
+              <DropdownMenuLabel className="text-muted-foreground px-2.5 pb-1 text-[11px] tracking-wide">
                 เมนูส่งออกข้อมูล
               </DropdownMenuLabel>
 
@@ -104,16 +104,16 @@ export function EmployeeTableFilterToolbar({
                   event.preventDefault()
                   handleExportAllEmployees()
                 }}
-                className="cursor-pointer rounded-lg px-2.5 py-2 focus:bg-muted/80"
+                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
               >
-                <span className="flex shrink-0 size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
                   <Upload className="size-4" />
                 </span>
                 <span className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium leading-none">
+                  <span className="text-sm leading-none font-medium">
                     ส่งออกข้อมูลพนักงาน
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     รายชื่อพนักงานตามตัวกรองปัจจุบัน
                   </span>
                 </span>
@@ -126,9 +126,9 @@ export function EmployeeTableFilterToolbar({
                   }
                 }}
                 disabled={isExportingCourses}
-                className="cursor-pointer rounded-lg px-2.5 py-2 focus:bg-muted/80"
+                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
               >
-                <span className="flex shrink-0 size-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {isExportingCourses ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
@@ -136,10 +136,10 @@ export function EmployeeTableFilterToolbar({
                   )}
                 </span>
                 <span className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium leading-none">
+                  <span className="text-sm leading-none font-medium">
                     ส่งออกพร้อมหลักสูตร
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     รายชื่อพนักงานพร้อมประวัติการฝึกอบรมของแต่ละคน
                   </span>
                 </span>

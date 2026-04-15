@@ -71,7 +71,7 @@ export function TableColumnActions({
             variant="ghost"
             size="icon"
             className={cn(
-              'size-7 transition-opacity group-hover:opacity-100 dark:text-muted-foreground',
+              'dark:text-muted-foreground size-7 transition-opacity group-hover:opacity-100',
               isActive ? 'text-primary opacity-100' : 'opacity-0',
               className
             )}
@@ -82,7 +82,7 @@ export function TableColumnActions({
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-48">
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
           {label}
         </DropdownMenuLabel>
         {children}

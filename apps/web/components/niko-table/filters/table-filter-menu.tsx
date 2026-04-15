@@ -358,7 +358,7 @@ function FacetedBadgeList(props: FacetedBadgeListProps) {
     return (
       <div
         {...badgeListProps}
-        className="flex w-full items-center gap-1 text-muted-foreground"
+        className="text-muted-foreground flex w-full items-center gap-1"
       >
         {placeholder}
         <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
@@ -451,7 +451,7 @@ function FacetedItem(props: FacetedItemProps) {
     >
       <span
         className={cn(
-          'flex size-4 items-center justify-center rounded-sm border border-primary',
+          'border-primary flex size-4 items-center justify-center rounded-sm border',
           isSelected
             ? 'bg-primary text-primary-foreground'
             : 'opacity-50 [&_svg]:invisible'
@@ -1004,7 +1004,7 @@ export function TableFilterMenu<TData>({
             <p
               id={descriptionId}
               className={cn(
-                'text-sm text-muted-foreground',
+                'text-muted-foreground text-sm',
                 filters.length > 0 && 'sr-only'
               )}
             >
@@ -1056,12 +1056,12 @@ export function TableFilterMenu<TData>({
       </Popover>
       <SortableOverlay>
         <div className="flex items-center gap-2">
-          <div className="h-8 min-w-[72px] rounded-sm bg-primary/10" />
-          <div className="h-8 w-32 rounded-sm bg-primary/10" />
-          <div className="h-8 w-32 rounded-sm bg-primary/10" />
-          <div className="h-8 min-w-36 flex-1 rounded-sm bg-primary/10" />
-          <div className="size-8 shrink-0 rounded-sm bg-primary/10" />
-          <div className="size-8 shrink-0 rounded-sm bg-primary/10" />
+          <div className="bg-primary/10 h-8 min-w-[72px] rounded-sm" />
+          <div className="bg-primary/10 h-8 w-32 rounded-sm" />
+          <div className="bg-primary/10 h-8 w-32 rounded-sm" />
+          <div className="bg-primary/10 h-8 min-w-36 flex-1 rounded-sm" />
+          <div className="bg-primary/10 size-8 shrink-0 rounded-sm" />
+          <div className="bg-primary/10 size-8 shrink-0 rounded-sm" />
         </div>
       </SortableOverlay>
     </Sortable>
@@ -1237,7 +1237,7 @@ function FilterEmptyInput<TData>({
         filter.operator === FILTER_OPERATORS.EMPTY ? 'empty' : 'not empty'
       }`}
       aria-live="polite"
-      className="h-8 w-full rounded border bg-transparent dark:bg-input/30"
+      className="dark:bg-input/30 h-8 w-full rounded border bg-transparent"
     />
   )
 }
@@ -1580,7 +1580,7 @@ function FilterJoinOperator<TData>({
   if (index === 0) {
     return (
       <div className="min-w-[72px] text-center">
-        <span className="text-sm text-muted-foreground">Where</span>
+        <span className="text-muted-foreground text-sm">Where</span>
       </div>
     )
   }

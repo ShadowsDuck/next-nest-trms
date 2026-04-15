@@ -1,10 +1,10 @@
-import { dataTableConfig } from "../config/data-table"
-import { FILTER_OPERATORS, FILTER_VARIANTS, JOIN_OPERATORS } from "./constants"
+import { dataTableConfig } from '../config/data-table'
 import type {
   ExtendedColumnFilter,
   FilterOperator,
   FilterVariant,
-} from "../types"
+} from '../types'
+import { FILTER_OPERATORS, FILTER_VARIANTS, JOIN_OPERATORS } from './constants'
 
 export function getFilterOperators(filterVariant: FilterVariant) {
   const operatorMap: Record<
@@ -36,9 +36,9 @@ export function getDefaultFilterOperator(filterVariant: FilterVariant) {
 }
 
 export function getValidFilters<TData>(
-  filters: ExtendedColumnFilter<TData>[],
+  filters: ExtendedColumnFilter<TData>[]
 ): ExtendedColumnFilter<TData>[] {
-  return filters.filter(filter => {
+  return filters.filter((filter) => {
     // isEmpty and isNotEmpty don't need values
     if (
       filter.operator === FILTER_OPERATORS.EMPTY ||
@@ -53,14 +53,14 @@ export function getValidFilters<TData>(
       return (
         filter.value.length > 0 &&
         filter.value.every(
-          val => val !== "" && val !== null && val !== undefined,
+          (val) => val !== '' && val !== null && val !== undefined
         )
       )
     }
 
     // For non-array values
     return (
-      filter.value !== "" && filter.value !== null && filter.value !== undefined
+      filter.value !== '' && filter.value !== null && filter.value !== undefined
     )
   })
 }
@@ -98,7 +98,7 @@ export function getValidFilters<TData>(
  * ```
  */
 export function processFiltersForLogic<TData>(
-  filters: ExtendedColumnFilter<TData>[],
+  filters: ExtendedColumnFilter<TData>[]
 ): {
   processedFilters: ExtendedColumnFilter<TData>[]
   hasOrFilters: boolean
@@ -108,11 +108,11 @@ export function processFiltersForLogic<TData>(
 } {
   // Check for explicit OR operators
   const hasOrFilters = filters.some(
-    (filter, index) => index > 0 && filter.joinOperator === JOIN_OPERATORS.OR,
+    (filter, index) => index > 0 && filter.joinOperator === JOIN_OPERATORS.OR
   )
 
   // Check for multiple filters on the same column (UX: should use OR logic)
-  const columnIds = filters.map(f => f.id)
+  const columnIds = filters.map((f) => f.id)
   const hasSameColumnFilters = columnIds.length !== new Set(columnIds).size
 
   // Process filters: convert same-column AND to OR for better UX
@@ -122,7 +122,7 @@ export function processFiltersForLogic<TData>(
         // convert AND to OR for better UX (same column filters should use OR logic)
         const previousFilters = filters.slice(0, index)
         const hasSameColumnBefore = previousFilters.some(
-          f => f.id === filter.id,
+          (f) => f.id === filter.id
         )
         if (hasSameColumnBefore && filter.joinOperator === JOIN_OPERATORS.AND) {
           return { ...filter, joinOperator: JOIN_OPERATORS.OR }

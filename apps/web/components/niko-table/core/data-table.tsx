@@ -120,7 +120,7 @@ export function DataTable({
         // Scrollbar visible but subtle by default, more prominent on hover
         '[&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5',
         '[&::-webkit-scrollbar-track]:bg-transparent',
-        '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border/40',
+        '[&::-webkit-scrollbar-thumb]:bg-border/40 [&::-webkit-scrollbar-thumb]:rounded-full',
         'hover:[&::-webkit-scrollbar-thumb]:bg-border',
         '[&::-webkit-scrollbar-thumb:hover]:bg-border/80!',
         // Firefox scrollbar styling

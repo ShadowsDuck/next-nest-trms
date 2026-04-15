@@ -1,6 +1,6 @@
-import type { Column } from "@tanstack/react-table"
-import * as React from "react"
-import { formatLabel } from "../lib/format"
+import * as React from 'react'
+import type { Column } from '@tanstack/react-table'
+import { formatLabel } from '../lib/format'
 
 /**
  * A hook that derives the title for a column filter component.
@@ -40,7 +40,7 @@ import { formatLabel } from "../lib/format"
 export function useDerivedColumnTitle<TData>(
   column: Column<TData, unknown> | undefined,
   accessorKey: string,
-  title?: string,
+  title?: string
 ): string {
   return React.useMemo(() => {
     if (title) return title

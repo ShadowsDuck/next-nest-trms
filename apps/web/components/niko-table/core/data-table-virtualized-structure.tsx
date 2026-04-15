@@ -61,7 +61,7 @@ export const DataTableVirtualizedHeader = React.memo(
       <TableHeader
         className={cn(
           'block',
-          sticky && 'sticky top-0 z-30 bg-background',
+          sticky && 'bg-background sticky top-0 z-30',
           // Ensure border is visible when sticky using pseudo-element
           className
         )}
@@ -598,8 +598,8 @@ export function DataTableVirtualizedLoading({
       >
         {children ?? (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-sm text-muted-foreground">Loading...</span>
+            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+            <span className="text-muted-foreground text-sm">Loading...</span>
           </div>
         )}
       </TableCell>

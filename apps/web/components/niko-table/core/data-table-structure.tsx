@@ -58,10 +58,10 @@ export const DataTableHeader = React.memo(function DataTableHeader({
   return (
     <TableHeader
       className={cn(
-        sticky && 'sticky top-0 z-30 bg-background',
+        sticky && 'bg-background sticky top-0 z-30',
         // Ensure border is visible when sticky using pseudo-element
         sticky &&
-          'after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:bg-border',
+          'after:bg-border after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px',
         className
       )}
     >
@@ -492,8 +492,8 @@ export function DataTableLoading({
       >
         {children ?? (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-sm text-muted-foreground">Loading...</span>
+            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+            <span className="text-muted-foreground text-sm">Loading...</span>
           </div>
         )}
       </TableCell>

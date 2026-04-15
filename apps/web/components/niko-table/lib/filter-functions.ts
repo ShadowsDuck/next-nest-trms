@@ -1,6 +1,6 @@
-import type { FilterFn, RowData } from "@tanstack/react-table"
-import type { ExtendedColumnFilter, FilterOperator } from "../types"
-import { JOIN_OPERATORS, FILTER_OPERATORS, FILTER_VARIANTS } from "./constants"
+import type { FilterFn, RowData } from '@tanstack/react-table'
+import type { ExtendedColumnFilter, FilterOperator } from '../types'
+import { FILTER_OPERATORS, FILTER_VARIANTS, JOIN_OPERATORS } from './constants'
 
 // ============================================================================
 // Regex Cache for Performance
@@ -76,14 +76,14 @@ export const extendedFilter: FilterFn<RowData> = (
   row,
   columnId,
   filterValue,
-  _addMeta,
+  _addMeta
 ) => {
   // If no filter value, show all rows
   if (!filterValue) return true
 
   // Handle our extended filter format
   if (
-    typeof filterValue === "object" &&
+    typeof filterValue === 'object' &&
     filterValue.operator &&
     filterValue.value !== undefined
   ) {
@@ -91,7 +91,7 @@ export const extendedFilter: FilterFn<RowData> = (
     return applyFilterOperator(
       row.getValue(columnId),
       filter.operator,
-      filter.value,
+      filter.value
     )
   }
 
@@ -104,8 +104,8 @@ export const extendedFilter: FilterFn<RowData> = (
     // Check if both values are numbers - if so, treat as range
     if (
       filterValue.length === 2 &&
-      typeof filterValue[0] === "number" &&
-      typeof filterValue[1] === "number"
+      typeof filterValue[0] === 'number' &&
+      typeof filterValue[1] === 'number'
     ) {
       const [min, max] = filterValue
       const value = Number(cellValue)
@@ -117,16 +117,16 @@ export const extendedFilter: FilterFn<RowData> = (
     // When filterValue is an array like ["electronics", "clothing"], check if cell value is in the array
 
     // Case-insensitive comparison for strings
-    if (typeof cellValue === "string") {
+    if (typeof cellValue === 'string') {
       const cellLower = cellValue.toLowerCase()
-      return filterValue.some(val =>
-        typeof val === "string"
+      return filterValue.some((val) =>
+        typeof val === 'string'
           ? val.toLowerCase() === cellLower
-          : String(val) === cellValue,
+          : String(val) === cellValue
       )
     }
     // For non-string types, convert to string for comparison
-    return filterValue.some(val => String(val) === String(cellValue))
+    return filterValue.some((val) => String(val) === String(cellValue))
   }
 
   // Fallback to default string contains behavior for simple values
@@ -136,8 +136,8 @@ export const extendedFilter: FilterFn<RowData> = (
   try {
     const cellStr = String(cellValue).toLowerCase()
     const filterStr = String(filterValue).toLowerCase()
-    const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    const regex = getOrCreateRegex(escapedFilter, "i") // ✅ Use cached regex
+    const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = getOrCreateRegex(escapedFilter, 'i') // ✅ Use cached regex
     return regex.test(cellStr)
   } catch {
     return String(cellValue)
@@ -177,28 +177,28 @@ export const globalFilter: FilterFn<RowData> = (
   row,
   _columnId,
   filterValue,
-  _addMeta,
+  _addMeta
 ) => {
   // If no filter value, show all rows
   if (!filterValue) return true
 
   // Check if this is a complex filter object (from filter menu)
   if (
-    typeof filterValue === "object" &&
+    typeof filterValue === 'object' &&
     filterValue.filters &&
     Array.isArray(filterValue.filters)
   ) {
     const filters = filterValue.filters
 
     // Handle different join operator modes
-    if (filterValue.joinOperator === "or") {
+    if (filterValue.joinOperator === 'or') {
       // Pure OR logic: at least one filter must match
       return filters.some((filter: ExtendedColumnFilter<RowData>) => {
         const cellValue = row.getValue(filter.id)
         return applyFilterOperator(
           cellValue as string | number | boolean | null | undefined,
           filter.operator,
-          filter.value as string | number | boolean | null | undefined,
+          filter.value as string | number | boolean | null | undefined
         )
       })
     } else if (filterValue.joinOperator === JOIN_OPERATORS.MIXED) {
@@ -210,7 +210,7 @@ export const globalFilter: FilterFn<RowData> = (
         return applyFilterOperator(
           cellValue as string | number | boolean | null | undefined,
           filter.operator,
-          filter.value as string | number | boolean | null | undefined,
+          filter.value as string | number | boolean | null | undefined
         )
       }
 
@@ -240,19 +240,19 @@ export const globalFilter: FilterFn<RowData> = (
       orGroups.push(currentAndGroup)
 
       // Evaluate each OR group (AND logic within each group)
-      const groupResults = orGroups.map(andGroup => {
+      const groupResults = orGroups.map((andGroup) => {
         return andGroup.every((filter: ExtendedColumnFilter<RowData>) => {
           const cellValue = row.getValue(filter.id)
           return applyFilterOperator(
             cellValue as string | number | boolean | null | undefined,
             filter.operator,
-            filter.value as string | number | boolean | null | undefined,
+            filter.value as string | number | boolean | null | undefined
           )
         })
       })
 
       // OR all group results together
-      return groupResults.some(result => result)
+      return groupResults.some((result) => result)
     }
 
     // Default to AND logic for other cases
@@ -261,7 +261,7 @@ export const globalFilter: FilterFn<RowData> = (
       return applyFilterOperator(
         cellValue as string | number | boolean | null | undefined,
         filter.operator,
-        filter.value as string | number | boolean | null | undefined,
+        filter.value as string | number | boolean | null | undefined
       )
     })
   }
@@ -270,7 +270,7 @@ export const globalFilter: FilterFn<RowData> = (
   const searchValue = String(filterValue).toLowerCase()
 
   // Search across all columns that have filtering enabled
-  return row.getAllCells().some(cell => {
+  return row.getAllCells().some((cell) => {
     const column = cell.column
 
     // Skip columns that have filtering disabled
@@ -284,8 +284,8 @@ export const globalFilter: FilterFn<RowData> = (
     try {
       // Convert cell value to string and search using regex
       const cellStr = String(cellValue).toLowerCase()
-      const escapedFilter = searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-      const regex = getOrCreateRegex(escapedFilter, "i") // ✅ Use cached regex
+      const escapedFilter = searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = getOrCreateRegex(escapedFilter, 'i') // ✅ Use cached regex
       return regex.test(cellStr)
     } catch {
       // Fallback to simple includes if regex fails
@@ -300,7 +300,7 @@ export const globalFilter: FilterFn<RowData> = (
 function applyFilterOperator(
   cellValue: string | number | boolean | null | undefined,
   operator: FilterOperator,
-  filterValue: string | number | boolean | null | undefined | string[],
+  filterValue: string | number | boolean | null | undefined | string[]
 ): boolean {
   // Handle null/undefined cell values
   if (cellValue == null) {
@@ -323,8 +323,8 @@ function applyFilterOperator(
     case FILTER_OPERATORS.ILIKE:
       try {
         // Escape special regex characters in the filter string
-        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-        const regex = getOrCreateRegex(escapedFilter, "i") // ✅ Use cached regex
+        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = getOrCreateRegex(escapedFilter, 'i') // ✅ Use cached regex
         return regex.test(cellStr)
       } catch {
         // Fallback to simple includes if regex fails
@@ -334,8 +334,8 @@ function applyFilterOperator(
     case FILTER_OPERATORS.NOT_ILIKE:
       try {
         // Escape special regex characters in the filter string
-        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-        const regex = getOrCreateRegex(escapedFilter, "i") // ✅ Use cached regex
+        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = getOrCreateRegex(escapedFilter, 'i') // ✅ Use cached regex
         return !regex.test(cellStr)
       } catch {
         // Fallback to simple includes if regex fails
@@ -344,24 +344,24 @@ function applyFilterOperator(
 
     case FILTER_OPERATORS.EQ:
       // Case-insensitive comparison for strings
-      if (typeof cellValue === "string" && typeof filterValue === "string") {
+      if (typeof cellValue === 'string' && typeof filterValue === 'string') {
         return cellStr === filterStr
       }
       // Boolean comparison - convert boolean to string for comparison with string filter values
       // This handles cases where cellValue is boolean (true/false) and filterValue is string ("true"/"false")
-      if (typeof cellValue === "boolean") {
+      if (typeof cellValue === 'boolean') {
         const cellBoolStr = String(cellValue)
         return cellBoolStr === String(filterValue)
       }
-      if (typeof filterValue === "boolean") {
+      if (typeof filterValue === 'boolean') {
         const filterBoolStr = String(filterValue)
         return filterBoolStr === String(cellValue)
       }
       // Date comparison - check if cellValue is a Date object
       if (
-        typeof cellValue === "object" &&
+        typeof cellValue === 'object' &&
         cellValue !== null &&
-        "getTime" in cellValue
+        'getTime' in cellValue
       ) {
         const dateCell = (cellValue as { getTime: () => number }).getTime()
         const dateFilter = Number(filterValue)
@@ -373,7 +373,7 @@ function applyFilterOperator(
         }
       }
       // Numeric comparison - convert both to numbers
-      if (typeof cellValue === "number" || typeof filterValue === "number") {
+      if (typeof cellValue === 'number' || typeof filterValue === 'number') {
         const numCell = Number(cellValue)
         const numFilter = Number(filterValue)
         // Check for valid numbers before comparing
@@ -385,14 +385,14 @@ function applyFilterOperator(
 
     case FILTER_OPERATORS.NEQ:
       // Case-insensitive comparison for strings
-      if (typeof cellValue === "string" && typeof filterValue === "string") {
+      if (typeof cellValue === 'string' && typeof filterValue === 'string') {
         return cellStr !== filterStr
       }
       // Date comparison - check if cellValue is a Date object
       if (
-        typeof cellValue === "object" &&
+        typeof cellValue === 'object' &&
         cellValue !== null &&
-        "getTime" in cellValue
+        'getTime' in cellValue
       ) {
         const dateCell = (cellValue as { getTime: () => number }).getTime()
         const dateFilter = Number(filterValue)
@@ -404,7 +404,7 @@ function applyFilterOperator(
         }
       }
       // Numeric comparison - convert both to numbers
-      if (typeof cellValue === "number" || typeof filterValue === "number") {
+      if (typeof cellValue === 'number' || typeof filterValue === 'number') {
         const numCell = Number(cellValue)
         const numFilter = Number(filterValue)
         // Check for valid numbers before comparing
@@ -416,15 +416,15 @@ function applyFilterOperator(
 
     case FILTER_OPERATORS.EMPTY:
       // Check for empty strings and whitespace-only strings
-      if (typeof cellValue === "string") {
-        return cellValue.trim() === ""
+      if (typeof cellValue === 'string') {
+        return cellValue.trim() === ''
       }
       return cellValue == null
 
     case FILTER_OPERATORS.NOT_EMPTY:
       // Check for non-empty strings (excluding whitespace-only)
-      if (typeof cellValue === "string") {
-        return cellValue.trim() !== ""
+      if (typeof cellValue === 'string') {
+        return cellValue.trim() !== ''
       }
       return cellValue != null
 
@@ -474,40 +474,40 @@ function applyFilterOperator(
     case FILTER_OPERATORS.IN:
       if (Array.isArray(filterValue)) {
         // Handle case-insensitive string comparison
-        if (typeof cellValue === "string") {
+        if (typeof cellValue === 'string') {
           const cellLower = cellValue.toLowerCase()
-          return filterValue.some(val =>
-            typeof val === "string"
+          return filterValue.some((val) =>
+            typeof val === 'string'
               ? val.toLowerCase() === cellLower
-              : val === cellValue,
+              : val === cellValue
           )
         }
         // For non-string types, convert to string for comparison
-        return filterValue.some(val => String(val) === String(cellValue))
+        return filterValue.some((val) => String(val) === String(cellValue))
       }
       return false
 
     case FILTER_OPERATORS.NOT_IN:
       if (Array.isArray(filterValue)) {
         // Handle case-insensitive string comparison
-        if (typeof cellValue === "string") {
+        if (typeof cellValue === 'string') {
           const cellLower = cellValue.toLowerCase()
-          return !filterValue.some(val =>
-            typeof val === "string"
+          return !filterValue.some((val) =>
+            typeof val === 'string'
               ? val.toLowerCase() === cellLower
-              : val === cellValue,
+              : val === cellValue
           )
         }
         // For non-string types, convert to string for comparison
-        return !filterValue.some(val => String(val) === String(cellValue))
+        return !filterValue.some((val) => String(val) === String(cellValue))
       }
       return true
 
     // Date operators (basic implementation)
     case FILTER_OPERATORS.RELATIVE:
-      if (process.env.NODE_ENV !== "production") {
+      if (process.env.NODE_ENV !== 'production') {
         console.warn(
-          "FILTER_OPERATORS.RELATIVE is not yet implemented — all rows will pass this filter.",
+          'FILTER_OPERATORS.RELATIVE is not yet implemented — all rows will pass this filter.'
         )
       }
       return true
@@ -515,8 +515,8 @@ function applyFilterOperator(
     default:
       // Fallback to contains behavior using regex
       try {
-        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-        const regex = getOrCreateRegex(escapedFilter, "i") // ✅ Use cached regex
+        const escapedFilter = filterStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = getOrCreateRegex(escapedFilter, 'i') // ✅ Use cached regex
         return regex.test(cellStr)
       } catch {
         return cellStr.includes(filterStr)
@@ -533,13 +533,13 @@ export const numberRangeFilter: FilterFn<RowData> = (
   columnId,
   filterValue,
 
-  addMeta,
+  addMeta
 ) => {
   if (!filterValue) return true
 
   // Handle ExtendedColumnFilter format
   if (
-    typeof filterValue === "object" &&
+    typeof filterValue === 'object' &&
     filterValue.operator &&
     filterValue.value !== undefined
   ) {
@@ -547,7 +547,7 @@ export const numberRangeFilter: FilterFn<RowData> = (
     return applyFilterOperator(
       row.getValue(columnId),
       filter.operator,
-      filter.value,
+      filter.value
     )
   }
 
@@ -575,13 +575,13 @@ export const dateRangeFilter: FilterFn<RowData> = (
   columnId,
   filterValue,
 
-  addMeta,
+  addMeta
 ) => {
   if (!filterValue) return true
 
   // Handle ExtendedColumnFilter format
   if (
-    typeof filterValue === "object" &&
+    typeof filterValue === 'object' &&
     filterValue.operator &&
     filterValue.value !== undefined
   ) {
@@ -589,7 +589,7 @@ export const dateRangeFilter: FilterFn<RowData> = (
     return applyFilterOperator(
       row.getValue(columnId),
       filter.operator,
-      filter.value,
+      filter.value
     )
   }
 
@@ -600,7 +600,7 @@ export const dateRangeFilter: FilterFn<RowData> = (
   const rowTimestamp =
     rowValue instanceof Date
       ? rowValue.getTime()
-      : typeof rowValue === "number"
+      : typeof rowValue === 'number'
         ? rowValue
         : new Date(rowValue as string).getTime()
 
@@ -627,7 +627,7 @@ export const dateRangeFilter: FilterFn<RowData> = (
   }
 
   // Handle single timestamp
-  if (typeof filterValue === "number") {
+  if (typeof filterValue === 'number') {
     // Compare dates at day level (midnight to midnight)
     const rowDate = new Date(rowTimestamp).setHours(0, 0, 0, 0)
     const filterDate = new Date(filterValue).setHours(0, 0, 0, 0)
@@ -647,11 +647,11 @@ export const dateRangeFilter: FilterFn<RowData> = (
  */
 export const createFilterValue = <TData extends RowData = RowData>(
   operator: FilterOperator,
-  value: string | number | boolean | null | undefined | string[],
+  value: string | number | boolean | null | undefined | string[]
 ): ExtendedColumnFilter<TData> => {
   return {
-    id: "" as Extract<keyof TData, string>, // Will be set by the column
-    filterId: "", // Will be set by the filter system
+    id: '' as Extract<keyof TData, string>, // Will be set by the column
+    filterId: '', // Will be set by the filter system
     operator,
     value: value as string | string[],
     variant: FILTER_VARIANTS.TEXT, // Default variant

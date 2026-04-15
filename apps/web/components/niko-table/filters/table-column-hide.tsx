@@ -46,7 +46,7 @@ export function TableColumnHideOptions<TData, TValue>({
   return (
     <>
       {withSeparator && <DropdownMenuSeparator />}
-      <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+      <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <span>Column Hide</span>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -58,7 +58,7 @@ export function TableColumnHideOptions<TData, TValue>({
         </Tooltip>
       </DropdownMenuLabel>
       <DropdownMenuItem onSelect={() => column.toggleVisibility(false)}>
-        <EyeOff className="mr-2 size-4 text-muted-foreground/70" />
+        <EyeOff className="text-muted-foreground/70 mr-2 size-4" />
         Hide Column
       </DropdownMenuItem>
     </>
@@ -93,7 +93,7 @@ export function TableColumnHideMenu<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-7 transition-opacity group-hover:opacity-100 dark:text-muted-foreground',
+            'dark:text-muted-foreground size-7 transition-opacity group-hover:opacity-100',
             !column.getIsVisible() ? 'text-primary opacity-100' : 'opacity-0',
             className
           )}
@@ -103,7 +103,7 @@ export function TableColumnHideMenu<TData, TValue>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+        <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
           <span>Column Hide</span>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -115,7 +115,7 @@ export function TableColumnHideMenu<TData, TValue>({
           </Tooltip>
         </DropdownMenuLabel>
         <DropdownMenuItem onSelect={() => column.toggleVisibility(false)}>
-          <EyeOff className="mr-2 size-4 text-muted-foreground/70" />
+          <EyeOff className="text-muted-foreground/70 mr-2 size-4" />
           Hide Column
         </DropdownMenuItem>
       </DropdownMenuContent>

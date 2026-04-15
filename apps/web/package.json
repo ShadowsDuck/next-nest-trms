@@ -48,6 +48,8 @@
     "@workspace/typescript-config": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.2",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3"
   }
 }

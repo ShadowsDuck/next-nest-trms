@@ -47,7 +47,7 @@ export function TableColumnPinOptions<TData, TValue>({
   return (
     <>
       {withSeparator && <DropdownMenuSeparator />}
-      <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+      <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <span>Column Pin</span>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -122,7 +122,7 @@ export function TableColumnPinMenu<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-7 transition-opacity group-hover:opacity-100 dark:text-muted-foreground',
+            'dark:text-muted-foreground size-7 transition-opacity group-hover:opacity-100',
             isPinned ? 'text-primary opacity-100' : 'opacity-0',
             className
           )}
@@ -132,7 +132,7 @@ export function TableColumnPinMenu<TData, TValue>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+        <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
           <span>Column Pin</span>
           <Tooltip>
             <TooltipTrigger asChild>

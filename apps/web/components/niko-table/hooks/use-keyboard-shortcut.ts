@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react"
+import { useCallback, useEffect } from 'react'
 
 export interface UseKeyboardShortcutOptions {
   /**
@@ -145,16 +145,16 @@ export function useKeyboardShortcut({
       preventDefault,
       stopPropagation,
       condition,
-    ],
+    ]
   )
 
   useEffect(() => {
     if (!enabled) return
 
-    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleKeyDown, enabled])
 }
@@ -232,17 +232,17 @@ export function useKeyboardShortcuts(shortcuts: UseKeyboardShortcutOptions[]) {
         break
       }
     },
-    [shortcuts],
+    [shortcuts]
   )
 
   useEffect(() => {
-    const hasEnabledShortcuts = shortcuts.some(s => s.enabled !== false)
+    const hasEnabledShortcuts = shortcuts.some((s) => s.enabled !== false)
     if (!hasEnabledShortcuts) return
 
-    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleKeyDown, shortcuts])
 }

@@ -1,4 +1,4 @@
-import type { Table, Row } from "@tanstack/react-table"
+import type { Row, Table } from '@tanstack/react-table'
 
 /**
  * Get filtered rows excluding a specific column's filter.
@@ -11,11 +11,11 @@ export function getFilteredRowsExcludingColumn<TData>(
   coreRows: Row<TData>[],
   excludeColumnId: string,
   columnFilters: Array<{ id: string; value: unknown }>,
-  globalFilter: unknown,
+  globalFilter: unknown
 ): Row<TData>[] {
   // Filter out the current column's filter
   const otherFilters = columnFilters.filter(
-    filter => filter.id !== excludeColumnId,
+    (filter) => filter.id !== excludeColumnId
   )
 
   // If no filters to apply (excluding the current column), return core rows
@@ -24,25 +24,25 @@ export function getFilteredRowsExcludingColumn<TData>(
   }
 
   // Filter rows manually, excluding the current column's filter
-  return coreRows.filter(row => {
+  return coreRows.filter((row) => {
     // Apply column filters (excluding the current column)
     for (const filter of otherFilters) {
       const column = table.getColumn(filter.id)
       if (!column) continue
 
       const filterValue = filter.value
-      const filterFn = column.columnDef.filterFn || "extended"
+      const filterFn = column.columnDef.filterFn || 'extended'
 
       // Skip if filter function is a string (built-in) and we don't have access
-      if (typeof filterFn === "string") {
+      if (typeof filterFn === 'string') {
         // Use the table's filterFns
         const fn = table.options.filterFns?.[filterFn]
-        if (fn && typeof fn === "function") {
+        if (fn && typeof fn === 'function') {
           if (!fn(row, filter.id, filterValue, () => {})) {
             return false
           }
         }
-      } else if (typeof filterFn === "function") {
+      } else if (typeof filterFn === 'function') {
         if (!filterFn(row, filter.id, filterValue, () => {})) {
           return false
         }
@@ -52,8 +52,8 @@ export function getFilteredRowsExcludingColumn<TData>(
     // Apply global filter if present
     if (globalFilter) {
       const globalFilterFn = table.options.globalFilterFn
-      if (globalFilterFn && typeof globalFilterFn === "function") {
-        if (!globalFilterFn(row, "global", globalFilter, () => {})) {
+      if (globalFilterFn && typeof globalFilterFn === 'function') {
+        if (!globalFilterFn(row, 'global', globalFilter, () => {})) {
           return false
         }
       }

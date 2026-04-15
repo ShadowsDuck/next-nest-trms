@@ -73,7 +73,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">เข้าสู่ระบบ</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             กรอกข้อมูลในฟอร์มด้านล่างเพื่อเข้าสู่ระบบ
           </p>
         </div>
@@ -93,7 +93,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.error && (
-                <p className="text-xs text-destructive">
+                <p className="text-destructive text-xs">
                   {fieldState.error.message}
                 </p>
               )}
@@ -111,7 +111,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
                 <FieldLabel htmlFor="password">รหัสผ่าน</FieldLabel>
                 <Link
                   href="/forgot-password"
-                  className="ml-auto text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  className="text-muted-foreground ml-auto text-sm underline-offset-4 hover:underline"
                 >
                   ลืมรหัสผ่าน?
                 </Link>
@@ -124,7 +124,7 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.error && (
-                <p className="text-xs text-destructive">
+                <p className="text-destructive text-xs">
                   {fieldState.error.message}
                 </p>
               )}

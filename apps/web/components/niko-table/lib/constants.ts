@@ -1,10 +1,10 @@
 export const JOIN_OPERATORS = {
   /** Logical AND (all filters must match) */
-  AND: "and",
+  AND: 'and',
   /** Logical OR (any filter can match) */
-  OR: "or",
+  OR: 'or',
   /** Mixed logic (combination of AND/OR) */
-  MIXED: "mixed",
+  MIXED: 'mixed',
 } as const
 
 /**
@@ -13,33 +13,33 @@ export const JOIN_OPERATORS = {
  */
 export const FILTER_OPERATORS = {
   /** SQL ILIKE (Case-insensitive search) */
-  ILIKE: "ilike",
+  ILIKE: 'ilike',
   /** SQL NOT ILIKE */
-  NOT_ILIKE: "not.ilike",
+  NOT_ILIKE: 'not.ilike',
   /** SQL EQUAL (=) */
-  EQ: "eq",
+  EQ: 'eq',
   /** SQL NOT EQUAL (!=) */
-  NEQ: "neq",
+  NEQ: 'neq',
   /** SQL IN (one of) */
-  IN: "in",
+  IN: 'in',
   /** SQL NOT IN (none of) */
-  NOT_IN: "not.in",
+  NOT_IN: 'not.in',
   /** Value is null or empty string */
-  EMPTY: "empty",
+  EMPTY: 'empty',
   /** Value is not null and not empty string */
-  NOT_EMPTY: "not.empty",
+  NOT_EMPTY: 'not.empty',
   /** SQL LESS THAN (<) */
-  LT: "lt",
+  LT: 'lt',
   /** SQL LESS THAN OR EQUAL (<=) */
-  LTE: "lte",
+  LTE: 'lte',
   /** SQL GREATER THAN (>) */
-  GT: "gt",
+  GT: 'gt',
   /** SQL GREATER THAN OR EQUAL (>=) */
-  GTE: "gte",
+  GTE: 'gte',
   /** SQL BETWEEN (range) */
-  BETWEEN: "between",
+  BETWEEN: 'between',
   /** Relative date calculation (e.g., "today", "last-7-days") */
-  RELATIVE: "relative",
+  RELATIVE: 'relative',
 } as const
 
 /**
@@ -47,21 +47,21 @@ export const FILTER_OPERATORS = {
  */
 export const FILTER_VARIANTS = {
   /** Standard text input */
-  TEXT: "text",
+  TEXT: 'text',
   /** Numeric input */
-  NUMBER: "number",
+  NUMBER: 'number',
   /** Two-value range input */
-  RANGE: "range",
+  RANGE: 'range',
   /** Single date picker */
-  DATE: "date",
+  DATE: 'date',
   /** Date range picker */
-  DATE_RANGE: "date_range",
+  DATE_RANGE: 'date_range',
   /** Single select dropdown */
-  SELECT: "select",
+  SELECT: 'select',
   /** Multi-select dropdown */
-  MULTI_SELECT: "multi_select",
+  MULTI_SELECT: 'multi_select',
   /** Checkbox or toggle */
-  BOOLEAN: "boolean",
+  BOOLEAN: 'boolean',
 } as const
 
 // ============================================================================
@@ -93,9 +93,9 @@ export const DEFAULT_VALUES = {
 /** System column IDs - used for smart pinning and feature detection */
 export const SYSTEM_COLUMN_IDS = {
   /** Row selection checkbox column */
-  SELECT: "select",
+  SELECT: 'select',
   /** Row expand/collapse column */
-  EXPAND: "expand",
+  EXPAND: 'expand',
 } as const
 
 /** Array of all system column IDs for filtering */
@@ -117,26 +117,26 @@ export const UI_CONSTANTS = {
 /** Default keyboard shortcut key mappings */
 export const KEYBOARD_SHORTCUTS = {
   /** Open/Toggle filter menu */
-  FILTER_TOGGLE: "f",
+  FILTER_TOGGLE: 'f',
   /** Remove active filter (usually combined with Shift) */
-  FILTER_REMOVE: "f",
+  FILTER_REMOVE: 'f',
   /** Close active UI elements */
-  ESCAPE: "escape",
+  ESCAPE: 'escape',
   /** Confirm or submit active action */
-  ENTER: "enter",
+  ENTER: 'enter',
   /** Remove character or navigate back */
-  BACKSPACE: "backspace",
+  BACKSPACE: 'backspace',
   /** Item deletion */
-  DELETE: "delete",
+  DELETE: 'delete',
 } as const
 
 /** Standard internalized error messages */
 export const ERROR_MESSAGES = {
   /** Thrown when using the old global operator pattern */
   DEPRECATED_GLOBAL_JOIN_OPERATOR:
-    "Global join operator is deprecated. Use individual filter join operators.",
+    'Global join operator is deprecated. Use individual filter join operators.',
   /** General configuration error */
-  INVALID_FILTER_CONFIGURATION: "Invalid filter configuration provided.",
+  INVALID_FILTER_CONFIGURATION: 'Invalid filter configuration provided.',
   /** Thrown when mandatory metadata is missing from columns */
-  MISSING_COLUMN_META: "Column metadata is required for filtering.",
+  MISSING_COLUMN_META: 'Column metadata is required for filtering.',
 } as const

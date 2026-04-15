@@ -92,7 +92,7 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">สมัครสมาชิก</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             กรอกข้อมูลในฟอร์มด้านล่างเพื่อสมัครสมาชิก
           </p>
         </div>
@@ -112,7 +112,7 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.error && (
-                <p className="text-xs text-destructive">
+                <p className="text-destructive text-xs">
                   {fieldState.error.message}
                 </p>
               )}
@@ -151,7 +151,7 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
                   aria-invalid={fieldState.invalid}
                 />
                 {fieldState.error && (
-                  <p className="mt-2 text-xs font-semibold text-destructive">
+                  <p className="text-destructive mt-2 text-xs font-semibold">
                     {fieldState.error.message}
                   </p>
                 )}
@@ -198,7 +198,7 @@ export function SignupForm({ className }: React.ComponentProps<'form'>) {
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.error && (
-                <p className="text-xs text-destructive">
+                <p className="text-destructive text-xs">
                   {fieldState.error.message}
                 </p>
               )}

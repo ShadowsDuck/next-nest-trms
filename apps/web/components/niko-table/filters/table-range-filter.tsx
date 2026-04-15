@@ -109,7 +109,7 @@ export function TableRangeFilter<TData>({
           onRangeValueChange(String(event.target.value), true)
         }
       />
-      <span className="sr-only shrink-0 text-muted-foreground">to</span>
+      <span className="text-muted-foreground sr-only shrink-0">to</span>
       <Input
         id={`${inputId}-max`}
         type="number"

@@ -129,13 +129,13 @@ export function TableColumnSortOptions<TData, TValue>({
   return (
     <>
       {withSeparator && <DropdownMenuSeparator />}
-      <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+      <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <div className="flex items-center gap-2">
           <span>Column Sort</span>
           {showSortBadge && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="flex size-4 cursor-help items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                <span className="bg-primary text-primary-foreground flex size-4 cursor-help items-center justify-center rounded-full text-[10px] font-medium">
                   {sortIndex + 1}
                 </span>
               </TooltipTrigger>
@@ -161,7 +161,7 @@ export function TableColumnSortOptions<TData, TValue>({
           sortState === 'asc' && 'bg-accent text-accent-foreground'
         )}
       >
-        <icons.asc className="mr-2 size-4 text-muted-foreground/70" />
+        <icons.asc className="text-muted-foreground/70 mr-2 size-4" />
         <span className="flex-1">{labels.asc}</span>
         {sortState === 'asc' && <Check className="ml-2 size-4" />}
       </DropdownMenuItem>
@@ -172,13 +172,13 @@ export function TableColumnSortOptions<TData, TValue>({
           sortState === 'desc' && 'bg-accent text-accent-foreground'
         )}
       >
-        <icons.desc className="mr-2 size-4 text-muted-foreground/70" />
+        <icons.desc className="text-muted-foreground/70 mr-2 size-4" />
         <span className="flex-1">{labels.desc}</span>
         {sortState === 'desc' && <Check className="ml-2 size-4" />}
       </DropdownMenuItem>
       {sortState && (
         <DropdownMenuItem onSelect={() => column.clearSorting()}>
-          <icons.unsorted className="mr-2 size-4 text-muted-foreground/70" />
+          <icons.unsorted className="text-muted-foreground/70 mr-2 size-4" />
           Clear Sort
         </DropdownMenuItem>
       )}
@@ -243,7 +243,7 @@ export function TableColumnSortMenu<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-7 transition-opacity dark:text-muted-foreground',
+            'dark:text-muted-foreground size-7 transition-opacity',
             sortState && 'text-primary',
             className
           )}
@@ -251,7 +251,7 @@ export function TableColumnSortMenu<TData, TValue>({
           <div className="relative flex items-center justify-center">
             <SortIcon className="size-4" />
             {showSortBadge && (
-              <span className="absolute -top-1 -right-2 flex size-3 items-center justify-center rounded-full bg-primary text-[9px] text-primary-foreground">
+              <span className="bg-primary text-primary-foreground absolute -top-1 -right-2 flex size-3 items-center justify-center rounded-full text-[9px]">
                 {sortIndex + 1}
               </span>
             )}

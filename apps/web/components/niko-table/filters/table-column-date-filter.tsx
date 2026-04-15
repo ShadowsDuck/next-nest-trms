@@ -154,7 +154,7 @@ export function TableColumnDateFilterOptions<TData, TValue>({
   return (
     <>
       {withSeparator && <DropdownMenuSeparator />}
-      <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+      <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <span>{labelText}</span>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -246,7 +246,7 @@ export function TableColumnDateFilterMenu<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-7 transition-opacity dark:text-muted-foreground',
+            'dark:text-muted-foreground size-7 transition-opacity',
             column.getIsFiltered() && 'text-primary',
             className
           )}

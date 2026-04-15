@@ -38,11 +38,12 @@ export const DataTableSelectionBar = React.memo(function DataTableSelectionBar({
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-4 py-3">
+      <div className="border-border bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{selectedCount}</Badge>
-          <span className="text-sm text-muted-foreground">
-            {selectedText ?? (selectedCount === 1 ? 'row selected' : 'rows selected')}
+          <span className="text-muted-foreground text-sm">
+            {selectedText ??
+              (selectedCount === 1 ? 'row selected' : 'rows selected')}
           </span>
           {onClear && (
             <Button

@@ -190,7 +190,7 @@ export function TableDateFilter<TData>({
                 aria-label={`Clear ${title} filter`}
                 tabIndex={0}
                 onClick={onReset}
-                className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
               >
                 <XCircle className="size-4" />
               </div>

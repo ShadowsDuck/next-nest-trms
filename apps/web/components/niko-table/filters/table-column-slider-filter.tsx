@@ -216,7 +216,7 @@ export function TableColumnSliderFilterOptions<TData, TValue>({
   return (
     <>
       {withSeparator && <DropdownMenuSeparator />}
-      <DropdownMenuLabel className="flex items-center justify-between text-xs font-normal text-muted-foreground">
+      <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <span>{labelText}</span>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -254,7 +254,7 @@ export function TableColumnSliderFilterOptions<TData, TValue>({
                 className={cn('h-8 w-full', unit && 'pr-8')}
               />
               {unit && (
-                <span className="absolute top-0 right-0 bottom-0 mt-0.5 mr-0.5 flex h-7 items-center rounded-r-md bg-accent px-2 text-sm text-muted-foreground">
+                <span className="bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 mt-0.5 mr-0.5 flex h-7 items-center rounded-r-md px-2 text-sm">
                   {unit}
                 </span>
               )}
@@ -282,7 +282,7 @@ export function TableColumnSliderFilterOptions<TData, TValue>({
                 className={cn('h-8 w-full', unit && 'pr-8')}
               />
               {unit && (
-                <span className="absolute top-0 right-0 bottom-0 mt-0.5 mr-0.5 flex h-7 items-center rounded-r-md bg-accent px-2 text-sm text-muted-foreground">
+                <span className="bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 mt-0.5 mr-0.5 flex h-7 items-center rounded-r-md px-2 text-sm">
                   {unit}
                 </span>
               )}
@@ -350,7 +350,7 @@ export function TableColumnSliderFilterMenu<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-7 transition-opacity dark:text-muted-foreground',
+            'dark:text-muted-foreground size-7 transition-opacity',
             column.getIsFiltered() && 'text-primary',
             className
           )}

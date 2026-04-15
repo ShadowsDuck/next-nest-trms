@@ -68,7 +68,7 @@ export function NavUser() {
                 <span className="truncate font-medium">
                   {session?.user.name}
                 </span>
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="text-muted-foreground truncate text-xs">
                   {session?.user.email}
                 </span>
               </div>
@@ -77,7 +77,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg "
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
@@ -104,7 +104,7 @@ export function NavUser() {
                       ? session?.user.name
                       : session?.user.email.split('@')[0]}
                   </span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="text-muted-foreground truncate text-xs">
                     {session?.user.email}
                   </span>
                 </div>

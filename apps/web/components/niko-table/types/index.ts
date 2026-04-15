@@ -1,20 +1,29 @@
-import * as React from "react"
+import * as React from 'react'
 import {
-  type Table,
   type ColumnDef,
   type Row,
   type RowData,
-} from "@tanstack/react-table"
+  type Table,
+} from '@tanstack/react-table'
 import {
-  JOIN_OPERATORS,
   FILTER_OPERATORS,
   FILTER_VARIANTS,
-} from "../lib/constants"
+  JOIN_OPERATORS,
+} from '../lib/constants'
+// ============================================================================
+// FILTER TYPES
+// ============================================================================
+
+import type {
+  FilterOperator as _FilterOperator,
+  FilterVariant as _FilterVariant,
+  JoinOperator as _JoinOperator,
+} from '../lib/constants'
 
 // ============================================================================
 // TANSTACK REACT-TABLE MODULE AUGMENTATION
 // ============================================================================
-declare module "@tanstack/react-table" {
+declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     // Display
@@ -37,7 +46,7 @@ declare module "@tanstack/react-table" {
     /** Per-column override for using filtered rows for counts (falls back to wrapper prop). */
     dynamicCounts?: boolean
     /** Merge strategy override: preserve | augment | replace (falls back to wrapper prop). */
-    mergeStrategy?: "preserve" | "augment" | "replace"
+    mergeStrategy?: 'preserve' | 'augment' | 'replace'
 
     // Formatting
     unit?: string
@@ -64,16 +73,6 @@ export interface Option {
   count?: number
   icon?: React.ComponentType<{ className?: string }>
 }
-
-// ============================================================================
-// FILTER TYPES
-// ============================================================================
-
-import type {
-  FilterVariant as _FilterVariant,
-  FilterOperator as _FilterOperator,
-  JoinOperator as _JoinOperator,
-} from "../lib/constants"
 
 export type FilterVariant = _FilterVariant
 export type FilterOperator = _FilterOperator

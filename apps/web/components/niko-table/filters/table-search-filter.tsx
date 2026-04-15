@@ -85,7 +85,7 @@ export function TableSearchFilter<TData>({
       role="search"
     >
       <Search
-        className="absolute left-3 h-4 w-4 text-muted-foreground"
+        className="text-muted-foreground absolute left-3 h-4 w-4"
         aria-hidden="true"
       />
       <Input
@@ -100,7 +100,7 @@ export function TableSearchFilter<TData>({
           variant="ghost"
           size="sm"
           onClick={handleClear}
-          className="absolute right-1 h-7 w-7 p-0 hover:bg-muted"
+          className="hover:bg-muted absolute right-1 h-7 w-7 p-0"
           type="button"
           aria-label="Clear search"
         >

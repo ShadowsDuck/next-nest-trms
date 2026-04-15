@@ -134,7 +134,7 @@ export const DataTableEmptyMessage = React.memo(function DataTableEmptyMessage({
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-1 text-center text-muted-foreground',
+        'text-muted-foreground flex flex-col items-center gap-1 text-center',
         className
       )}
     >
@@ -181,7 +181,7 @@ export const DataTableEmptyFilteredMessage = React.memo(
     return (
       <div
         className={cn(
-          'flex flex-col items-center gap-1 text-center text-muted-foreground',
+          'text-muted-foreground flex flex-col items-center gap-1 text-center',
           className
         )}
       >
@@ -276,7 +276,7 @@ export const DataTableEmptyDescription = React.memo(
     className,
   }: DataTableEmptyDescriptionProps) {
     return (
-      <p className={cn('text-sm text-muted-foreground', className)}>
+      <p className={cn('text-muted-foreground text-sm', className)}>
         {children}
       </p>
     )

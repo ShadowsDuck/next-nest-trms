@@ -24,7 +24,7 @@ export function EmployeeTableEmptyState({ visible, isFiltered }: iAppProps) {
   return (
     <TableRow>
       <TableCell colSpan={columns.length} className="p-0 align-middle">
-        <div className="flex min-h-[calc(100dvh-25rem)] flex-col items-center justify-center gap-1 text-center text-muted-foreground">
+        <div className="text-muted-foreground flex min-h-[calc(100dvh-25rem)] flex-col items-center justify-center gap-1 text-center">
           <DataTableEmptyIcon>
             <Icon className="size-12" />
           </DataTableEmptyIcon>

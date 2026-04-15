@@ -9,7 +9,7 @@ import { BookOpen, ListX, ShoppingCart, Users } from 'lucide-react'
 
 export async function SectionCards() {
   return (
-    <div className="grid grid-cols-1 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
+    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader className="flex items-center justify-between">
           <div>
@@ -18,7 +18,7 @@ export async function SectionCards() {
               123
             </CardTitle>
           </div>
-          <Users className="size-6 text-muted-foreground" />
+          <Users className="text-muted-foreground size-6" />
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <p className="text-muted-foreground">
@@ -35,7 +35,7 @@ export async function SectionCards() {
               123
             </CardTitle>
           </div>
-          <ShoppingCart className="size-6 text-muted-foreground" />
+          <ShoppingCart className="text-muted-foreground size-6" />
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <p className="text-muted-foreground">
@@ -52,7 +52,7 @@ export async function SectionCards() {
               123
             </CardTitle>
           </div>
-          <BookOpen className="size-6 text-muted-foreground" />
+          <BookOpen className="text-muted-foreground size-6" />
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <p className="text-muted-foreground">
@@ -69,7 +69,7 @@ export async function SectionCards() {
               123
             </CardTitle>
           </div>
-          <ListX className="size-6 text-muted-foreground" />
+          <ListX className="text-muted-foreground size-6" />
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <p className="text-muted-foreground">

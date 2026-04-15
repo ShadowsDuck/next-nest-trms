@@ -389,7 +389,7 @@ export function TableSortMenu<TData>({
               {sorting.length > 1 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <CircleHelp className="size-3.5 cursor-help text-muted-foreground" />
+                    <CircleHelp className="text-muted-foreground size-3.5 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     The order of fields determines sort priority
@@ -400,7 +400,7 @@ export function TableSortMenu<TData>({
             <p
               id={descriptionId}
               className={cn(
-                'text-sm text-muted-foreground',
+                'text-muted-foreground text-sm',
                 sorting.length > 0 && 'sr-only'
               )}
             >
@@ -451,10 +451,10 @@ export function TableSortMenu<TData>({
       </Popover>
       <SortableOverlay>
         <div className="flex items-center gap-2">
-          <div className="h-8 w-[180px] rounded-sm bg-primary/10" />
-          <div className="h-8 w-24 rounded-sm bg-primary/10" />
-          <div className="size-8 shrink-0 rounded-sm bg-primary/10" />
-          <div className="size-8 shrink-0 rounded-sm bg-primary/10" />
+          <div className="bg-primary/10 h-8 w-[180px] rounded-sm" />
+          <div className="bg-primary/10 h-8 w-24 rounded-sm" />
+          <div className="bg-primary/10 size-8 shrink-0 rounded-sm" />
+          <div className="bg-primary/10 size-8 shrink-0 rounded-sm" />
         </div>
       </SortableOverlay>
     </Sortable>

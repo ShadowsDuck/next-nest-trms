@@ -178,14 +178,7 @@ export default function EmployeeTable() {
           controller.isBackgroundFetching && 'opacity-70'
         )}
       >
-        <DataTable
-          className="
-            h-[calc(100dvh-16rem)]
-            md:h-[calc(100dvh-18rem)]
-            xl:h-[calc(100dvh-20rem)]
-            2xl:h-[calc(100dvh-22rem)]
-          "
-        >
+        <DataTable className="h-[calc(100dvh-16rem)] md:h-[calc(100dvh-18rem)] xl:h-[calc(100dvh-20rem)] 2xl:h-[calc(100dvh-22rem)]">
           <DataTableHeader />
           <DataTableBody>
             <DataTableSkeleton rows={controller.params.limit} />

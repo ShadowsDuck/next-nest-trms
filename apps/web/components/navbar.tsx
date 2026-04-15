@@ -29,7 +29,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="flex items-center justify-between w-full py-5">
+    <nav className="flex w-full items-center justify-between py-5">
       <div className="flex items-center gap-8">
         <Link href="/">
           <h1 className="text-3xl font-bold">

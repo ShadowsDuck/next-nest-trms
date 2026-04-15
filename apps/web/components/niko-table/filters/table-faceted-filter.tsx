@@ -193,7 +193,7 @@ export function TableFacetedFilter<TData, TValue>({
                     onReset(e as unknown as React.MouseEvent)
                   }
                 }}
-                className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
               >
                 <XCircle className="size-4" />
               </div>
@@ -279,7 +279,7 @@ export function TableFacetedFilterContent({
               >
                 <div
                   className={cn(
-                    'mr-2 flex size-4 items-center justify-center rounded-sm border border-primary',
+                    'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
                     isSelected
                       ? 'bg-primary text-primary-foreground'
                       : 'opacity-50 [&_svg]:invisible'
@@ -290,7 +290,7 @@ export function TableFacetedFilterContent({
                 {option.icon && <option.icon className="mr-2 size-4" />}
                 <span className="truncate">{option.label}</span>
                 {option.count !== undefined && (
-                  <span className="ml-auto font-mono text-xs ">
+                  <span className="ml-auto font-mono text-xs">
                     {option.count}
                   </span>
                 )}

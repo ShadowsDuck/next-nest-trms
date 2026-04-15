@@ -141,7 +141,7 @@ function DataTableAsideContent({
     <aside
       data-slot="aside-content"
       className={cn(
-        'shrink-0 animate-in',
+        'animate-in shrink-0',
         width,
         slideAnimation,
         sticky && 'sticky top-0',
@@ -193,7 +193,7 @@ function DataTableAsideDescription({
   return (
     <p
       data-slot="aside-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-sm', className)}
       {...props}
     />
   )
@@ -222,7 +222,7 @@ function DataTableAsideClose({
       data-slot="aside-close"
       type="button"
       className={cn(
-        'rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none',
+        'ring-offset-background focus:ring-ring rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none',
         className
       )}
       onClick={handleClose}

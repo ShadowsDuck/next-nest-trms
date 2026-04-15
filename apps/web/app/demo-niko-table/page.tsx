@@ -1222,12 +1222,12 @@ function ServerSideStateTableContent() {
       {error && (
         <Card className="border-destructive">
           <CardContent className="flex items-center gap-2 pt-6">
-            <AlertCircle className="h-5 w-5 text-destructive" />
+            <AlertCircle className="text-destructive h-5 w-5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-destructive">
+              <p className="text-destructive text-sm font-medium">
                 Error loading data
               </p>
-              <p className="text-xs text-muted-foreground">{error}</p>
+              <p className="text-muted-foreground text-xs">{error}</p>
             </div>
             <Button
               variant="outline"
@@ -1274,7 +1274,7 @@ function ServerSideStateTableContent() {
             {/* Loading Indicator */}
             {/* Only show loading indicator on initial load, not during pagination */}
             {isLoading && (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+              <div className="bg-muted/30 flex items-center gap-2 rounded-lg border p-2 text-xs">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span className="text-muted-foreground">
                   Loading products from server...
@@ -1283,7 +1283,7 @@ function ServerSideStateTableContent() {
             )}
             {/* Show subtle indicator during pagination/filtering (when using previous data) */}
             {isPlaceholderData && isFetching && (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+              <div className="bg-muted/30 flex items-center gap-2 rounded-lg border p-2 text-xs">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span className="text-muted-foreground">
                   Loading new page...
@@ -1294,7 +1294,7 @@ function ServerSideStateTableContent() {
             {!isLoading && !isPlaceholderData && (
               <div className="flex items-center gap-2">
                 {prefetchingState.next && (
-                  <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+                  <div className="bg-muted/30 flex items-center gap-2 rounded-lg border p-2 text-xs">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span className="text-muted-foreground">
                       Prefetching next page...
@@ -1302,7 +1302,7 @@ function ServerSideStateTableContent() {
                   </div>
                 )}
                 {prefetchingState.previous && (
-                  <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+                  <div className="bg-muted/30 flex items-center gap-2 rounded-lg border p-2 text-xs">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span className="text-muted-foreground">
                       Prefetching previous page...

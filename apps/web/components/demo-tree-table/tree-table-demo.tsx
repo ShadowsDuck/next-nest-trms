@@ -531,24 +531,24 @@ export default function TreeTable() {
                           <>
                             {/* L-shaped connector */}
                             <div
-                              className="absolute top-0 left-2.5 w-px bg-border"
+                              className="bg-border absolute top-0 left-2.5 w-px"
                               style={{ height: '0.625rem' }}
                             />
                             <div
-                              className="absolute left-2.5 h-px w-3 bg-border"
+                              className="bg-border absolute left-2.5 h-px w-3"
                               style={{ top: '0.625rem' }}
                             />
                             {/* Vertical line extension for expanded parents */}
                             {canExpand && isExpanded && (
                               <div
-                                className="absolute left-2.5 w-px bg-border"
+                                className="bg-border absolute left-2.5 w-px"
                                 style={{ top: '0.625rem', height: '0.625rem' }}
                               />
                             )}
                           </>
                         ) : (
                           /* Vertical line for ancestor levels */
-                          <div className="absolute top-0 left-2.5 h-full w-px bg-border" />
+                          <div className="bg-border absolute top-0 left-2.5 h-full w-px" />
                         )}
                       </div>
                     )
@@ -564,7 +564,7 @@ export default function TreeTable() {
                       variant="ghost"
                       size="sm"
                       onClick={row.getToggleExpandedHandler()}
-                      className="h-4 w-4 p-0 hover:bg-accent"
+                      className="hover:bg-accent h-4 w-4 p-0"
                     >
                       {isExpanded ? (
                         <ChevronDown className="h-3.5 w-3.5" />
