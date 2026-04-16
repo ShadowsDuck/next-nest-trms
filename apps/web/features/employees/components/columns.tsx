@@ -38,6 +38,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all employees"
+        className="border-input dark:bg-sidebar ml-2 bg-white shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
       />
     ),
     cell: ({ row }) => (
@@ -45,6 +46,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select employee row"
+        className="border-input ml-2 shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
       />
     ),
     enableSorting: false,

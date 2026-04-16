@@ -23,6 +23,18 @@ const expectedParentLevelByLevel: Record<OrgUnitLevel, OrgUnitLevel | null> = {
 export class OrganizationUnitsService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async findPlants(): Promise<OrganizationUnitResponseDto[]> {
+    const plants = await this.prismaService.organizationUnit.findMany({
+      where: {
+        level: OrgUnitLevel.Plant,
+        parentId: null,
+      },
+      orderBy: [{ name: 'asc' }],
+    });
+
+    return plants.map((item) => this.formatOrganizationUnit(item));
+  }
+
   async create(
     createOrganizationUnitDto: CreateOrganizationUnitDto,
   ): Promise<OrganizationUnitResponseDto> {

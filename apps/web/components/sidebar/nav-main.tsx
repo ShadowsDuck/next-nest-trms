@@ -34,9 +34,7 @@ export function NavMain({
                 <Link
                   href={item.url}
                   className={
-                    pathname === item.url
-                      ? 'bg-accent text-accent-foreground'
-                      : ''
+                    pathname === item.url ? 'bg-accent text-primary' : ''
                   }
                 >
                   {item.icon && (

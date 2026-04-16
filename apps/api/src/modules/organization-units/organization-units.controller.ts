@@ -22,6 +22,13 @@ export class OrganizationUnitsController {
     private readonly organizationUnitsService: OrganizationUnitsService,
   ) {}
 
+  @Get('plants')
+  @ApiOperation({ summary: 'ดึงรายการ Plant ทั้งหมด (root node)' })
+  @ZodResponse({ status: 200, type: [OrganizationUnitResponseDto] })
+  async findPlants(): Promise<OrganizationUnitResponseDto[]> {
+    return await this.organizationUnitsService.findPlants();
+  }
+
   @Post()
   @ApiOperation({ summary: 'สร้างหน่วยงานองค์กร' })
   @ZodResponse({ status: 201, type: OrganizationUnitResponseDto })

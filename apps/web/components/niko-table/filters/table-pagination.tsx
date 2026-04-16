@@ -174,7 +174,7 @@ export function TablePagination<TData>({
           className="text-muted-foreground text-sm whitespace-nowrap"
           id="pagination-page-size-label"
         >
-          Items per page
+          จำนวนรายการต่อหน้า
         </span>
         <Select
           value={`${Number(pageSize) === 0 ? defaultPageSize : Number(pageSize)}`}
@@ -206,14 +206,14 @@ export function TablePagination<TData>({
         aria-atomic="true"
       >
         {totalRows === 0
-          ? '0 items'
-          : `${startItem}-${endItem} of ${totalRows} items`}
+          ? '0 รายการ'
+          : `${startItem}-${endItem} จาก ${totalRows} รายการ`}
       </div>
 
       <div className="ml-auto flex items-center space-x-4">
         <div className="text-muted-foreground flex items-center space-x-2 text-sm">
           <label htmlFor="page-number-input" className="sr-only">
-            Page number
+            หน้า
           </label>
           <Input
             id="page-number-input"
@@ -232,7 +232,7 @@ export function TablePagination<TData>({
             aria-label={`Page ${currentPage} of ${totalPages}`}
           />
           <span className="whitespace-nowrap" aria-hidden="true">
-            of {Math.max(1, totalPages)} pages
+            จาก {Math.max(1, totalPages)} หน้า
           </span>
         </div>
 

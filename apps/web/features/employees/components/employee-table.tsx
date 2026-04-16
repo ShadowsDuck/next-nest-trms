@@ -175,11 +175,12 @@ export default function EmployeeTable() {
       <div
         className={cn(
           'transition-opacity duration-200',
-          controller.isBackgroundFetching && 'opacity-70'
+          controller.isBackgroundFetching &&
+            'pointer-events-none opacity-70 select-none'
         )}
       >
         <DataTable className="h-[calc(100dvh-16rem)] md:h-[calc(100dvh-18rem)] xl:h-[calc(100dvh-20rem)] 2xl:h-[calc(100dvh-22rem)]">
-          <DataTableHeader />
+          <DataTableHeader className="bg-sidebar" />
           <DataTableBody>
             <DataTableSkeleton rows={controller.params.limit} />
             <EmployeeTableEmptyState

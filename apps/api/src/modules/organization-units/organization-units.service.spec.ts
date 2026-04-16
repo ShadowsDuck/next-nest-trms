@@ -51,6 +51,33 @@ describe('OrganizationUnitsService', () => {
     expect(result.parentId).toBe('div-1');
   });
 
+  it('returns root plants only', async () => {
+    const { service, prismaService } = makeService();
+
+    prismaService.organizationUnit.findMany.mockResolvedValueOnce([
+      {
+        id: 'plant-1',
+        name: 'Plant Main',
+        level: OrgUnitLevel.Plant,
+        parentId: null,
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
+
+    const result = await service.findPlants();
+
+    expect(prismaService.organizationUnit.findMany).toHaveBeenCalledWith({
+      where: {
+        level: OrgUnitLevel.Plant,
+        parentId: null,
+      },
+      orderBy: [{ name: 'asc' }],
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0]?.level).toBe(OrgUnitLevel.Plant);
+  });
+
   it('rejects invalid hierarchy when creating division under plant', async () => {
     const { service, prismaService } = makeService();
 

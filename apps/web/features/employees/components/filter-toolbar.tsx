@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { EmployeeQuery, EmployeeResponse } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import { EllipsisVertical, Loader2, Upload } from 'lucide-react'
+import { EllipsisVertical, Loader2, Plus, Upload } from 'lucide-react'
 import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
@@ -74,7 +75,17 @@ export function EmployeeTableFilterToolbar({
   }
 
   return (
-    <DataTableToolbarSection className="w-full flex-col justify-between gap-2">
+    <DataTableToolbarSection className="w-full flex-col justify-between gap-2.5">
+      <DataTableToolbarSection className="w-full justify-between px-0">
+        <h1 className="text-2xl font-semibold tracking-tight">ข้อมูลพนักงาน</h1>
+        <Button asChild className="gap-1.5">
+          <Link href="/admin/employees/new">
+            <Plus className="size-4" />
+            สร้างพนักงานใหม่
+          </Link>
+        </Button>
+      </DataTableToolbarSection>
+
       <DataTableToolbarSection className="px-0">
         <DataTableSearchFilter placeholder="ค้นหาด้วย รหัสพนักงาน หรือ ชื่อ-นามสกุล..." />
         <div className="flex items-center gap-2">
