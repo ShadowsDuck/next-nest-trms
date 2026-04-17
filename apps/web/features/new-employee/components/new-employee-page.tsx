@@ -7,16 +7,49 @@ import { Button } from '@workspace/ui/components/button'
 import { ChevronLeft } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import * as z from 'zod'
 import { BasicInfoSection } from '@/features/new-employee/components/basic-info-section'
 import { EmploymentInfoSection } from '@/features/new-employee/components/employment-info-section'
 import { OrganizationUnitSection } from '@/features/new-employee/components/organization-unit-section'
 import { createEmployee } from '@/features/new-employee/data/create-employee'
 import { useOrganizationUnitOptions } from '@/features/new-employee/hooks/use-organization-unit-options'
-import {
-  type CreateEmployeeForm,
-  createEmployeeSchema,
-  defaultCreateEmployeeValues,
-} from '@/features/new-employee/lib/create-employee-schema'
+
+const createEmployeeSchema = z.object({
+  employeeNo: z.string().min(1, 'กรุณากรอกรหัสพนักงาน'),
+  prefix: z.enum(['Mr', 'Mrs', 'Miss'], { message: 'กรุณาเลือกคำนำหน้า' }),
+  firstName: z.string().min(1, 'กรุณากรอกชื่อ'),
+  lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
+  idCardNo: z
+    .string()
+    .regex(/^\d{13}$/, 'เลขบัตรประชาชนต้องเป็นตัวเลข 13 หลัก')
+    .or(z.literal('')),
+  hireDate: z.string().optional(),
+  jobLevel: z.enum(['S1', 'S2', 'M1', 'M2'], {
+    message: 'กรุณาเลือกระดับงาน',
+  }),
+  status: z.enum(['Active', 'Resigned'], { message: 'กรุณาเลือกสถานะ' }),
+  plantId: z.string().min(1, 'กรุณาเลือก Plant'),
+  buId: z.string().min(1, 'กรุณาเลือก Business Unit'),
+  functionId: z.string().min(1, 'กรุณาเลือก Function'),
+  divisionId: z.string().min(1, 'กรุณาเลือก Division'),
+  departmentId: z.string().min(1, 'กรุณาเลือก Department'),
+})
+
+export type CreateEmployeeForm = z.infer<typeof createEmployeeSchema>
+
+const defaultCreateEmployeeValues: Partial<CreateEmployeeForm> = {
+  employeeNo: '',
+  firstName: '',
+  lastName: '',
+  idCardNo: '',
+  hireDate: '',
+  status: 'Active',
+  plantId: '',
+  buId: '',
+  functionId: '',
+  divisionId: '',
+  departmentId: '',
+}
 
 export function NewEmployeePage() {
   const router = useRouter()
@@ -62,7 +95,7 @@ export function NewEmployeePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-5 pt-2 pb-4">
+    <div className="mx-auto flex w-full flex-col gap-3 pt-2 pb-4">
       <header className="flex gap-3">
         <Button variant="outline" size="icon-sm" asChild>
           <Link href="/admin/employees">

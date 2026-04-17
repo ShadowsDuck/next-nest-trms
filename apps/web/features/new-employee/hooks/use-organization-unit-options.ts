@@ -5,11 +5,11 @@ import type { OrganizationUnitResponse } from '@workspace/schemas'
 import type { Control, UseFormSetValue } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import type { CreateEmployeeForm } from '@/features/new-employee/lib/create-employee-schema'
+import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
 import {
-  fetchOrganizationUnits,
+  getOrganizationUnits,
   sortOrgUnitsByName,
-} from '@/features/new-employee/lib/org-unit-api'
+} from '@/features/new-employee/data/get-org-unit'
 
 type UseOrganizationUnitOptionsParams = {
   control: Control<CreateEmployeeForm>
@@ -60,7 +60,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const plants = await fetchOrganizationUnits(
+        const plants = await getOrganizationUnits(
           '/api/organization-units/plants'
         )
 
@@ -102,7 +102,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await fetchOrganizationUnits(
+        const children = await getOrganizationUnits(
           `/api/organization-units/${encodeURIComponent(selectedPlantId)}/children`
         )
 
@@ -145,7 +145,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await fetchOrganizationUnits(
+        const children = await getOrganizationUnits(
           `/api/organization-units/${encodeURIComponent(selectedBuId)}/children`
         )
 
@@ -188,7 +188,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await fetchOrganizationUnits(
+        const children = await getOrganizationUnits(
           `/api/organization-units/${encodeURIComponent(selectedFunctionId)}/children`
         )
 
@@ -229,7 +229,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await fetchOrganizationUnits(
+        const children = await getOrganizationUnits(
           `/api/organization-units/${encodeURIComponent(selectedDivisionId)}/children`
         )
 

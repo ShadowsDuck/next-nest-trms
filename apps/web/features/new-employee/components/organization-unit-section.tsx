@@ -17,7 +17,7 @@ import { cn } from '@workspace/ui/lib/utils'
 import { Building2 } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { FormSectionShell } from '@/features/new-employee/components/form-section-shell'
-import type { CreateEmployeeForm } from '@/features/new-employee/lib/create-employee-schema'
+import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
 
 type OrganizationUnitSectionProps = {
   plantOptions: OrganizationUnitResponse[]

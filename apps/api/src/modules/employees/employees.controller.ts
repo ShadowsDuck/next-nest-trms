@@ -1,4 +1,3 @@
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import {
@@ -16,7 +15,6 @@ import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { EmployeeResponseDto } from './dto/employee-response.dto';
 import { EmployeesService } from './employees.service';
 
-@AllowAnonymous()
 @Controller('employees')
 @ApiTags('Employees')
 export class EmployeesController {

@@ -21,6 +21,20 @@ const courseTypeLabelMap = new Map<string, string>([
   ['external', 'ภายนอก'],
 ])
 
+/**
+ * แปลงวันที่จาก ISO string เป็น DD/MM/YYYY (ปี พ.ศ.)
+ * เช่น 2026-02-24 → 24/02/2569
+ */
+function toThaiDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return dateStr
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const year = date.getUTCFullYear() + 543
+  return `${day}/${month}/${year}`
+}
+
 function buildRows(employees: EmployeeResponse[]): string[] {
   const header = [
     'รหัสพนักงาน',
@@ -83,7 +97,7 @@ function buildRows(employees: EmployeeResponse[]): string[] {
           index === 0 ? escapeCsvValue(statusLabel) : '',
           escapeCsvValue(record.course?.title ?? ''),
           escapeCsvValue(courseTypeLabel),
-          escapeCsvValue(record.course?.startDate ?? ''),
+          escapeCsvValue(toThaiDate(record.course?.startDate)),
           escapeCsvValue(rawDuration),
         ].join(',')
       )

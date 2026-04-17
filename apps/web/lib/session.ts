@@ -4,13 +4,13 @@ import { cache } from 'react'
 import { authClient } from './auth-client'
 
 export const authSession = cache(async () => {
-  const session = await authClient.getSession({
+  const { data: session } = await authClient.getSession({
     fetchOptions: {
       headers: await headers(),
     },
   })
 
-  return session.data
+  return session
 })
 
 export const requireUser = cache(async () => {

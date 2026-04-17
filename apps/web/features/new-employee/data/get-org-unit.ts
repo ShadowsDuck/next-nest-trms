@@ -3,22 +3,18 @@ import {
   organizationUnitResponseSchema,
 } from '@workspace/schemas'
 import * as z from 'zod'
-import { env } from '@/lib/env'
+import { fetcher } from '@/lib/fetcher'
 
 const organizationUnitListSchema = z.array(organizationUnitResponseSchema)
 
-export async function fetchOrganizationUnits(
+export async function getOrganizationUnits(
   path: string
 ): Promise<OrganizationUnitResponse[]> {
-  const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
+  const data = await fetcher<OrganizationUnitResponse[]>(path, {
     cache: 'no-store',
   })
 
-  if (!response.ok) {
-    throw new Error(`โหลดข้อมูลหน่วยงานไม่สำเร็จ (${response.status})`)
-  }
-
-  return organizationUnitListSchema.parse(await response.json())
+  return organizationUnitListSchema.parse(data)
 }
 
 export function sortOrgUnitsByName(items: OrganizationUnitResponse[]) {

@@ -1,4 +1,3 @@
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
@@ -14,7 +13,6 @@ import { OrganizationUnitResponseDto } from './dto/organization-unit-response.dt
 import { UpdateOrganizationUnitDto } from './dto/update-organization-unit.dto';
 import { OrganizationUnitsService } from './organization-units.service';
 
-@AllowAnonymous()
 @Controller('organization-units')
 @ApiTags('Organization Units')
 export class OrganizationUnitsController {

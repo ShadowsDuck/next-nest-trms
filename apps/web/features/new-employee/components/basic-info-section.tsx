@@ -17,7 +17,7 @@ import { UserRound } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { prefixOptions } from '@/features/employees/lib/filter-options'
 import { FormSectionShell } from '@/features/new-employee/components/form-section-shell'
-import type { CreateEmployeeForm } from '@/features/new-employee/lib/create-employee-schema'
+import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
 
 export function BasicInfoSection() {
   const { control } = useFormContext<CreateEmployeeForm>()
