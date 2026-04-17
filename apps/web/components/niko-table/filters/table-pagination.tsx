@@ -189,7 +189,7 @@ export function TablePagination<TData>({
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="item-aligned">
             {pageSizeOptions?.map((size) => (
               <SelectItem key={size} value={`${size}`}>
                 {size}

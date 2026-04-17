@@ -23,6 +23,7 @@
     "@workspace/ui": "workspace:*",
     "better-auth": "^1.5.6",
     "cmdk": "^1.1.1",
+    "date-fns": "^4.1.0",
     "jose": "^6.2.2",
     "lucide-react": "^0.577.0",
     "next": "latest",

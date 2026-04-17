@@ -1,10 +1,10 @@
+import { DateTimePicker } from '@workspace/ui/components/date-picker'
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from '@workspace/ui/components/field'
-import { Input } from '@workspace/ui/components/input'
 import {
   Select,
   SelectContent,
@@ -21,6 +21,28 @@ import {
 } from '@/features/employees/lib/filter-options'
 import { FormSectionShell } from '@/features/new-employee/components/form-section-shell'
 import type { CreateEmployeeForm } from '@/features/new-employee/lib/create-employee-schema'
+
+function parseIsoDate(value?: string) {
+  if (!value) {
+    return undefined
+  }
+
+  const [year, month, day] = value.split('-').map(Number)
+
+  if (!year || !month || !day) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+function toIsoDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
 
 export function EmploymentInfoSection() {
   const { control } = useFormContext<CreateEmployeeForm>()
@@ -105,12 +127,18 @@ export function EmploymentInfoSection() {
           render={({ field, fieldState }) => (
             <Field className="md:col-span-2">
               <FieldLabel htmlFor="hireDate">วันที่จ้างงาน</FieldLabel>
-              <Input
-                {...field}
-                id="hireDate"
-                type="date"
-                value={field.value ?? ''}
-                aria-invalid={fieldState.invalid}
+              <DateTimePicker
+                value={parseIsoDate(field.value)}
+                onChange={(date) => {
+                  field.onChange(date ? toIsoDate(date) : '')
+                }}
+                placeholder="เลือกวันที่จ้างงาน"
+                granularity="day"
+                className={
+                  fieldState.invalid ? 'border-destructive' : undefined
+                }
+                displayFormat={{ hour24: 'dd/MM/yyyy' }}
+                buddhist
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
