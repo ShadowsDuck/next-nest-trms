@@ -6,6 +6,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { auth } from './auth/auth';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ZodValidationExceptionFilter } from './filters/zod-validation-exception.filter';
+import { CoursesModule } from './modules/courses/courses.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
 import { UsersModule } from './modules/users/users.module';
@@ -16,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({ isGlobal: true }),
     BetterAuthModule.forRoot({ auth }), // Global Guard (ทุก route protected by default)
     PrismaModule,
+    CoursesModule,
     EmployeesModule,
     OrganizationUnitsModule,
     UsersModule,

@@ -131,7 +131,7 @@ export function TableColumnSortOptions<TData, TValue>({
       {withSeparator && <DropdownMenuSeparator />}
       <DropdownMenuLabel className="text-muted-foreground flex items-center justify-between text-xs font-normal">
         <div className="flex items-center gap-2">
-          <span>Column Sort</span>
+          <span>จัดเรียงข้อมูล</span>
           {showSortBadge && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -139,9 +139,7 @@ export function TableColumnSortOptions<TData, TValue>({
                   {sortIndex + 1}
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Sort priority (order in which columns are sorted)
-              </TooltipContent>
+              <TooltipContent side="right">ลำดับการจัดเรียง</TooltipContent>
             </Tooltip>
           )}
         </div>
@@ -150,7 +148,7 @@ export function TableColumnSortOptions<TData, TValue>({
             <CircleHelp className="size-3.5 cursor-help" />
           </TooltipTrigger>
           <TooltipContent side="right">
-            TIP: Hold &apos;shift&apos; key to enable multi sort
+            เคล็ดลับ: กด &apos;Shift&apos; ค้างไว้เพื่อจัดเรียงหลายคอลัมน์
           </TooltipContent>
         </Tooltip>
       </DropdownMenuLabel>
@@ -179,7 +177,7 @@ export function TableColumnSortOptions<TData, TValue>({
       {sortState && (
         <DropdownMenuItem onSelect={() => column.clearSorting()}>
           <icons.unsorted className="text-muted-foreground/70 mr-2 size-4" />
-          Clear Sort
+          ยกเลิกการจัดเรียง
         </DropdownMenuItem>
       )}
     </>
@@ -256,7 +254,7 @@ export function TableColumnSortMenu<TData, TValue>({
               </span>
             )}
           </div>
-          <span className="sr-only">Sort column</span>
+          <span className="sr-only">จัดเรียงคอลัมน์</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

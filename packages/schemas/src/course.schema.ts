@@ -1,5 +1,6 @@
 import * as z from "zod"
 import { toArray } from "./lib/zod-helper"
+import { tagSchema } from "./tag.schema"
 
 export const courseType = ["Internal", "External"] as const
 export const accreditationStatus = ["Pending", "Approved", "Rejected"] as const
@@ -34,6 +35,7 @@ export const courseResponseSchema = courseSchema.extend({
   id: z.string(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  tag: tagSchema.optional(),
 })
 
 // Response paginated courses schema
@@ -57,8 +59,10 @@ export const courseQuerySchema = z.object({
     .pipe(toArray, z.array(z.enum(accreditationStatus)))
     .optional(),
   tagId: z.pipe(toArray, z.array(z.string().min(1))).optional(),
+  includeEmployees: z.coerce.boolean().optional(),
 })
 
+export type TagResponse = z.infer<typeof tagSchema>
 export type CourseType = z.infer<typeof courseSchema>
 export type CourseResponse = z.infer<typeof courseResponseSchema>
 export type CourseQuery = z.infer<typeof courseQuerySchema>
