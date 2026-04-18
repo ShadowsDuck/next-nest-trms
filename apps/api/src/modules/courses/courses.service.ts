@@ -1,4 +1,10 @@
-import { Course, Prisma, Tag } from '@workspace/database';
+import {
+  Course,
+  Employee,
+  OrganizationUnit,
+  Prisma,
+  Tag,
+} from '@workspace/database';
 import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
@@ -13,7 +19,15 @@ export class CoursesService {
   async findAll(
     queryDto: CourseQueryDto,
   ): Promise<CoursePaginationResponseDto> {
-    const { page, limit, search, type, accreditationStatus, tagId } = queryDto;
+    const {
+      page,
+      limit,
+      search,
+      type,
+      accreditationStatus,
+      tagId,
+      includeEmployees,
+    } = queryDto;
 
     const where: Prisma.CourseWhereInput = {};
 
@@ -40,7 +54,22 @@ export class CoursesService {
     const [courses, total] = await Promise.all([
       this.prismaService.course.findMany({
         where,
-        include: { tag: true },
+        include: {
+          tag: true,
+          ...(includeEmployees
+            ? {
+                trainingRecords: {
+                  include: {
+                    employee: {
+                      include: {
+                        orgUnit: true,
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+        },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { startDate: 'desc' },
@@ -48,8 +77,14 @@ export class CoursesService {
       this.prismaService.course.count({ where }),
     ]);
 
+    const orgPathByOrgUnitId = includeEmployees
+      ? await this.buildOrgPathMap(courses)
+      : new Map<string, OrganizationUnit[]>();
+
     return {
-      data: courses.map((course) => this.formatCourse(course)),
+      data: courses.map((course) =>
+        this.formatCourse(course, orgPathByOrgUnitId),
+      ),
       meta: {
         total,
         page,
@@ -59,7 +94,68 @@ export class CoursesService {
     };
   }
 
-  private formatCourse(course: Course & { tag: Tag }): CourseResponseDto {
+  private async buildOrgPathMap(
+    courses: (Course & {
+      trainingRecords?: {
+        employee: Employee & { orgUnit: OrganizationUnit | null };
+      }[];
+    })[],
+  ) {
+    const orgUnitIds = new Set<string>();
+
+    for (const course of courses) {
+      for (const trainingRecord of course.trainingRecords ?? []) {
+        if (trainingRecord.employee.orgUnitId) {
+          orgUnitIds.add(trainingRecord.employee.orgUnitId);
+        }
+      }
+    }
+
+    const orgPathByOrgUnitId = new Map<string, OrganizationUnit[]>();
+
+    await Promise.all(
+      [...orgUnitIds].map(async (orgUnitId) => {
+        orgPathByOrgUnitId.set(
+          orgUnitId,
+          await this.getOrganizationPath(orgUnitId),
+        );
+      }),
+    );
+
+    return orgPathByOrgUnitId;
+  }
+
+  private async getOrganizationPath(
+    orgUnitId: string,
+  ): Promise<OrganizationUnit[]> {
+    const path: OrganizationUnit[] = [];
+    let currentId: string | null = orgUnitId;
+
+    while (currentId) {
+      const orgUnit = await this.prismaService.organizationUnit.findUnique({
+        where: { id: currentId },
+      });
+
+      if (!orgUnit) {
+        break;
+      }
+
+      path.unshift(orgUnit);
+      currentId = orgUnit.parentId;
+    }
+
+    return path;
+  }
+
+  private formatCourse(
+    course: Course & {
+      tag: Tag;
+      trainingRecords?: {
+        employee: Employee & { orgUnit: OrganizationUnit | null };
+      }[];
+    },
+    orgPathByOrgUnitId: Map<string, OrganizationUnit[]> = new Map(),
+  ): CourseResponseDto {
     return {
       ...course,
       startDate: toIsoDate(course.startDate),
@@ -79,6 +175,27 @@ export class CoursesService {
         name: course.tag.name,
         colorCode: course.tag.colorCode,
       },
+      participants: (course.trainingRecords ?? []).map((trainingRecord) => ({
+        id: trainingRecord.employee.id,
+        employeeNo: trainingRecord.employee.employeeNo,
+        prefix: trainingRecord.employee.prefix,
+        firstName: trainingRecord.employee.firstName,
+        lastName: trainingRecord.employee.lastName,
+        jobLevel: trainingRecord.employee.jobLevel,
+        status: trainingRecord.employee.status,
+        orgPath: trainingRecord.employee.orgUnitId
+          ? (
+              orgPathByOrgUnitId.get(trainingRecord.employee.orgUnitId) ?? []
+            ).map((orgUnit) => ({
+              id: orgUnit.id,
+              name: orgUnit.name,
+              level: orgUnit.level,
+              parentId: orgUnit.parentId,
+              createdAt: toIsoDateTime(orgUnit.createdAt),
+              updatedAt: toIsoDateTime(orgUnit.updatedAt),
+            }))
+          : [],
+      })),
     };
   }
 }

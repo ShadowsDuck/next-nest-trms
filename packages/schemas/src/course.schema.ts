@@ -1,9 +1,21 @@
 import * as z from "zod"
 import { toArray } from "./lib/zod-helper"
+import { organizationUnitResponseSchema } from "./organization-unit.schema"
 import { tagSchema } from "./tag.schema"
 
 export const courseType = ["Internal", "External"] as const
 export const accreditationStatus = ["Pending", "Approved", "Rejected"] as const
+
+const courseParticipantSchema = z.object({
+  id: z.string(),
+  employeeNo: z.string(),
+  prefix: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  jobLevel: z.string(),
+  status: z.string(),
+  orgPath: z.array(organizationUnitResponseSchema).optional(),
+})
 
 // Course schema
 export const courseSchema = z.object({
@@ -36,6 +48,7 @@ export const courseResponseSchema = courseSchema.extend({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   tag: tagSchema.optional(),
+  participants: z.array(courseParticipantSchema).optional(),
 })
 
 // Response paginated courses schema
@@ -62,10 +75,10 @@ export const courseQuerySchema = z.object({
   includeEmployees: z.coerce.boolean().optional(),
 })
 
-export type TagResponse = z.infer<typeof tagSchema>
 export type CourseType = z.infer<typeof courseSchema>
 export type CourseResponse = z.infer<typeof courseResponseSchema>
 export type CourseQuery = z.infer<typeof courseQuerySchema>
 export type CoursePaginationResponse = z.infer<
   typeof coursePaginationResponseSchema
 >
+export type CourseParticipant = z.infer<typeof courseParticipantSchema>

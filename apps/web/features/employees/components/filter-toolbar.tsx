@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import type { EmployeeQuery, EmployeeResponse } from '@workspace/schemas'
+import type { EmployeeQuery } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import {
   DropdownMenu,
@@ -17,11 +17,8 @@ import { DataTableClearFilter } from '@/components/niko-table/components/data-ta
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
 import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
-import { useDataTable } from '@/components/niko-table/core/data-table-context'
-import { exportTableToCSV } from '@/components/niko-table/filters/table-export-button'
-import { SYSTEM_COLUMN_IDS } from '@/components/niko-table/lib/constants'
-import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses'
-import { employeeExportValueTransformers } from '../lib/export-value-transformers'
+import { exportEmployeesCSV } from '../lib/export-employees-csv'
+import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 import {
   jobLevelOptions,
   prefixOptions,
@@ -37,7 +34,6 @@ export function EmployeeTableFilterToolbar({
 }: {
   params: EmployeeQuery
 }) {
-  const { table } = useDataTable<EmployeeResponse>()
   const exportTimestamp = useMemo(() => {
     const now = new Date()
     const date = now.toISOString().split('T')[0] ?? ''
@@ -62,15 +58,10 @@ export function EmployeeTableFilterToolbar({
     }
   }
 
-  function handleExportAllEmployees() {
-    exportTableToCSV(table, {
+  async function handleExportAllEmployees() {
+    await exportEmployeesCSV({
+      params,
       filename: allExportFilename,
-      useHeaderLabels: true,
-      valueTransformers: employeeExportValueTransformers,
-      excludeColumns: [
-        SYSTEM_COLUMN_IDS.SELECT,
-        'prefix',
-      ] as unknown as (keyof EmployeeResponse)[],
     })
   }
 
@@ -113,7 +104,7 @@ export function EmployeeTableFilterToolbar({
               <DropdownMenuItem
                 onSelect={(event) => {
                   event.preventDefault()
-                  handleExportAllEmployees()
+                  void handleExportAllEmployees()
                 }}
                 className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
               >

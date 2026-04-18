@@ -17,12 +17,10 @@ import {
   DataTableHeader,
   DataTableSkeleton,
 } from '@/components/niko-table/core/data-table-structure'
-import { TableExportButton } from '@/components/niko-table/filters/table-export-button'
-import { SYSTEM_COLUMN_IDS } from '@/components/niko-table/lib/constants'
 import { useLockPageScroll } from '@/hooks/use-lock-page-scroll'
 import { useEmployeeTableController } from '../hooks/use-employee-table-controller'
-import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses'
-import { employeeExportValueTransformers } from '../lib/export-value-transformers'
+import { exportEmployeesCSV } from '../lib/export-employees-csv'
+import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 import { employeeParsers } from '../lib/search-params'
 import { employeeTableColumns } from './columns'
 import { EmployeeTableEmptyState } from './empty-state'
@@ -40,19 +38,35 @@ function EmployeeSelectionActions({
   params: EmployeeQuery
 }) {
   const { table } = useDataTable<EmployeeResponse>()
+  const [isExportingEmployees, setIsExportingEmployees] = useState(false)
   const [isExportingCourses, setIsExportingCourses] = useState(false)
+
+  function getSelectedEmployeeNos() {
+    return Object.entries(table.getState().rowSelection)
+      .filter(([, selected]) => Boolean(selected))
+      .map(([rowId]) => rowId)
+  }
+
+  async function handleExportSelectedEmployees() {
+    try {
+      setIsExportingEmployees(true)
+      await exportEmployeesCSV({
+        params,
+        filename,
+        selectedEmployeeNos: getSelectedEmployeeNos(),
+      })
+    } finally {
+      setIsExportingEmployees(false)
+    }
+  }
 
   async function handleExportSelectedEmployeesWithCourses() {
     try {
       setIsExportingCourses(true)
-      const selectedEmployeeNos = Object.entries(table.getState().rowSelection)
-        .filter(([, selected]) => Boolean(selected))
-        .map(([rowId]) => rowId)
-
       await exportEmployeesWithCoursesCSV({
         params,
         filename: `${filename}-พร้อมหลักสูตร`,
-        selectedEmployeeNos,
+        selectedEmployeeNos: getSelectedEmployeeNos(),
       })
     } finally {
       setIsExportingCourses(false)
@@ -66,20 +80,17 @@ function EmployeeSelectionActions({
       selectedText="รายการที่เลือก"
       clearText="ล้างรายการ"
     >
-      <TableExportButton
-        table={table}
-        label="ส่งออกข้อมูล"
-        filename={filename}
-        onlySelected
-        useHeaderLabels
-        valueTransformers={employeeExportValueTransformers}
-        excludeColumns={
-          [
-            SYSTEM_COLUMN_IDS.SELECT,
-            'prefix',
-          ] as unknown as (keyof EmployeeResponse)[]
-        }
-      />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          void handleExportSelectedEmployees()
+        }}
+        disabled={isExportingEmployees}
+      >
+        <Upload className="mr-1 size-4" />
+        {isExportingEmployees ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกข้อมูล'}
+      </Button>
       <Button
         variant="outline"
         size="sm"

@@ -7,6 +7,23 @@ import { Button } from '@workspace/ui/components/button'
 import { Upload } from 'lucide-react'
 
 /**
+ * Trigger CSV download
+ */
+export function triggerCsvDownload(filename: string, rows: string[]) {
+  const csvContent = rows.join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `${filename}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+/**
  * Escape a cell value for CSV output.
  * Handles strings, numbers, booleans, dates, arrays, null, and undefined.
  */
