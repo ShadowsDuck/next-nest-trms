@@ -58,21 +58,35 @@ export async function getFunctions(
 }
 
 export async function getDivisions(
-  functionId: string
+  functionId?: string
 ): Promise<OrganizationOption[]> {
-  const searchParams = new URLSearchParams({ functionId })
+  const searchParams = new URLSearchParams()
+
+  if (functionId) {
+    searchParams.set('functionId', functionId)
+  }
+
   return await getOrganizationOptions(
-    `/api/organization-units/divisions?${searchParams.toString()}`,
+    searchParams.size > 0
+      ? `/api/organization-units/divisions?${searchParams.toString()}`
+      : '/api/organization-units/divisions',
     divisionListSchema
   )
 }
 
 export async function getDepartments(
-  divisionId: string
+  divisionId?: string
 ): Promise<OrganizationOption[]> {
-  const searchParams = new URLSearchParams({ divisionId })
+  const searchParams = new URLSearchParams()
+
+  if (divisionId) {
+    searchParams.set('divisionId', divisionId)
+  }
+
   return await getOrganizationOptions(
-    `/api/organization-units/departments?${searchParams.toString()}`,
+    searchParams.size > 0
+      ? `/api/organization-units/departments?${searchParams.toString()}`
+      : '/api/organization-units/departments',
     departmentListSchema
   )
 }

@@ -17,6 +17,7 @@ import { DataTableClearFilter } from '@/components/niko-table/components/data-ta
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
 import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
+import { useEmployeeOrgFilterOptions } from '../hooks/use-employee-org-filter-options'
 import { exportEmployeesCSV } from '../lib/export-employees-csv'
 import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 import {
@@ -34,6 +35,7 @@ export function EmployeeTableFilterToolbar({
 }: {
   params: EmployeeQuery
 }) {
+  const { data: orgFilterOptions } = useEmployeeOrgFilterOptions()
   const exportTimestamp = useMemo(() => {
     const now = new Date()
     const date = now.toISOString().split('T')[0] ?? ''
@@ -154,19 +156,39 @@ export function EmployeeTableFilterToolbar({
       <DataTableToolbarSection className="px-0">
         <DataTableFacetedFilter
           accessorKey="prefix"
+          title="คำนำหน้า"
           options={prefixOptions}
           multiple
           showCounts={false}
         />
         <DataTableFacetedFilter
           accessorKey="jobLevel"
+          title="ระดับงาน"
           options={jobLevelOptions}
           multiple
           showCounts={false}
         />
         <DataTableFacetedFilter
+          accessorKey="divisionName"
+          title="ฝ่าย"
+          options={orgFilterOptions?.divisionOptions}
+          multiple
+          showCounts={false}
+          limitToFilteredRows={false}
+        />
+        <DataTableFacetedFilter
+          accessorKey="departmentName"
+          title="ส่วนงาน"
+          options={orgFilterOptions?.departmentOptions}
+          multiple
+          showCounts={false}
+          limitToFilteredRows={false}
+        />
+        <DataTableFacetedFilter
           accessorKey="status"
+          title="สถานะ"
           options={statusOptions}
+          multiple
           showCounts={false}
           limitToFilteredRows={false}
         />

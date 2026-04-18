@@ -13,15 +13,28 @@ import { useQueryStates } from 'nuqs'
 import { getAllEmployees } from '../data/get-all-employees'
 import { employeeParsers } from '../lib/search-params'
 
-type MultiFilterKey = 'prefix' | 'jobLevel' | 'status'
+type MultiFilterKey =
+  | 'prefix'
+  | 'jobLevel'
+  | 'divisionName'
+  | 'departmentName'
+  | 'status'
 type MultiFilterParams = Pick<EmployeeQuery, MultiFilterKey>
 
-const FILTER_KEYS = ['prefix', 'jobLevel', 'status'] as const
+const FILTER_KEYS = [
+  'prefix',
+  'jobLevel',
+  'divisionName',
+  'departmentName',
+  'status',
+] as const
 
 const FILTER_ALLOWED = {
   prefix,
   jobLevel,
   status: employeeStatus,
+  divisionName: [] as const,
+  departmentName: [] as const,
 } as const
 
 /**
@@ -119,10 +132,17 @@ function buildFilterParamsFromColumnFilters(
   const next: MultiFilterParams = {
     prefix: [],
     jobLevel: [],
+    divisionName: [],
+    departmentName: [],
     status: [],
   }
 
   for (const key of FILTER_KEYS) {
+    if (key === 'divisionName' || key === 'departmentName') {
+      setFilterParam(next, key, getFilterValues(filters, key))
+      continue
+    }
+
     const values = pickAllowed(
       getFilterValues(filters, key),
       FILTER_ALLOWED[key]
@@ -194,6 +214,8 @@ export function useEmployeeTableController() {
       params.search,
       params.prefix.join(','),
       params.jobLevel.join(','),
+      params.divisionName.join(','),
+      params.departmentName.join(','),
       params.status.join(','),
     ],
     [params]

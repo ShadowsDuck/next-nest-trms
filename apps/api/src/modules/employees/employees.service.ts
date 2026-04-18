@@ -110,6 +110,8 @@ export class EmployeesService {
       search,
       prefix,
       jobLevel,
+      divisionName,
+      departmentName,
       status,
       includeTrainingRecords,
     } = queryDto;
@@ -122,6 +124,18 @@ export class EmployeesService {
 
     if (jobLevel && jobLevel.length > 0) {
       where.jobLevel = { in: jobLevel };
+    }
+
+    if (divisionName && divisionName.length > 0) {
+      where.division = {
+        name: { in: divisionName },
+      };
+    }
+
+    if (departmentName && departmentName.length > 0) {
+      where.department = {
+        name: { in: departmentName },
+      };
     }
 
     if (status && status.length > 0) {

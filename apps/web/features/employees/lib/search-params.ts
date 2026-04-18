@@ -14,6 +14,8 @@ export const employeeParsers = {
   search: parseAsString.withDefault(''),
   prefix: parseAsArrayOf(parseAsStringEnum([...prefix])).withDefault([]),
   jobLevel: parseAsArrayOf(parseAsStringEnum([...jobLevel])).withDefault([]),
+  divisionName: parseAsArrayOf(parseAsString).withDefault([]),
+  departmentName: parseAsArrayOf(parseAsString).withDefault([]),
   status: parseAsArrayOf(parseAsStringEnum([...employeeStatus])).withDefault(
     []
   ),

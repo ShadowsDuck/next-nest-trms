@@ -54,6 +54,8 @@ export const employeeQuerySchema = z.object({
   search: z.string().optional(),
   prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
   jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
+  divisionName: z.pipe(toArray, z.array(z.string().min(1))).optional(),
+  departmentName: z.pipe(toArray, z.array(z.string().min(1))).optional(),
   status: z.pipe(toArray, z.array(z.enum(employeeStatus))).optional(),
   includeTrainingRecords: z.coerce.boolean().optional(),
 })
