@@ -1,8 +1,6 @@
 import {
   IconAdjustmentsHorizontal,
   IconBook,
-  IconDatabase,
-  IconFileWord,
   IconHistory,
   IconLayoutDashboard,
   IconReport,
@@ -34,19 +32,9 @@ export const data = {
   ],
   report: [
     {
-      title: 'Data Library',
-      url: '#',
-      icon: IconDatabase,
-    },
-    {
-      title: 'Reports',
-      url: '#',
+      title: 'รายงานสรุป',
+      url: '/admin/reports/summary',
       icon: IconReport,
-    },
-    {
-      title: 'Word Assistant',
-      url: '#',
-      icon: IconFileWord,
     },
   ],
   setting: [

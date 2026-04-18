@@ -1,12 +1,13 @@
 'use client'
 'use no memo'
 
+import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import type { RowSelectionState, VisibilityState } from '@tanstack/react-table'
 import type { CourseQuery, CourseResponse } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import { cn } from '@workspace/ui/lib/utils'
-import { Loader2, Upload } from 'lucide-react'
+import { BarChart3, Loader2, Upload } from 'lucide-react'
 import { DataTablePagination } from '@/components/niko-table/components/data-table-pagination'
 import { DataTableSelectionBar } from '@/components/niko-table/components/data-table-selection-bar'
 import { DataTable } from '@/components/niko-table/core/data-table'
@@ -17,6 +18,7 @@ import {
   DataTableHeader,
   DataTableSkeleton,
 } from '@/components/niko-table/core/data-table-structure'
+import { createCourseSummaryReport } from '@/features/summary-report/actions'
 import { useLockPageScroll } from '@/hooks/use-lock-page-scroll'
 import { useCourseTableController } from '../hooks/use-course-table-controller'
 import { exportCoursesCSV } from '../lib/export-courses-csv'
@@ -36,10 +38,12 @@ function CourseSelectionActions({
   filename: string
   params: CourseQuery
 }) {
+  const router = useRouter()
   const { table } = useDataTable<CourseResponse>()
   const [isExportingWithEmployees, setIsExportingWithEmployees] =
     useState(false)
   const [isExportingCourses, setIsExportingCourses] = useState(false)
+  const [isPreparingReport, setIsPreparingReport] = useState(false)
 
   function getSelectedCourseIds() {
     return Object.entries(table.getState().rowSelection)
@@ -70,6 +74,22 @@ function CourseSelectionActions({
       })
     } finally {
       setIsExportingWithEmployees(false)
+    }
+  }
+
+  async function handleGoToSummaryReport() {
+    try {
+      setIsPreparingReport(true)
+      const selectedCourseIds = getSelectedCourseIds()
+
+      const { reportId } = await createCourseSummaryReport({
+        params,
+        selectedCourseIds,
+      })
+
+      router.push(`/admin/reports/summary?reportId=${reportId}`)
+    } finally {
+      setIsPreparingReport(false)
     }
   }
 
@@ -111,6 +131,20 @@ function CourseSelectionActions({
         {isExportingWithEmployees
           ? 'กำลังส่งออกข้อมูล...'
           : 'ส่งออกพร้อมพนักงาน'}
+      </Button>
+      <Button
+        size="sm"
+        onClick={() => {
+          void handleGoToSummaryReport()
+        }}
+        disabled={isPreparingReport}
+      >
+        {isPreparingReport ? (
+          <Loader2 className="mr-1 size-4 animate-spin" />
+        ) : (
+          <BarChart3 className="mr-1 size-4" />
+        )}
+        {isPreparingReport ? 'กำลังเตรียมรายงาน...' : 'ไปที่รายงานสรุป'}
       </Button>
     </DataTableSelectionBar>
   )

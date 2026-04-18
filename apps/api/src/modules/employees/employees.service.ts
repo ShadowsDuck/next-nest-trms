@@ -7,6 +7,7 @@ import {
   OrgFunction,
   Plant,
   Prisma,
+  Tag,
   TrainingRecord,
 } from '@workspace/database';
 import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
@@ -28,7 +29,9 @@ type EmployeeWithRelations = Employee & {
   division: Division;
   department: Department;
   trainingRecords?: (TrainingRecord & {
-    course?: Course;
+    course?: Course & {
+      tag?: Tag | null;
+    };
   })[];
 };
 
@@ -85,7 +88,11 @@ export class EmployeesService {
         department: true,
         trainingRecords: {
           include: {
-            course: true,
+            course: {
+              include: {
+                tag: true,
+              },
+            },
           },
         },
       },
@@ -150,7 +157,11 @@ export class EmployeesService {
             ? {
                 trainingRecords: {
                   include: {
-                    course: true,
+                    course: {
+                      include: {
+                        tag: true,
+                      },
+                    },
                   },
                 },
               }
@@ -175,6 +186,48 @@ export class EmployeesService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async findByEmployeeNosForReport(
+    employeeNos: string[],
+  ): Promise<EmployeeResponseDto[]> {
+    if (employeeNos.length === 0) {
+      return [];
+    }
+
+    const employees = await this.prismaService.employee.findMany({
+      where: {
+        employeeNo: { in: employeeNos },
+      },
+      include: {
+        plant: true,
+        businessUnit: true,
+        orgFunction: true,
+        division: true,
+        department: true,
+        trainingRecords: {
+          include: {
+            course: {
+              include: {
+                tag: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const orderMap = new Map(
+      employeeNos.map((employeeNo, index) => [employeeNo, index] as const),
+    );
+
+    return employees
+      .map((employee) => this.formatEmployee(employee))
+      .sort(
+        (a, b) =>
+          (orderMap.get(a.employeeNo) ?? Number.MAX_SAFE_INTEGER) -
+          (orderMap.get(b.employeeNo) ?? Number.MAX_SAFE_INTEGER),
+      );
   }
 
   private formatEmployee(employee: EmployeeWithRelations): EmployeeResponseDto {
@@ -217,6 +270,13 @@ export class EmployeesService {
               expense: Number(trainingRecord.course.expense),
               createdAt: toIsoDateTime(trainingRecord.course.createdAt),
               updatedAt: toIsoDateTime(trainingRecord.course.updatedAt),
+              tag: trainingRecord.course.tag
+                ? {
+                    id: trainingRecord.course.tag.id,
+                    name: trainingRecord.course.tag.name,
+                    colorCode: trainingRecord.course.tag.colorCode,
+                  }
+                : undefined,
             }
           : undefined,
       })),

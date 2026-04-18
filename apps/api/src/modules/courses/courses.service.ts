@@ -104,6 +104,48 @@ export class CoursesService {
     };
   }
 
+  async findByCourseIdsForReport(
+    courseIds: string[],
+  ): Promise<CourseResponseDto[]> {
+    if (courseIds.length === 0) {
+      return [];
+    }
+
+    const courses = await this.prismaService.course.findMany({
+      where: {
+        id: { in: courseIds },
+      },
+      include: {
+        tag: true,
+        trainingRecords: {
+          include: {
+            employee: {
+              include: {
+                plant: true,
+                businessUnit: true,
+                orgFunction: true,
+                division: true,
+                department: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const orderMap = new Map(
+      courseIds.map((courseId, index) => [courseId, index] as const),
+    );
+
+    return courses
+      .map((course) => this.formatCourse(course))
+      .sort(
+        (a, b) =>
+          (orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+          (orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+      );
+  }
+
   private formatCourse(
     course: Course & {
       tag: Tag;

@@ -1,0 +1,20 @@
+enum SummaryReportSource {
+  employees
+  courses
+}
+
+model SummaryReport {
+  id              String              @id @default(cuid())
+  source          SummaryReportSource
+  selectedIds     Json                @map("selected_ids")
+  filtersSnapshot Json                @map("filters_snapshot")
+  reportSnapshot  Json                @map("report_snapshot")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  userId          String              @unique @map("user_id")
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("summary_reports")
+}

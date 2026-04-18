@@ -11,8 +11,8 @@ import * as z from 'zod'
 import { BasicInfoSection } from '@/features/new-employee/components/basic-info-section'
 import { EmploymentInfoSection } from '@/features/new-employee/components/employment-info-section'
 import { OrganizationUnitSection } from '@/features/new-employee/components/organization-unit-section'
-import { createEmployee } from '@/features/new-employee/data/create-employee'
 import { useOrganizationUnitOptions } from '@/features/new-employee/hooks/use-organization-unit-options'
+import { createEmployee } from '../actions'
 
 const createEmployeeSchema = z.object({
   employeeNo: z.string().min(1, 'กรุณากรอกรหัสพนักงาน'),

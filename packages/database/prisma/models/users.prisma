@@ -27,6 +27,7 @@ model User {
   updatedTrainingRecords  TrainingRecord[] @relation("TrainingRecordUpdatedBy")
 
   auditLogs     AuditLog[]
+  summaryReport SummaryReport?
 
   @@unique([email])
   @@map("users")

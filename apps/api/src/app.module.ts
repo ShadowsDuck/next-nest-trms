@@ -9,6 +9,7 @@ import { ZodValidationExceptionFilter } from './filters/zod-validation-exception
 import { CoursesModule } from './modules/courses/courses.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
+import { SummaryReportsModule } from './modules/summary-reports/summary-reports.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -20,6 +21,7 @@ import { PrismaModule } from './prisma/prisma.module';
     CoursesModule,
     EmployeesModule,
     OrganizationUnitsModule,
+    SummaryReportsModule,
     UsersModule,
   ],
   providers: [

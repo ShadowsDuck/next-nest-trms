@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from '@workspace/ui/components/sidebar'
 import { NavMain } from '@/components/sidebar/nav-main'
+import { NavReport } from '@/components/sidebar/nav-report'
 import { NavSetting } from '@/components/sidebar/nav-setting'
 import { NavUser } from '@/components/sidebar/nav-user'
 import { data } from '@/lib/constant'
@@ -43,6 +44,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavReport items={data.report} />
         <NavSetting items={data.setting} />
       </SidebarContent>
 
