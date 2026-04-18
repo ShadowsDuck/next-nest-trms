@@ -55,16 +55,6 @@ function formatDateRange(startDate: string, endDate: string) {
   return `${start} - ${toThaiDate(endDate)}`
 }
 
-function getOrgUnitNameByLevel(
-  participant: CourseParticipant,
-  targetLevel: 'Division' | 'Department'
-) {
-  const match = participant.orgPath?.find(
-    (orgUnit) => orgUnit.level === targetLevel
-  )
-  return match?.name ?? ''
-}
-
 function getParticipantFullName(participant: CourseParticipant) {
   const prefix = prefixLabelMap.get(participant.prefix) ?? participant.prefix
   return `${prefix} ${participant.firstName} ${participant.lastName}`.trim()
@@ -72,6 +62,16 @@ function getParticipantFullName(participant: CourseParticipant) {
 
 function getEmployeeStatusLabel(status: string) {
   return employeeStatusLabelMap.get(status) ?? status
+}
+
+function getEmployeeOrgColumns(participant: CourseParticipant): string[] {
+  return [
+    escapeCsvValue(participant.plantName),
+    escapeCsvValue(participant.buName),
+    escapeCsvValue(participant.functionName),
+    escapeCsvValue(participant.divisionName),
+    escapeCsvValue(participant.departmentName),
+  ]
 }
 
 export function buildCourseSummaryRow(course: CourseResponse) {
@@ -96,9 +96,9 @@ export function buildParticipantRows(course: CourseResponse) {
     [
       escapeCsvValue(participant.employeeNo),
       escapeCsvValue(getParticipantFullName(participant)),
+      escapeCsvValue(toThaiDate(participant.hireDate)),
       escapeCsvValue(participant.jobLevel),
-      escapeCsvValue(getOrgUnitNameByLevel(participant, 'Division')),
-      escapeCsvValue(getOrgUnitNameByLevel(participant, 'Department')),
+      ...getEmployeeOrgColumns(participant),
       escapeCsvValue(getEmployeeStatusLabel(participant.status)),
     ].join(',')
   )
@@ -111,15 +111,19 @@ export const COURSE_EXPORT_HEADER = [
   'วิทยากร',
   'สถาบัน',
   'ค่าใช้จ่าย',
-  'ช่วงวันที่อบรม',
+  'วันที่จัดอบรม',
   'รวมเวลา(ชม.)',
   'สถานะการรับรอง',
 ]
 
 export const COURSE_PARTICIPANT_HEADER = [
   'รหัสพนักงาน',
-  'ชื่อ - นามสกุล',
+  'ชื่อ-นามสกุล',
+  'วันที่เริ่มงาน',
   'ระดับงาน',
+  'Plant',
+  'BU',
+  'สายงาน',
   'ฝ่าย',
   'ส่วนงาน',
   'สถานะ',

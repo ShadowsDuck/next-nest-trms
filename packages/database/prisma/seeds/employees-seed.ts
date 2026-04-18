@@ -1,8 +1,7 @@
 import {
-  Prefix,
-  JobLevel,
   EmployeeStatus,
-  OrgUnitLevel,
+  JobLevel,
+  Prefix,
 } from "../../src/generated/prisma/client"
 import { prisma } from "../../src/client"
 
@@ -118,8 +117,8 @@ const thaiLastNames = [
   "วีระพันธ์",
 ]
 
-function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+function randomFrom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)] as T
 }
 
 function randomInt(min: number, max: number): number {
@@ -127,12 +126,10 @@ function randomInt(min: number, max: number): number {
 }
 
 function generateIdCardNo(index: number): string {
-  // dummy 13-digit starting with 1-8, padded with index for uniqueness
   const prefix = String(randomInt(1, 8))
   const middle = String(index).padStart(5, "0")
   const filler = String(randomInt(1000000, 9999999)).slice(0, 7)
   const raw = (prefix + middle + filler).slice(0, 12)
-  // simple checksum digit (not real Thai ID algo, just deterministic)
   const checkDigit = (index % 10).toString()
   return raw + checkDigit
 }
@@ -143,23 +140,33 @@ function randomHireDate(): Date {
   return new Date(start + Math.random() * (end - start))
 }
 
-const prefixes: Prefix[] = ["Mr", "Mr", "Mr", "Mrs", "Miss", "Miss"] // weight: more Mr
-const jobLevels: JobLevel[] = ["S1", "S1", "S2", "S2", "M1", "M2"] // weight: more S-level
+const prefixes: Prefix[] = ["Mr", "Mr", "Mr", "Mrs", "Miss", "Miss"]
+const jobLevels: JobLevel[] = ["S1", "S1", "S2", "S2", "M1", "M2"]
 
 export async function seedEmployees() {
   console.log("🌱 Seeding employees...")
 
-  // Clear existing data
-  await prisma.employee.deleteMany()
-
-  const departments = await prisma.organizationUnit.findMany({
-    where: { level: OrgUnitLevel.Department },
-    select: { id: true },
+  const departments = await prisma.department.findMany({
+    include: {
+      division: {
+        include: {
+          orgFunction: {
+            include: {
+              businessUnit: {
+                include: {
+                  plant: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     orderBy: { name: "asc" },
   })
 
   if (departments.length === 0) {
-    throw new Error("No Department organization units found. Seed organization units first.")
+    throw new Error("No departments found. Seed organization units first.")
   }
 
   const employees = Array.from({ length: 100 }, (_, i) => {
@@ -168,8 +175,12 @@ export async function seedEmployees() {
     const firstName = randomFrom(thaiFirstNames[prefix])
     const lastName = randomFrom(thaiLastNames)
     const jobLevel = jobLevels[index % jobLevels.length]
+    const department = randomFrom(departments)
+    const division = department.division
+    const orgFunction = division.orgFunction
+    const businessUnit = orgFunction.businessUnit
+    const plant = businessUnit.plant
 
-    // ~85% Active, ~15% Resigned
     const status: EmployeeStatus = index % 7 === 0 ? "Resigned" : "Active"
 
     return {
@@ -181,7 +192,11 @@ export async function seedEmployees() {
       hireDate: randomHireDate(),
       jobLevel,
       status,
-      orgUnitId: randomFrom(departments).id,
+      plantId: plant.id,
+      buId: businessUnit.id,
+      functionId: orgFunction.id,
+      divisionId: division.id,
+      departmentId: department.id,
     }
   })
 
@@ -192,11 +207,11 @@ export async function seedEmployees() {
 
 if (require.main === module) {
   seedEmployees()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+    .catch((e) => {
+      console.error(e)
+      process.exit(1)
+    })
+    .finally(async () => {
+      await prisma.$disconnect()
+    })
 }

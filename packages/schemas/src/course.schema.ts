@@ -1,6 +1,5 @@
 import * as z from "zod"
 import { toArray } from "./lib/zod-helper"
-import { organizationUnitResponseSchema } from "./organization-unit.schema"
 import { tagSchema } from "./tag.schema"
 
 export const courseType = ["Internal", "External"] as const
@@ -12,12 +11,16 @@ const courseParticipantSchema = z.object({
   prefix: z.string(),
   firstName: z.string(),
   lastName: z.string(),
+  hireDate: z.iso.date(),
   jobLevel: z.string(),
   status: z.string(),
-  orgPath: z.array(organizationUnitResponseSchema).optional(),
+  plantName: z.string(),
+  buName: z.string(),
+  functionName: z.string(),
+  divisionName: z.string(),
+  departmentName: z.string(),
 })
 
-// Course schema
 export const courseSchema = z.object({
   title: z.string().min(1, { message: "ชื่อหลักสูตรห้ามว่าง" }),
   type: z.enum(courseType, { message: "ประเภทหลักสูตรไม่ถูกต้อง" }),
@@ -42,7 +45,6 @@ export const courseSchema = z.object({
   tagId: z.string().min(1, { message: "หมวดหมู่หลักสูตรห้ามว่าง" }),
 })
 
-// Response schema
 export const courseResponseSchema = courseSchema.extend({
   id: z.string(),
   createdAt: z.iso.datetime(),
@@ -51,7 +53,6 @@ export const courseResponseSchema = courseSchema.extend({
   participants: z.array(courseParticipantSchema).optional(),
 })
 
-// Response paginated courses schema
 export const coursePaginationResponseSchema = z.object({
   data: z.array(courseResponseSchema),
   meta: z.object({
@@ -62,11 +63,10 @@ export const coursePaginationResponseSchema = z.object({
   }),
 })
 
-// Query schema for filtering courses
 export const courseQuerySchema = z.object({
   page: z.coerce.number().int().positive().catch(1),
   limit: z.coerce.number().int().positive().max(100).catch(25),
-  search: z.string().optional(), // title, lecturer, institute
+  search: z.string().optional(),
   type: z.pipe(toArray, z.array(z.enum(courseType))).optional(),
   accreditationStatus: z
     .pipe(toArray, z.array(z.enum(accreditationStatus)))

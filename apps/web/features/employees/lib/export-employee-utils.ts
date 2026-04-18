@@ -24,14 +24,27 @@ type ExportTrainingRecord = NonNullable<
 export const EMPLOYEE_EXPORT_HEADER = [
   'รหัสพนักงาน',
   'ชื่อ-นามสกุล',
+  'วันที่เริ่มงาน',
   'ระดับงาน',
+  'Plant',
+  'BU',
+  'สายงาน',
+  'ฝ่าย',
+  'ส่วนงาน',
   'สถานะ',
+  'บัตรประชาชน',
 ]
 
 export const EMPLOYEE_COURSE_EXPORT_HEADER = [
   'รหัสพนักงาน',
   'ชื่อ-นามสกุล',
+  'วันที่เริ่มงาน',
   'ระดับงาน',
+  'Plant',
+  'BU',
+  'สายงาน',
+  'ฝ่าย',
+  'ส่วนงาน',
   'สถานะ',
   'หัวข้อการอบรม',
   'ประเภท',
@@ -39,10 +52,6 @@ export const EMPLOYEE_COURSE_EXPORT_HEADER = [
   'ระยะเวลา(ชม.)',
 ]
 
-/**
- * แปลงวันที่จาก ISO string เป็น DD/MM/YYYY (ปี พ.ศ.)
- * เช่น 2026-02-24 → 24/02/2569
- */
 function toThaiDate(dateStr: string | null | undefined): string {
   if (!dateStr) return ''
 
@@ -64,6 +73,16 @@ function getEmployeeStatusLabel(status: string) {
   return statusLabelMap.get(status) ?? status
 }
 
+function getEmployeeOrgColumns(employee: EmployeeResponse): string[] {
+  return [
+    escapeCsvValue(employee.plantName),
+    escapeCsvValue(employee.buName),
+    escapeCsvValue(employee.functionName),
+    escapeCsvValue(employee.divisionName),
+    escapeCsvValue(employee.departmentName),
+  ]
+}
+
 export function buildEmployeeRows(employees: EmployeeResponse[]): string[] {
   const rows: string[] = [EMPLOYEE_EXPORT_HEADER.map(escapeCsvValue).join(',')]
 
@@ -72,8 +91,11 @@ export function buildEmployeeRows(employees: EmployeeResponse[]): string[] {
       [
         escapeCsvValue(employee.employeeNo),
         escapeCsvValue(getEmployeeFullName(employee)),
+        escapeCsvValue(toThaiDate(employee.hireDate)),
         escapeCsvValue(employee.jobLevel),
+        ...getEmployeeOrgColumns(employee),
         escapeCsvValue(getEmployeeStatusLabel(employee.status)),
+        escapeCsvValue(employee.idCardNo),
       ].join(',')
     )
   }
@@ -98,7 +120,9 @@ export function buildEmployeeCourseRows(
         [
           escapeCsvValue(employee.employeeNo),
           escapeCsvValue(fullName),
+          escapeCsvValue(toThaiDate(employee.hireDate)),
           escapeCsvValue(employee.jobLevel),
+          ...getEmployeeOrgColumns(employee),
           escapeCsvValue(statusLabel),
           '',
           '',
@@ -132,7 +156,11 @@ export function buildEmployeeCourseRows(
         [
           index === 0 ? escapeCsvValue(employee.employeeNo) : '',
           index === 0 ? escapeCsvValue(fullName) : '',
+          index === 0 ? escapeCsvValue(toThaiDate(employee.hireDate)) : '',
           index === 0 ? escapeCsvValue(employee.jobLevel) : '',
+          ...(index === 0
+            ? getEmployeeOrgColumns(employee)
+            : ['', '', '', '', '']),
           index === 0 ? escapeCsvValue(statusLabel) : '',
           escapeCsvValue(record.course?.title ?? ''),
           escapeCsvValue(courseTypeLabel),
@@ -145,6 +173,12 @@ export function buildEmployeeCourseRows(
     rows.push(
       [
         escapeCsvValue('รวมเวลาเข้าร่วมทั้งหมด'),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
         '',
         '',
         '',

@@ -6,7 +6,6 @@ export const prefix = ["Mr", "Mrs", "Miss"] as const
 export const jobLevel = ["S1", "S2", "M1", "M2"] as const
 export const employeeStatus = ["Active", "Resigned"] as const
 
-// Employee schema
 export const employeeSchema = z.object({
   employeeNo: z.string().min(1, { message: "รหัสพนักงานห้ามว่าง" }),
   prefix: z.enum(prefix, { message: "คำนำหน้าไม่ถูกต้อง" }),
@@ -20,18 +19,25 @@ export const employeeSchema = z.object({
   hireDate: z.iso.date().optional(),
   jobLevel: z.enum(jobLevel, { message: "ระดับตำแหน่งไม่ถูกต้อง" }),
   status: z.enum(employeeStatus, { message: "สถานะไม่ถูกต้อง" }),
-  orgUnitId: z.string().min(1, { message: "รหัสหน่วยงานห้ามว่าง" }).optional(),
+  plantId: z.string().min(1, { message: "Plant ห้ามว่าง" }),
+  buId: z.string().min(1, { message: "Business Unit ห้ามว่าง" }),
+  functionId: z.string().min(1, { message: "Function ห้ามว่าง" }),
+  divisionId: z.string().min(1, { message: "Division ห้ามว่าง" }),
+  departmentId: z.string().min(1, { message: "Department ห้ามว่าง" }),
 })
 
-// Response schema
 export const employeeResponseSchema = employeeSchema.extend({
   id: z.string(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  plantName: z.string(),
+  buName: z.string(),
+  functionName: z.string(),
+  divisionName: z.string(),
+  departmentName: z.string(),
   trainingRecords: z.array(trainingRecordResponseSchema),
 })
 
-// Response paginated employees schema
 export const employeePaginationResponseSchema = z.object({
   data: z.array(employeeResponseSchema),
   meta: z.object({
@@ -42,11 +48,10 @@ export const employeePaginationResponseSchema = z.object({
   }),
 })
 
-// Query schema for filtering employees
 export const employeeQuerySchema = z.object({
   page: z.coerce.number().int().positive().catch(1),
   limit: z.coerce.number().int().positive().max(100).catch(25),
-  search: z.string().optional(), // employeeNo, firstName, lastName, idCardNo
+  search: z.string().optional(),
   prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
   jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
   status: z.pipe(toArray, z.array(z.enum(employeeStatus))).optional(),

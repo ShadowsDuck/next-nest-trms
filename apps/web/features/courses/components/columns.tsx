@@ -159,7 +159,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
         <DataTableColumnSortMenu variant={FILTER_VARIANTS.DATE_RANGE} />
       </DataTableColumnHeader>
     ),
-    meta: { label: 'ช่วงวันที่อบรม' },
+    meta: { label: 'วันที่จัดอบรม' },
     cell: ({ row }) => {
       const { startDate, endDate } = row.original
       return (

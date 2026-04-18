@@ -32,10 +32,27 @@ model Employee {
   // Relations
   user         User?
 
-  orgUnitId    String?          @map("org_unit_id")
-  orgUnit      OrganizationUnit? @relation(fields: [orgUnitId], references: [id])
+  plantId      String           @map("plant_id")
+  plant        Plant            @relation(fields: [plantId], references: [id])
+
+  buId         String           @map("bu_id")
+  businessUnit BusinessUnit     @relation(fields: [buId], references: [id])
+
+  functionId   String           @map("function_id")
+  orgFunction  OrgFunction      @relation(fields: [functionId], references: [id])
+
+  divisionId   String           @map("division_id")
+  division     Division         @relation(fields: [divisionId], references: [id])
+
+  departmentId String           @map("department_id")
+  department   Department       @relation(fields: [departmentId], references: [id])
 
   trainingRecords TrainingRecord[]
-  
+
+  @@index([plantId])
+  @@index([buId])
+  @@index([functionId])
+  @@index([divisionId])
+  @@index([departmentId])
   @@map("employees")
 }

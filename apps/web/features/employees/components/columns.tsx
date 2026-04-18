@@ -2,7 +2,9 @@
 
 import type { EmployeeResponse } from '@workspace/schemas'
 import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
 import { Checkbox } from '@workspace/ui/components/checkbox'
+import { EllipsisVertical } from 'lucide-react'
 import { DataTableColumnHeader } from '@/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/components/niko-table/components/data-table-column-title'
@@ -24,6 +26,11 @@ const prefixLabelByValue = new Map<string, string>(
 const statusLabelByValue = new Map<string, string>(
   statusOptions.map((option) => [option.value, option.label] as const)
 )
+
+function getFullName(employee: EmployeeResponse) {
+  const prefixLabel = prefixLabelByValue.get(employee.prefix) ?? employee.prefix
+  return `${prefixLabel} ${employee.firstName} ${employee.lastName}`
+}
 
 export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
   {
@@ -67,7 +74,19 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     },
   },
   {
-    accessorKey: 'fullName',
+    accessorKey: 'prefix',
+    header: () => null,
+    cell: () => null,
+    enableHiding: true,
+    enableSorting: false,
+    meta: {
+      label: 'คำนำหน้า',
+      options: prefixOptions,
+    },
+  },
+  {
+    id: 'fullName',
+    accessorFn: (row) => getFullName(row),
     size: 500,
     minSize: 500,
     header: () => (
@@ -79,31 +98,12 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     meta: {
       label: 'ชื่อ-นามสกุล',
     },
-    cell: ({ row }) => {
-      const { prefix, firstName, lastName } = row.original
-      const prefixLabel = prefixLabelByValue.get(prefix) ?? prefix
-
-      return `${prefixLabel} ${firstName} ${lastName}`
-    },
-  },
-  {
-    accessorKey: 'prefix',
-    header: () => null,
-    meta: {
-      label: 'คำนำหน้า',
-      options: prefixOptions,
-    },
-    cell: ({ row }) => {
-      const prefix = row.getValue('prefix') as string
-      return prefixLabelByValue.get(prefix) ?? prefix
-    },
-    enableColumnFilter: true,
-    enableSorting: false,
+    cell: ({ row }) => getFullName(row.original),
   },
   {
     accessorKey: 'jobLevel',
-    size: 200,
-    minSize: 200,
+    size: 140,
+    minSize: 120,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
@@ -118,9 +118,39 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'status',
-    size: 200,
+    accessorKey: 'divisionName',
+    size: 220,
+    minSize: 180,
+    header: () => (
+      <DataTableColumnHeader>
+        <DataTableColumnTitle />
+        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+      </DataTableColumnHeader>
+    ),
+    meta: {
+      label: 'ฝ่าย',
+    },
+    cell: ({ row }) => row.getValue('divisionName') || '-',
+  },
+  {
+    accessorKey: 'departmentName',
+    size: 240,
     minSize: 200,
+    header: () => (
+      <DataTableColumnHeader>
+        <DataTableColumnTitle />
+        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+      </DataTableColumnHeader>
+    ),
+    meta: {
+      label: 'ส่วนงาน',
+    },
+    cell: ({ row }) => row.getValue('departmentName') || '-',
+  },
+  {
+    accessorKey: 'status',
+    size: 160,
+    minSize: 140,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
@@ -141,5 +171,18 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
       )
     },
     enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    size: 56,
+    minSize: 56,
+    header: () => null,
+    cell: () => (
+      <Button variant="ghost" size="icon" className="size-7" disabled>
+        <EllipsisVertical className="size-4" />
+      </Button>
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
 ]

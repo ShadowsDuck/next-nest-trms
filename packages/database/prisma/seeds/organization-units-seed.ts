@@ -1,118 +1,143 @@
-import { OrgUnitLevel } from "../../src/generated/prisma/client"
 import { prisma } from "../../src/client"
 
-type OrgSeedNode = {
-  key: string
-  name: string
-  level: OrgUnitLevel
-  parentKey: string | null
-}
+const plants = [
+  { key: "plant-main", name: "Plant Main" },
+  { key: "plant-east", name: "Plant East" },
+] as const
 
-const orgSeedNodes: OrgSeedNode[] = [
-  { key: "plant-main", name: "Plant Main", level: "Plant", parentKey: null },
+const businessUnits = [
+  { key: "bu-auto", name: "BU Automotive", plantKey: "plant-main" },
+  { key: "bu-elec", name: "BU Electronics", plantKey: "plant-main" },
+  { key: "bu-energy", name: "BU Energy", plantKey: "plant-east" },
+] as const
 
-  {
-    key: "bu-auto",
-    name: "BU Automotive",
-    level: "BU",
-    parentKey: "plant-main",
-  },
-  {
-    key: "bu-elec",
-    name: "BU Electronics",
-    level: "BU",
-    parentKey: "plant-main",
-  },
+const orgFunctions = [
+  { key: "fn-prod", name: "Production", businessUnitKey: "bu-auto" },
+  { key: "fn-quality", name: "Quality", businessUnitKey: "bu-auto" },
+  { key: "fn-supply", name: "Supply Chain", businessUnitKey: "bu-elec" },
+  { key: "fn-engineering", name: "Engineering", businessUnitKey: "bu-energy" },
+] as const
 
-  {
-    key: "fn-prod",
-    name: "สายงานการผลิต",
-    level: "Function",
-    parentKey: "bu-auto",
-  },
-  {
-    key: "fn-supply",
-    name: "สายงานซัพพลายเชน",
-    level: "Function",
-    parentKey: "bu-elec",
-  },
+const divisions = [
+  { key: "div-assembly", name: "Assembly", functionKey: "fn-prod" },
+  { key: "div-paint", name: "Paint", functionKey: "fn-prod" },
+  { key: "div-qc", name: "Quality Control", functionKey: "fn-quality" },
+  { key: "div-logistics", name: "Logistics", functionKey: "fn-supply" },
+  { key: "div-rnd", name: "R&D", functionKey: "fn-engineering" },
+] as const
 
-  {
-    key: "div-assembly",
-    name: "ฝ่ายประกอบ",
-    level: "Division",
-    parentKey: "fn-prod",
-  },
-  {
-    key: "div-quality",
-    name: "ฝ่ายคุณภาพ",
-    level: "Division",
-    parentKey: "fn-prod",
-  },
-  {
-    key: "div-logistics",
-    name: "ฝ่ายโลจิสติกส์",
-    level: "Division",
-    parentKey: "fn-supply",
-  },
-
-  {
-    key: "dep-assy-a",
-    name: "ส่วนงานประกอบ A",
-    level: "Department",
-    parentKey: "div-assembly",
-  },
-  {
-    key: "dep-assy-b",
-    name: "ส่วนงานประกอบ B",
-    level: "Department",
-    parentKey: "div-assembly",
-  },
-  {
-    key: "dep-qc-in",
-    name: "ส่วนงานตรวจสอบคุณภาพ",
-    level: "Department",
-    parentKey: "div-quality",
-  },
+const departments = [
+  { key: "dep-assy-a", name: "Assembly Line A", divisionKey: "div-assembly" },
+  { key: "dep-assy-b", name: "Assembly Line B", divisionKey: "div-assembly" },
+  { key: "dep-paint", name: "Paint Operations", divisionKey: "div-paint" },
+  { key: "dep-qc-in", name: "Incoming Quality", divisionKey: "div-qc" },
   {
     key: "dep-log-plan",
-    name: "ส่วนงานวางแผนขนส่ง",
-    level: "Department",
-    parentKey: "div-logistics",
+    name: "Transport Planning",
+    divisionKey: "div-logistics",
   },
-]
+  { key: "dep-rnd-lab", name: "Prototype Lab", divisionKey: "div-rnd" },
+] as const
 
 export async function seedOrganizationUnits() {
   console.log("🌱 Seeding organization units...")
 
-  await prisma.organizationUnit.deleteMany()
+  const plantIdByKey = new Map<string, string>()
+  const businessUnitIdByKey = new Map<string, string>()
+  const functionIdByKey = new Map<string, string>()
+  const divisionIdByKey = new Map<string, string>()
 
-  const idByKey = new Map<string, string>()
-
-  for (const node of orgSeedNodes) {
-    const parentId = node.parentKey
-      ? (idByKey.get(node.parentKey) ?? null)
-      : null
-
-    if (node.parentKey && !parentId) {
-      throw new Error(
-        `Parent key not found while seeding organization unit: ${node.parentKey}`
-      )
-    }
-
-    const created = await prisma.organizationUnit.create({
+  for (const plant of plants) {
+    const created = await prisma.plant.create({
       data: {
-        name: node.name,
-        level: node.level,
-        parentId,
+        name: plant.name,
       },
       select: { id: true },
     })
 
-    idByKey.set(node.key, created.id)
+    plantIdByKey.set(plant.key, created.id)
   }
 
-  console.log(`✅ Seeded ${orgSeedNodes.length} organization units`)
+  for (const businessUnit of businessUnits) {
+    const plantId = plantIdByKey.get(businessUnit.plantKey)
+
+    if (!plantId) {
+      throw new Error(
+        `Plant key not found while seeding business unit: ${businessUnit.plantKey}`
+      )
+    }
+
+    const created = await prisma.businessUnit.create({
+      data: {
+        name: businessUnit.name,
+        plantId,
+      },
+      select: { id: true },
+    })
+
+    businessUnitIdByKey.set(businessUnit.key, created.id)
+  }
+
+  for (const orgFunction of orgFunctions) {
+    const businessUnitId = businessUnitIdByKey.get(orgFunction.businessUnitKey)
+
+    if (!businessUnitId) {
+      throw new Error(
+        `Business unit key not found while seeding function: ${orgFunction.businessUnitKey}`
+      )
+    }
+
+    const created = await prisma.orgFunction.create({
+      data: {
+        name: orgFunction.name,
+        businessUnitId,
+      },
+      select: { id: true },
+    })
+
+    functionIdByKey.set(orgFunction.key, created.id)
+  }
+
+  for (const division of divisions) {
+    const functionId = functionIdByKey.get(division.functionKey)
+
+    if (!functionId) {
+      throw new Error(
+        `Function key not found while seeding division: ${division.functionKey}`
+      )
+    }
+
+    const created = await prisma.division.create({
+      data: {
+        name: division.name,
+        functionId,
+      },
+      select: { id: true },
+    })
+
+    divisionIdByKey.set(division.key, created.id)
+  }
+
+  for (const department of departments) {
+    const divisionId = divisionIdByKey.get(department.divisionKey)
+
+    if (!divisionId) {
+      throw new Error(
+        `Division key not found while seeding department: ${department.divisionKey}`
+      )
+    }
+
+    await prisma.department.create({
+      data: {
+        name: department.name,
+        divisionId,
+      },
+    })
+  }
+
+  console.log(
+    `✅ Seeded ${plants.length} plants, ${businessUnits.length} business units, ${orgFunctions.length} functions, ${divisions.length} divisions, ${departments.length} departments`
+  )
 }
 
 if (require.main === module) {

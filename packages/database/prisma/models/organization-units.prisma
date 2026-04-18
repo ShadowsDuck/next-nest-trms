@@ -1,26 +1,74 @@
-enum OrgUnitLevel {
-  Plant
-  BU
-  Function
-  Division
-  Department
+model Plant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  businessUnits BusinessUnit[]
+  employees     Employee[]
+
+  @@map("plants")
 }
 
-model OrganizationUnit {
-  id        String       @id @default(cuid())
+model BusinessUnit {
+  id        String   @id @default(cuid())
   name      String
-  level     OrgUnitLevel
-  parentId  String?      @map("parent_id")
-  createdAt DateTime     @default(now()) @map("created_at")
-  updatedAt DateTime     @updatedAt @map("updated_at")
+  plantId   String   @map("plant_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  parent    OrganizationUnit?  @relation("OrgHierarchy", fields: [parentId], references: [id])
-  children  OrganizationUnit[] @relation("OrgHierarchy")
+  plant         Plant          @relation(fields: [plantId], references: [id])
+  orgFunctions  OrgFunction[]
+  employees     Employee[]
 
-  employees Employee[]
+  @@unique([plantId, name])
+  @@index([plantId])
+  @@map("business_units")
+}
 
-  @@unique([parentId, name])
-  @@index([parentId])
-  @@index([level])
-  @@map("organization_units")
+model OrgFunction {
+  id             String   @id @default(cuid())
+  name           String
+  businessUnitId String   @map("business_unit_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  businessUnit BusinessUnit @relation(fields: [businessUnitId], references: [id])
+  divisions    Division[]
+  employees    Employee[]
+
+  @@unique([businessUnitId, name])
+  @@index([businessUnitId])
+  @@map("org_functions")
+}
+
+model Division {
+  id         String   @id @default(cuid())
+  name       String
+  functionId String   @map("function_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  orgFunction  OrgFunction  @relation(fields: [functionId], references: [id])
+  departments  Department[]
+  employees    Employee[]
+
+  @@unique([functionId, name])
+  @@index([functionId])
+  @@map("divisions")
+}
+
+model Department {
+  id         String   @id @default(cuid())
+  name       String
+  divisionId String   @map("division_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  division   Division   @relation(fields: [divisionId], references: [id])
+  employees  Employee[]
+
+  @@unique([divisionId, name])
+  @@index([divisionId])
+  @@map("departments")
 }

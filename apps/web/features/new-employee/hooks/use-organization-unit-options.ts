@@ -1,13 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { OrganizationUnitResponse } from '@workspace/schemas'
 import type { Control, UseFormSetValue } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
 import {
-  getOrganizationUnits,
+  type OrganizationOption,
+  getBusinessUnits,
+  getDepartments,
+  getDivisions,
+  getFunctions,
+  getPlants,
   sortOrgUnitsByName,
 } from '@/features/new-employee/data/get-org-unit'
 
@@ -17,11 +21,11 @@ type UseOrganizationUnitOptionsParams = {
 }
 
 type OrganizationUnitOptionsResult = {
-  plantOptions: OrganizationUnitResponse[]
-  buOptions: OrganizationUnitResponse[]
-  functionOptions: OrganizationUnitResponse[]
-  divisionOptions: OrganizationUnitResponse[]
-  departmentOptions: OrganizationUnitResponse[]
+  plantOptions: OrganizationOption[]
+  buOptions: OrganizationOption[]
+  functionOptions: OrganizationOption[]
+  divisionOptions: OrganizationOption[]
+  departmentOptions: OrganizationOption[]
   isOrgLoading: boolean
   selectedPlantId: string | undefined
   selectedBuId: string | undefined
@@ -33,18 +37,16 @@ export function useOrganizationUnitOptions({
   control,
   setValue,
 }: UseOrganizationUnitOptionsParams): OrganizationUnitOptionsResult {
-  const [plantOptions, setPlantOptions] = useState<OrganizationUnitResponse[]>(
+  const [plantOptions, setPlantOptions] = useState<OrganizationOption[]>([])
+  const [buOptions, setBuOptions] = useState<OrganizationOption[]>([])
+  const [functionOptions, setFunctionOptions] = useState<OrganizationOption[]>(
     []
   )
-  const [buOptions, setBuOptions] = useState<OrganizationUnitResponse[]>([])
-  const [functionOptions, setFunctionOptions] = useState<
-    OrganizationUnitResponse[]
-  >([])
-  const [divisionOptions, setDivisionOptions] = useState<
-    OrganizationUnitResponse[]
-  >([])
+  const [divisionOptions, setDivisionOptions] = useState<OrganizationOption[]>(
+    []
+  )
   const [departmentOptions, setDepartmentOptions] = useState<
-    OrganizationUnitResponse[]
+    OrganizationOption[]
   >([])
   const [loadingCount, setLoadingCount] = useState(0)
 
@@ -60,9 +62,7 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const plants = await getOrganizationUnits(
-          '/api/organization-units/plants'
-        )
+        const plants = await getPlants()
 
         if (isActive) {
           setPlantOptions(sortOrgUnitsByName(plants))
@@ -76,7 +76,7 @@ export function useOrganizationUnitOptions({
       }
     }
 
-    loadPlants()
+    void loadPlants()
 
     return () => {
       isActive = false
@@ -102,14 +102,10 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await getOrganizationUnits(
-          `/api/organization-units/${encodeURIComponent(selectedPlantId)}/children`
-        )
+        const businessUnits = await getBusinessUnits(selectedPlantId)
 
         if (isActive) {
-          setBuOptions(
-            sortOrgUnitsByName(children.filter((item) => item.level === 'BU'))
-          )
+          setBuOptions(sortOrgUnitsByName(businessUnits))
         }
       } catch {
         if (isActive) {
@@ -121,7 +117,7 @@ export function useOrganizationUnitOptions({
       }
     }
 
-    loadBusinessUnits()
+    void loadBusinessUnits()
 
     return () => {
       isActive = false
@@ -145,16 +141,10 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await getOrganizationUnits(
-          `/api/organization-units/${encodeURIComponent(selectedBuId)}/children`
-        )
+        const functions = await getFunctions(selectedBuId)
 
         if (isActive) {
-          setFunctionOptions(
-            sortOrgUnitsByName(
-              children.filter((item) => item.level === 'Function')
-            )
-          )
+          setFunctionOptions(sortOrgUnitsByName(functions))
         }
       } catch {
         if (isActive) {
@@ -166,7 +156,7 @@ export function useOrganizationUnitOptions({
       }
     }
 
-    loadFunctions()
+    void loadFunctions()
 
     return () => {
       isActive = false
@@ -188,16 +178,10 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await getOrganizationUnits(
-          `/api/organization-units/${encodeURIComponent(selectedFunctionId)}/children`
-        )
+        const divisions = await getDivisions(selectedFunctionId)
 
         if (isActive) {
-          setDivisionOptions(
-            sortOrgUnitsByName(
-              children.filter((item) => item.level === 'Division')
-            )
-          )
+          setDivisionOptions(sortOrgUnitsByName(divisions))
         }
       } catch {
         if (isActive) {
@@ -209,7 +193,7 @@ export function useOrganizationUnitOptions({
       }
     }
 
-    loadDivisions()
+    void loadDivisions()
 
     return () => {
       isActive = false
@@ -229,16 +213,10 @@ export function useOrganizationUnitOptions({
       setLoadingCount((current) => current + 1)
 
       try {
-        const children = await getOrganizationUnits(
-          `/api/organization-units/${encodeURIComponent(selectedDivisionId)}/children`
-        )
+        const departments = await getDepartments(selectedDivisionId)
 
         if (isActive) {
-          setDepartmentOptions(
-            sortOrgUnitsByName(
-              children.filter((item) => item.level === 'Department')
-            )
-          )
+          setDepartmentOptions(sortOrgUnitsByName(departments))
         }
       } catch {
         if (isActive) {
@@ -250,7 +228,7 @@ export function useOrganizationUnitOptions({
       }
     }
 
-    loadDepartments()
+    void loadDepartments()
 
     return () => {
       isActive = false

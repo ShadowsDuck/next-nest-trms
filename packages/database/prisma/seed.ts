@@ -10,7 +10,11 @@ async function main() {
   // Clear child table first to avoid FK constraint errors
   await prisma.trainingRecord.deleteMany()
   await prisma.employee.deleteMany()
-  await prisma.organizationUnit.deleteMany()
+  await prisma.department.deleteMany()
+  await prisma.division.deleteMany()
+  await prisma.orgFunction.deleteMany()
+  await prisma.businessUnit.deleteMany()
+  await prisma.plant.deleteMany()
 
   await seedOrganizationUnits()
   await seedEmployees()

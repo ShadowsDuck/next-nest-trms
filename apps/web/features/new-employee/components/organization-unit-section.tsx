@@ -1,4 +1,3 @@
-import type { OrganizationUnitResponse } from '@workspace/schemas'
 import {
   Field,
   FieldError,
@@ -18,13 +17,14 @@ import { Building2 } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { FormSectionShell } from '@/features/new-employee/components/form-section-shell'
 import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
+import type { OrganizationOption } from '@/features/new-employee/data/get-org-unit'
 
 type OrganizationUnitSectionProps = {
-  plantOptions: OrganizationUnitResponse[]
-  buOptions: OrganizationUnitResponse[]
-  functionOptions: OrganizationUnitResponse[]
-  divisionOptions: OrganizationUnitResponse[]
-  departmentOptions: OrganizationUnitResponse[]
+  plantOptions: OrganizationOption[]
+  buOptions: OrganizationOption[]
+  functionOptions: OrganizationOption[]
+  divisionOptions: OrganizationOption[]
+  departmentOptions: OrganizationOption[]
   isOrgLoading: boolean
   selectedPlantId?: string
   selectedBuId?: string

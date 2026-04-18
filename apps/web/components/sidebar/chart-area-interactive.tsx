@@ -32,6 +32,17 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+const data = [
+  { date: '2026-03-20', enrollments: 18 },
+  { date: '2026-03-24', enrollments: 26 },
+  { date: '2026-03-28', enrollments: 21 },
+  { date: '2026-04-01', enrollments: 32 },
+  { date: '2026-04-05', enrollments: 28 },
+  { date: '2026-04-09', enrollments: 35 },
+  { date: '2026-04-13', enrollments: 30 },
+  { date: '2026-04-17', enrollments: 38 },
+]
+
 export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">

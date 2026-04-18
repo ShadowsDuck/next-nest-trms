@@ -89,7 +89,7 @@ function EmployeeSelectionActions({
         disabled={isExportingEmployees}
       >
         <Upload className="mr-1 size-4" />
-        {isExportingEmployees ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกข้อมูล'}
+        {isExportingEmployees ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกข้อมูลพนักงาน'}
       </Button>
       <Button
         variant="outline"
@@ -100,9 +100,7 @@ function EmployeeSelectionActions({
         disabled={isExportingCourses}
       >
         <Upload className="mr-1 size-4" />
-        {isExportingCourses
-          ? 'กำลังส่งออกข้อมูล...'
-          : 'ส่งออกข้อมูลพร้อมหลักสูตร'}
+        {isExportingCourses ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกพร้อมหลักสูตร'}
       </Button>
     </DataTableSelectionBar>
   )

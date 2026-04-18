@@ -1,235 +1,430 @@
-import { OrgUnitLevel, OrganizationUnit } from '@workspace/database';
+import {
+  BusinessUnit,
+  Department,
+  Division,
+  OrgFunction,
+  Plant,
+} from '@workspace/database';
 import { toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateOrganizationUnitDto } from './dto/create-organization-unit.dto';
-import { OrganizationUnitPathResponseDto } from './dto/organization-unit-path-response.dto';
-import { OrganizationUnitResponseDto } from './dto/organization-unit-response.dto';
-import { UpdateOrganizationUnitDto } from './dto/update-organization-unit.dto';
-
-const expectedParentLevelByLevel: Record<OrgUnitLevel, OrgUnitLevel | null> = {
-  Plant: null,
-  BU: 'Plant',
-  Function: 'BU',
-  Division: 'Function',
-  Department: 'Division',
-};
+import {
+  BusinessUnitQueryDto,
+  BusinessUnitResponseDto,
+  CreateBusinessUnitDto,
+  CreateDepartmentDto,
+  CreateDivisionDto,
+  CreateOrgFunctionDto,
+  CreatePlantDto,
+  DepartmentQueryDto,
+  DepartmentResponseDto,
+  DivisionQueryDto,
+  DivisionResponseDto,
+  OrgFunctionQueryDto,
+  OrgFunctionResponseDto,
+  PlantResponseDto,
+  UpdateBusinessUnitDto,
+  UpdateDepartmentDto,
+  UpdateDivisionDto,
+  UpdateOrgFunctionDto,
+  UpdatePlantDto,
+} from './dto/organization-unit-resources.dto';
 
 @Injectable()
 export class OrganizationUnitsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findPlants(): Promise<OrganizationUnitResponseDto[]> {
-    const plants = await this.prismaService.organizationUnit.findMany({
-      where: {
-        level: OrgUnitLevel.Plant,
-        parentId: null,
-      },
-      orderBy: [{ name: 'asc' }],
+  async findPlants(): Promise<PlantResponseDto[]> {
+    const plants = await this.prismaService.plant.findMany({
+      orderBy: { name: 'asc' },
     });
 
-    return plants.map((item) => this.formatOrganizationUnit(item));
+    return plants.map((plant) => this.formatPlant(plant));
   }
 
-  async create(
-    createOrganizationUnitDto: CreateOrganizationUnitDto,
-  ): Promise<OrganizationUnitResponseDto> {
-    await this.validateHierarchy(
-      createOrganizationUnitDto.level,
-      createOrganizationUnitDto.parentId ?? null,
-      null,
-    );
-
-    const organizationUnit = await this.prismaService.organizationUnit.create({
+  async createPlant(createPlantDto: CreatePlantDto): Promise<PlantResponseDto> {
+    const plant = await this.prismaService.plant.create({
       data: {
-        name: createOrganizationUnitDto.name,
-        level: createOrganizationUnitDto.level,
-        parentId: createOrganizationUnitDto.parentId ?? null,
+        name: createPlantDto.name,
       },
     });
 
-    return this.formatOrganizationUnit(organizationUnit);
+    return this.formatPlant(plant);
   }
 
-  async update(
+  async updatePlant(
     id: string,
-    updateOrganizationUnitDto: UpdateOrganizationUnitDto,
-  ): Promise<OrganizationUnitResponseDto> {
-    const existingOrganizationUnit =
-      await this.prismaService.organizationUnit.findUnique({
+    updatePlantDto: UpdatePlantDto,
+  ): Promise<PlantResponseDto> {
+    await this.ensurePlantExists(id);
+
+    const plant = await this.prismaService.plant.update({
+      where: { id },
+      data: updatePlantDto,
+    });
+
+    return this.formatPlant(plant);
+  }
+
+  async findBusinessUnits(
+    query: BusinessUnitQueryDto,
+  ): Promise<BusinessUnitResponseDto[]> {
+    if (query.plantId) {
+      await this.ensurePlantExists(query.plantId);
+    }
+
+    const businessUnits = await this.prismaService.businessUnit.findMany({
+      where: query.plantId ? { plantId: query.plantId } : undefined,
+      orderBy: { name: 'asc' },
+    });
+
+    return businessUnits.map((businessUnit) =>
+      this.formatBusinessUnit(businessUnit),
+    );
+  }
+
+  async createBusinessUnit(
+    createBusinessUnitDto: CreateBusinessUnitDto,
+  ): Promise<BusinessUnitResponseDto> {
+    await this.ensurePlantExists(createBusinessUnitDto.plantId);
+
+    try {
+      const businessUnit = await this.prismaService.businessUnit.create({
+        data: {
+          name: createBusinessUnitDto.name,
+          plantId: createBusinessUnitDto.plantId,
+        },
+      });
+
+      return this.formatBusinessUnit(businessUnit);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async updateBusinessUnit(
+    id: string,
+    updateBusinessUnitDto: UpdateBusinessUnitDto,
+  ): Promise<BusinessUnitResponseDto> {
+    await this.ensureBusinessUnitExists(id);
+
+    if (updateBusinessUnitDto.plantId) {
+      await this.ensurePlantExists(updateBusinessUnitDto.plantId);
+    }
+
+    try {
+      const businessUnit = await this.prismaService.businessUnit.update({
         where: { id },
+        data: updateBusinessUnitDto,
       });
 
-    if (!existingOrganizationUnit) {
-      throw new NotFoundException('ไม่พบหน่วยงานที่ต้องการแก้ไข');
+      return this.formatBusinessUnit(businessUnit);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
     }
-
-    const nextLevel =
-      updateOrganizationUnitDto.level ?? existingOrganizationUnit.level;
-    const nextParentId = Object.prototype.hasOwnProperty.call(
-      updateOrganizationUnitDto,
-      'parentId',
-    )
-      ? (updateOrganizationUnitDto.parentId ?? null)
-      : existingOrganizationUnit.parentId;
-
-    await this.validateHierarchy(nextLevel, nextParentId, id);
-
-    const organizationUnit = await this.prismaService.organizationUnit.update({
-      where: { id },
-      data: {
-        ...(updateOrganizationUnitDto.name
-          ? { name: updateOrganizationUnitDto.name }
-          : {}),
-        ...(updateOrganizationUnitDto.level
-          ? { level: updateOrganizationUnitDto.level }
-          : {}),
-        ...(Object.prototype.hasOwnProperty.call(
-          updateOrganizationUnitDto,
-          'parentId',
-        )
-          ? { parentId: updateOrganizationUnitDto.parentId ?? null }
-          : {}),
-      },
-    });
-
-    return this.formatOrganizationUnit(organizationUnit);
   }
 
-  async findChildren(parentId: string): Promise<OrganizationUnitResponseDto[]> {
-    const parent = await this.prismaService.organizationUnit.findUnique({
-      where: { id: parentId },
-      select: { id: true },
-    });
-
-    if (!parent) {
-      throw new NotFoundException('ไม่พบหน่วยงานแม่ที่ต้องการค้นหา');
+  async findFunctions(
+    query: OrgFunctionQueryDto,
+  ): Promise<OrgFunctionResponseDto[]> {
+    if (query.businessUnitId) {
+      await this.ensureBusinessUnitExists(query.businessUnitId);
     }
 
-    const children = await this.prismaService.organizationUnit.findMany({
-      where: { parentId },
-      orderBy: [{ level: 'asc' }, { name: 'asc' }],
+    const orgFunctions = await this.prismaService.orgFunction.findMany({
+      where: query.businessUnitId
+        ? { businessUnitId: query.businessUnitId }
+        : undefined,
+      orderBy: { name: 'asc' },
     });
 
-    return children.map((child) => this.formatOrganizationUnit(child));
+    return orgFunctions.map((orgFunction) =>
+      this.formatOrgFunction(orgFunction),
+    );
   }
 
-  async findPathToRoot(id: string): Promise<OrganizationUnitPathResponseDto> {
-    const path: OrganizationUnit[] = [];
+  async createFunction(
+    createOrgFunctionDto: CreateOrgFunctionDto,
+  ): Promise<OrgFunctionResponseDto> {
+    await this.ensureBusinessUnitExists(createOrgFunctionDto.businessUnitId);
 
-    let current = await this.prismaService.organizationUnit.findUnique({
-      where: { id },
-    });
-
-    if (!current) {
-      throw new NotFoundException('ไม่พบหน่วยงานที่ต้องการค้นหาเส้นทาง');
-    }
-
-    while (current) {
-      path.push(current);
-
-      if (!current.parentId) {
-        break;
-      }
-
-      current = await this.prismaService.organizationUnit.findUnique({
-        where: { id: current.parentId },
+    try {
+      const orgFunction = await this.prismaService.orgFunction.create({
+        data: {
+          name: createOrgFunctionDto.name,
+          businessUnitId: createOrgFunctionDto.businessUnitId,
+        },
       });
+
+      return this.formatOrgFunction(orgFunction);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async updateFunction(
+    id: string,
+    updateOrgFunctionDto: UpdateOrgFunctionDto,
+  ): Promise<OrgFunctionResponseDto> {
+    await this.ensureFunctionExists(id);
+
+    if (updateOrgFunctionDto.businessUnitId) {
+      await this.ensureBusinessUnitExists(updateOrgFunctionDto.businessUnitId);
     }
 
+    try {
+      const orgFunction = await this.prismaService.orgFunction.update({
+        where: { id },
+        data: updateOrgFunctionDto,
+      });
+
+      return this.formatOrgFunction(orgFunction);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async findDivisions(query: DivisionQueryDto): Promise<DivisionResponseDto[]> {
+    if (query.functionId) {
+      await this.ensureFunctionExists(query.functionId);
+    }
+
+    const divisions = await this.prismaService.division.findMany({
+      where: query.functionId ? { functionId: query.functionId } : undefined,
+      orderBy: { name: 'asc' },
+    });
+
+    return divisions.map((division) => this.formatDivision(division));
+  }
+
+  async createDivision(
+    createDivisionDto: CreateDivisionDto,
+  ): Promise<DivisionResponseDto> {
+    await this.ensureFunctionExists(createDivisionDto.functionId);
+
+    try {
+      const division = await this.prismaService.division.create({
+        data: {
+          name: createDivisionDto.name,
+          functionId: createDivisionDto.functionId,
+        },
+      });
+
+      return this.formatDivision(division);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async updateDivision(
+    id: string,
+    updateDivisionDto: UpdateDivisionDto,
+  ): Promise<DivisionResponseDto> {
+    await this.ensureDivisionExists(id);
+
+    if (updateDivisionDto.functionId) {
+      await this.ensureFunctionExists(updateDivisionDto.functionId);
+    }
+
+    try {
+      const division = await this.prismaService.division.update({
+        where: { id },
+        data: updateDivisionDto,
+      });
+
+      return this.formatDivision(division);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async findDepartments(
+    query: DepartmentQueryDto,
+  ): Promise<DepartmentResponseDto[]> {
+    if (query.divisionId) {
+      await this.ensureDivisionExists(query.divisionId);
+    }
+
+    const departments = await this.prismaService.department.findMany({
+      where: query.divisionId ? { divisionId: query.divisionId } : undefined,
+      orderBy: { name: 'asc' },
+    });
+
+    return departments.map((department) => this.formatDepartment(department));
+  }
+
+  async createDepartment(
+    createDepartmentDto: CreateDepartmentDto,
+  ): Promise<DepartmentResponseDto> {
+    await this.ensureDivisionExists(createDepartmentDto.divisionId);
+
+    try {
+      const department = await this.prismaService.department.create({
+        data: {
+          name: createDepartmentDto.name,
+          divisionId: createDepartmentDto.divisionId,
+        },
+      });
+
+      return this.formatDepartment(department);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  async updateDepartment(
+    id: string,
+    updateDepartmentDto: UpdateDepartmentDto,
+  ): Promise<DepartmentResponseDto> {
+    await this.ensureDepartmentExists(id);
+
+    if (updateDepartmentDto.divisionId) {
+      await this.ensureDivisionExists(updateDepartmentDto.divisionId);
+    }
+
+    try {
+      const department = await this.prismaService.department.update({
+        where: { id },
+        data: updateDepartmentDto,
+      });
+
+      return this.formatDepartment(department);
+    } catch (error) {
+      this.rethrowDuplicateNameError(error);
+      throw error;
+    }
+  }
+
+  private async ensurePlantExists(id: string) {
+    const plant = await this.prismaService.plant.findUnique({
+      where: { id },
+    });
+
+    if (!plant) {
+      throw new NotFoundException('ไม่พบ Plant ที่ระบุ');
+    }
+
+    return plant;
+  }
+
+  private async ensureBusinessUnitExists(id: string) {
+    const businessUnit = await this.prismaService.businessUnit.findUnique({
+      where: { id },
+    });
+
+    if (!businessUnit) {
+      throw new NotFoundException('ไม่พบ Business Unit ที่ระบุ');
+    }
+
+    return businessUnit;
+  }
+
+  private async ensureFunctionExists(id: string) {
+    const orgFunction = await this.prismaService.orgFunction.findUnique({
+      where: { id },
+    });
+
+    if (!orgFunction) {
+      throw new NotFoundException('ไม่พบ Function ที่ระบุ');
+    }
+
+    return orgFunction;
+  }
+
+  private async ensureDivisionExists(id: string) {
+    const division = await this.prismaService.division.findUnique({
+      where: { id },
+    });
+
+    if (!division) {
+      throw new NotFoundException('ไม่พบ Division ที่ระบุ');
+    }
+
+    return division;
+  }
+
+  private async ensureDepartmentExists(id: string) {
+    const department = await this.prismaService.department.findUnique({
+      where: { id },
+    });
+
+    if (!department) {
+      throw new NotFoundException('ไม่พบ Department ที่ระบุ');
+    }
+
+    return department;
+  }
+
+  private rethrowDuplicateNameError(error: unknown): void {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictException('ชื่อหน่วยงานซ้ำภายใต้หน่วยงานแม่เดียวกัน');
+    }
+  }
+
+  private formatPlant(plant: Plant): PlantResponseDto {
     return {
-      path: path.reverse().map((unit) => this.formatOrganizationUnit(unit)),
+      id: plant.id,
+      name: plant.name,
+      createdAt: toIsoDateTime(plant.createdAt),
+      updatedAt: toIsoDateTime(plant.updatedAt),
     };
   }
 
-  private async validateHierarchy(
-    level: OrgUnitLevel,
-    parentId: string | null,
-    currentId: string | null,
-  ) {
-    // กำหนดว่าระดับปัจจุบัน "ควรมี parent เป็นระดับอะไร"
-    // เช่น Department ต้องอยู่ใต้ Division เท่านั้น
-    const expectedParentLevel = expectedParentLevelByLevel[level];
-
-    // กรณี Plant: เป็นรากของโครงสร้าง ห้ามมี parent
-    if (!expectedParentLevel) {
-      if (parentId) {
-        throw new BadRequestException('Plant ต้องไม่มีหน่วยงานแม่');
-      }
-      return;
-    }
-
-    // ระดับอื่นที่ไม่ใช่ Plant ต้องมี parent เสมอ
-    if (!parentId) {
-      throw new BadRequestException(
-        `ระดับ ${level} ต้องมีหน่วยงานแม่ระดับ ${expectedParentLevel}`,
-      );
-    }
-
-    // กันเคส parent เป็นตัวเองตรงๆ
-    if (currentId && parentId === currentId) {
-      throw new BadRequestException('หน่วยงานไม่สามารถเป็นแม่ของตัวเองได้');
-    }
-
-    const parent = await this.prismaService.organizationUnit.findUnique({
-      where: { id: parentId },
-      select: { id: true, level: true, parentId: true },
-    });
-
-    if (!parent) {
-      throw new NotFoundException('ไม่พบหน่วยงานแม่ที่ระบุ');
-    }
-
-    if (parent.level !== expectedParentLevel) {
-      throw new BadRequestException(
-        `ระดับ ${level} ต้องอยู่ใต้ระดับ ${expectedParentLevel} เท่านั้น`,
-      );
-    }
-
-    // ตอน update ต้องกันการย้าย node ไปอยู่ใต้ลูกหลานของตัวเอง (cycle)
-    if (currentId) {
-      await this.assertParentIsNotDescendant(currentId, parent.id);
-    }
-  }
-
-  private async assertParentIsNotDescendant(
-    currentId: string,
-    candidateParentId: string,
-  ) {
-    // ไล่ parent chain ของ candidateParent ขึ้นไปจนถึงราก
-    // ถ้าระหว่างทางเจอ currentId แปลว่ากำลังสร้าง loop ใน tree
-    let cursor: string | null = candidateParentId;
-
-    while (cursor) {
-      if (cursor === currentId) {
-        throw new BadRequestException(
-          'ไม่สามารถย้ายหน่วยงานไปอยู่ใต้ลูกหลานของตัวเองได้',
-        );
-      }
-
-      const node = await this.prismaService.organizationUnit.findUnique({
-        where: { id: cursor },
-        select: { parentId: true },
-      });
-
-      cursor = node?.parentId ?? null;
-    }
-  }
-
-  private formatOrganizationUnit(
-    organizationUnit: OrganizationUnit,
-  ): OrganizationUnitResponseDto {
+  private formatBusinessUnit(
+    businessUnit: BusinessUnit,
+  ): BusinessUnitResponseDto {
     return {
-      id: organizationUnit.id,
-      name: organizationUnit.name,
-      level: organizationUnit.level,
-      parentId: organizationUnit.parentId,
-      createdAt: toIsoDateTime(organizationUnit.createdAt),
-      updatedAt: toIsoDateTime(organizationUnit.updatedAt),
+      id: businessUnit.id,
+      name: businessUnit.name,
+      plantId: businessUnit.plantId,
+      createdAt: toIsoDateTime(businessUnit.createdAt),
+      updatedAt: toIsoDateTime(businessUnit.updatedAt),
+    };
+  }
+
+  private formatOrgFunction(orgFunction: OrgFunction): OrgFunctionResponseDto {
+    return {
+      id: orgFunction.id,
+      name: orgFunction.name,
+      businessUnitId: orgFunction.businessUnitId,
+      createdAt: toIsoDateTime(orgFunction.createdAt),
+      updatedAt: toIsoDateTime(orgFunction.updatedAt),
+    };
+  }
+
+  private formatDivision(division: Division): DivisionResponseDto {
+    return {
+      id: division.id,
+      name: division.name,
+      functionId: division.functionId,
+      createdAt: toIsoDateTime(division.createdAt),
+      updatedAt: toIsoDateTime(division.updatedAt),
+    };
+  }
+
+  private formatDepartment(department: Department): DepartmentResponseDto {
+    return {
+      id: department.id,
+      name: department.name,
+      divisionId: department.divisionId,
+      createdAt: toIsoDateTime(department.createdAt),
+      updatedAt: toIsoDateTime(department.updatedAt),
     };
   }
 }

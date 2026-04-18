@@ -1,7 +1,11 @@
 import {
+  BusinessUnit,
   Course,
+  Department,
+  Division,
   Employee,
-  OrganizationUnit,
+  OrgFunction,
+  Plant,
   Prisma,
   Tag,
 } from '@workspace/database';
@@ -11,6 +15,14 @@ import { Injectable } from '@nestjs/common';
 import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 import { CourseResponseDto } from './dto/course-response.dto';
+
+type CourseEmployee = Employee & {
+  plant: Plant;
+  businessUnit: BusinessUnit;
+  orgFunction: OrgFunction;
+  division: Division;
+  department: Department;
+};
 
 @Injectable()
 export class CoursesService {
@@ -62,7 +74,11 @@ export class CoursesService {
                   include: {
                     employee: {
                       include: {
-                        orgUnit: true,
+                        plant: true,
+                        businessUnit: true,
+                        orgFunction: true,
+                        division: true,
+                        department: true,
                       },
                     },
                   },
@@ -77,14 +93,8 @@ export class CoursesService {
       this.prismaService.course.count({ where }),
     ]);
 
-    const orgPathByOrgUnitId = includeEmployees
-      ? await this.buildOrgPathMap(courses)
-      : new Map<string, OrganizationUnit[]>();
-
     return {
-      data: courses.map((course) =>
-        this.formatCourse(course, orgPathByOrgUnitId),
-      ),
+      data: courses.map((course) => this.formatCourse(course)),
       meta: {
         total,
         page,
@@ -94,67 +104,13 @@ export class CoursesService {
     };
   }
 
-  private async buildOrgPathMap(
-    courses: (Course & {
-      trainingRecords?: {
-        employee: Employee & { orgUnit: OrganizationUnit | null };
-      }[];
-    })[],
-  ) {
-    const orgUnitIds = new Set<string>();
-
-    for (const course of courses) {
-      for (const trainingRecord of course.trainingRecords ?? []) {
-        if (trainingRecord.employee.orgUnitId) {
-          orgUnitIds.add(trainingRecord.employee.orgUnitId);
-        }
-      }
-    }
-
-    const orgPathByOrgUnitId = new Map<string, OrganizationUnit[]>();
-
-    await Promise.all(
-      [...orgUnitIds].map(async (orgUnitId) => {
-        orgPathByOrgUnitId.set(
-          orgUnitId,
-          await this.getOrganizationPath(orgUnitId),
-        );
-      }),
-    );
-
-    return orgPathByOrgUnitId;
-  }
-
-  private async getOrganizationPath(
-    orgUnitId: string,
-  ): Promise<OrganizationUnit[]> {
-    const path: OrganizationUnit[] = [];
-    let currentId: string | null = orgUnitId;
-
-    while (currentId) {
-      const orgUnit = await this.prismaService.organizationUnit.findUnique({
-        where: { id: currentId },
-      });
-
-      if (!orgUnit) {
-        break;
-      }
-
-      path.unshift(orgUnit);
-      currentId = orgUnit.parentId;
-    }
-
-    return path;
-  }
-
   private formatCourse(
     course: Course & {
       tag: Tag;
       trainingRecords?: {
-        employee: Employee & { orgUnit: OrganizationUnit | null };
+        employee: CourseEmployee;
       }[];
     },
-    orgPathByOrgUnitId: Map<string, OrganizationUnit[]> = new Map(),
   ): CourseResponseDto {
     return {
       ...course,
@@ -181,20 +137,14 @@ export class CoursesService {
         prefix: trainingRecord.employee.prefix,
         firstName: trainingRecord.employee.firstName,
         lastName: trainingRecord.employee.lastName,
+        hireDate: toIsoDate(trainingRecord.employee.hireDate),
         jobLevel: trainingRecord.employee.jobLevel,
         status: trainingRecord.employee.status,
-        orgPath: trainingRecord.employee.orgUnitId
-          ? (
-              orgPathByOrgUnitId.get(trainingRecord.employee.orgUnitId) ?? []
-            ).map((orgUnit) => ({
-              id: orgUnit.id,
-              name: orgUnit.name,
-              level: orgUnit.level,
-              parentId: orgUnit.parentId,
-              createdAt: toIsoDateTime(orgUnit.createdAt),
-              updatedAt: toIsoDateTime(orgUnit.updatedAt),
-            }))
-          : [],
+        plantName: trainingRecord.employee.plant.name,
+        buName: trainingRecord.employee.businessUnit.name,
+        functionName: trainingRecord.employee.orgFunction.name,
+        divisionName: trainingRecord.employee.division.name,
+        departmentName: trainingRecord.employee.department.name,
       })),
     };
   }

@@ -70,7 +70,7 @@ export function NewEmployeePage() {
   }
 
   async function onSubmit(data: CreateEmployeeForm) {
-    const payloadForSelfRelation = {
+    const payload = {
       employeeNo: data.employeeNo,
       prefix: data.prefix,
       firstName: data.firstName,
@@ -79,11 +79,15 @@ export function NewEmployeePage() {
       hireDate: data.hireDate || undefined,
       jobLevel: data.jobLevel,
       status: data.status,
-      orgUnitId: data.departmentId,
+      plantId: data.plantId,
+      buId: data.buId,
+      functionId: data.functionId,
+      divisionId: data.divisionId,
+      departmentId: data.departmentId,
     }
 
     try {
-      await createEmployee(payloadForSelfRelation)
+      await createEmployee(payload)
       toast.success('สร้างพนักงานสำเร็จ')
       router.push('/admin/employees')
       router.refresh()

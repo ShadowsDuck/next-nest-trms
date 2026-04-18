@@ -1,7 +1,11 @@
 import {
+  BusinessUnit,
   Course,
+  Department,
+  Division,
   Employee,
-  OrgUnitLevel,
+  OrgFunction,
+  Plant,
   Prisma,
   TrainingRecord,
 } from '@workspace/database';
@@ -11,12 +15,22 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { EmployeeResponseDto } from './dto/employee-response.dto';
+
+type EmployeeWithRelations = Employee & {
+  plant: Plant;
+  businessUnit: BusinessUnit;
+  orgFunction: OrgFunction;
+  division: Division;
+  department: Department;
+  trainingRecords?: (TrainingRecord & {
+    course?: Course;
+  })[];
+};
 
 @Injectable()
 export class EmployeesService {
@@ -25,7 +39,6 @@ export class EmployeesService {
   async create(
     createEmployeeDto: CreateEmployeeDto,
   ): Promise<EmployeeResponseDto> {
-    // เช็ครหัสพนักงานซ้ำ
     const existingEmployeeNo = await this.prismaService.employee.findUnique({
       where: {
         employeeNo: createEmployeeDto.employeeNo,
@@ -35,7 +48,6 @@ export class EmployeesService {
       throw new ConflictException('รหัสพนักงานนี้มีอยู่แล้ว');
     }
 
-    // เช็คเลขบัตรประชาชนซ้ำ (ถ้ามีการส่งมา)
     if (createEmployeeDto.idCardNo) {
       const existingIdCardNo = await this.prismaService.employee.findUnique({
         where: {
@@ -51,22 +63,31 @@ export class EmployeesService {
       ? new Date(createEmployeeDto.hireDate)
       : null;
 
-    // ตรวจสอบว่า Date ที่แปลงมา "ใช้ได้จริงไหม" (ป้องกัน Invalid Date)
     if (hireDate && isNaN(hireDate.getTime())) {
       throw new BadRequestException('รูปแบบวันที่จ้างงานไม่ถูกต้อง');
     }
-    // ตรวจสอบว่าวันที่จ้างงานต้องไม่เกินวันปัจจุบัน
     if (hireDate && hireDate > new Date()) {
       throw new BadRequestException('วันที่จ้างงานต้องไม่เกินวันปัจจุบัน');
     }
 
-    // เช็คแผนก/สังกัด (Foreign Key org_unit_id)
-    await this.validateDepartmentOrgUnit(createEmployeeDto.orgUnitId);
+    await this.validateOrganizationChain(createEmployeeDto);
 
     const employee = await this.prismaService.employee.create({
       data: {
         ...createEmployeeDto,
-        hireDate: hireDate,
+        hireDate,
+      },
+      include: {
+        plant: true,
+        businessUnit: true,
+        orgFunction: true,
+        division: true,
+        department: true,
+        trainingRecords: {
+          include: {
+            course: true,
+          },
+        },
       },
     });
 
@@ -119,17 +140,22 @@ export class EmployeesService {
 
     const [employees, total] = await Promise.all([
       this.prismaService.employee.findMany({
-        ...(includeTrainingRecords
-          ? {
-              include: {
+        include: {
+          plant: true,
+          businessUnit: true,
+          orgFunction: true,
+          division: true,
+          department: true,
+          ...(includeTrainingRecords
+            ? {
                 trainingRecords: {
                   include: {
                     course: true,
                   },
                 },
-              },
-            }
-          : {}),
+              }
+            : {}),
+        },
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -151,68 +177,111 @@ export class EmployeesService {
     };
   }
 
-  private formatEmployee(
-    employee: Employee & {
-      trainingRecords?: (TrainingRecord & {
-        course?: Course;
-      })[];
-    },
-  ): EmployeeResponseDto {
+  private formatEmployee(employee: EmployeeWithRelations): EmployeeResponseDto {
+    const {
+      plant,
+      businessUnit,
+      orgFunction,
+      division,
+      department,
+      trainingRecords,
+      ...employeeData
+    } = employee;
+
     return {
-      ...employee,
+      ...employeeData,
       hireDate: toIsoDate(employee.hireDate),
       createdAt: toIsoDateTime(employee.createdAt),
       updatedAt: toIsoDateTime(employee.updatedAt),
-      trainingRecords: (employee.trainingRecords ?? []).map(
-        (trainingRecord) => ({
-          ...trainingRecord,
-          createdAt: toIsoDateTime(trainingRecord.createdAt),
-          updatedAt: toIsoDateTime(trainingRecord.updatedAt),
-          course: trainingRecord.course
-            ? {
-                ...trainingRecord.course,
-                startDate: toIsoDate(trainingRecord.course.startDate),
-                endDate: toIsoDate(trainingRecord.course.endDate),
-                startTime: trainingRecord.course.startTime
-                  ? trainingRecord.course.startTime.toISOString().slice(11, 19)
-                  : null,
-                endTime: trainingRecord.course.endTime
-                  ? trainingRecord.course.endTime.toISOString().slice(11, 19)
-                  : null,
-                duration: Number(trainingRecord.course.duration),
-                expense: Number(trainingRecord.course.expense),
-                createdAt: toIsoDateTime(trainingRecord.course.createdAt),
-                updatedAt: toIsoDateTime(trainingRecord.course.updatedAt),
-              }
-            : undefined,
-        }),
-      ),
+      plantName: plant.name,
+      buName: businessUnit.name,
+      functionName: orgFunction.name,
+      divisionName: division.name,
+      departmentName: department.name,
+      trainingRecords: (trainingRecords ?? []).map((trainingRecord) => ({
+        ...trainingRecord,
+        createdAt: toIsoDateTime(trainingRecord.createdAt),
+        updatedAt: toIsoDateTime(trainingRecord.updatedAt),
+        course: trainingRecord.course
+          ? {
+              ...trainingRecord.course,
+              startDate: toIsoDate(trainingRecord.course.startDate),
+              endDate: toIsoDate(trainingRecord.course.endDate),
+              startTime: trainingRecord.course.startTime
+                ? trainingRecord.course.startTime.toISOString().slice(11, 19)
+                : null,
+              endTime: trainingRecord.course.endTime
+                ? trainingRecord.course.endTime.toISOString().slice(11, 19)
+                : null,
+              duration: Number(trainingRecord.course.duration),
+              expense: Number(trainingRecord.course.expense),
+              createdAt: toIsoDateTime(trainingRecord.course.createdAt),
+              updatedAt: toIsoDateTime(trainingRecord.course.updatedAt),
+            }
+          : undefined,
+      })),
     };
   }
 
-  private async validateDepartmentOrgUnit(orgUnitId?: string) {
-    if (!orgUnitId) {
-      return;
+  private async validateOrganizationChain(
+    createEmployeeDto: CreateEmployeeDto,
+  ) {
+    const [plant, businessUnit, orgFunction, division, department] =
+      await Promise.all([
+        this.prismaService.plant.findUnique({
+          where: { id: createEmployeeDto.plantId },
+        }),
+        this.prismaService.businessUnit.findUnique({
+          where: { id: createEmployeeDto.buId },
+        }),
+        this.prismaService.orgFunction.findUnique({
+          where: { id: createEmployeeDto.functionId },
+        }),
+        this.prismaService.division.findUnique({
+          where: { id: createEmployeeDto.divisionId },
+        }),
+        this.prismaService.department.findUnique({
+          where: { id: createEmployeeDto.departmentId },
+        }),
+      ]);
+
+    if (!plant) {
+      throw new BadRequestException('ไม่พบ Plant ที่ระบุ');
+    }
+    if (!businessUnit) {
+      throw new BadRequestException('ไม่พบ Business Unit ที่ระบุ');
+    }
+    if (!orgFunction) {
+      throw new BadRequestException('ไม่พบ Function ที่ระบุ');
+    }
+    if (!division) {
+      throw new BadRequestException('ไม่พบ Division ที่ระบุ');
+    }
+    if (!department) {
+      throw new BadRequestException('ไม่พบ Department ที่ระบุ');
     }
 
-    const organizationUnit =
-      await this.prismaService.organizationUnit.findUnique({
-        where: {
-          id: orgUnitId,
-        },
-        select: {
-          id: true,
-          level: true,
-        },
-      });
-
-    if (!organizationUnit) {
-      throw new NotFoundException('ไม่พบหน่วยงานที่ระบุ');
-    }
-
-    if (organizationUnit.level !== OrgUnitLevel.Department) {
+    if (businessUnit.plantId !== createEmployeeDto.plantId) {
       throw new BadRequestException(
-        'พนักงานต้องถูกผูกกับหน่วยงานระดับ Department เท่านั้น',
+        'Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน',
+      );
+    }
+
+    if (orgFunction.businessUnitId !== createEmployeeDto.buId) {
+      throw new BadRequestException(
+        'Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน',
+      );
+    }
+
+    if (division.functionId !== createEmployeeDto.functionId) {
+      throw new BadRequestException(
+        'Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน',
+      );
+    }
+
+    if (department.divisionId !== createEmployeeDto.divisionId) {
+      throw new BadRequestException(
+        'Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน',
       );
     }
   }
