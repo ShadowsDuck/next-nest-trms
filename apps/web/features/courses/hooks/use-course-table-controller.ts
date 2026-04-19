@@ -13,15 +13,57 @@ import { useQueryStates } from 'nuqs'
 import { getAllCourses } from '../data/get-all-courses'
 import { courseParsers } from '../lib/search-params'
 
-type MultiFilterKey = 'type' | 'accreditationStatus'
+type MultiFilterKey =
+  | 'type'
+  | 'tagName'
+  | 'dateRange'
+  | 'durationRange'
+  | 'accreditationStatus'
 type MultiFilterParams = Pick<CourseQuery, MultiFilterKey>
 
-const FILTER_KEYS = ['type', 'accreditationStatus'] as const
+const FILTER_KEYS = [
+  'type',
+  'tagName',
+  'dateRange',
+  'durationRange',
+  'accreditationStatus',
+] as const
 
 const FILTER_ALLOWED = {
   type: courseType,
   accreditationStatus: accreditationStatus,
 } as const
+
+function toColumnId(key: MultiFilterKey): string {
+  if (key === 'durationRange') return 'duration'
+  return key
+}
+
+function getNumericFilterValues(
+  filters: ColumnFiltersState,
+  id: string
+): number[] {
+  const found = filters.find((item) => item.id === id)
+  if (!found) return []
+
+  const raw = found.value as unknown
+  const values = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object' && 'value' in raw
+      ? (raw as { value: unknown }).value
+      : raw == null
+        ? []
+        : [raw]
+
+  if (!Array.isArray(values)) {
+    const numericValue = Number(values)
+    return Number.isFinite(numericValue) ? [numericValue] : []
+  }
+
+  return values
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value))
+}
 
 function getFilterValues(filters: ColumnFiltersState, id: string): string[] {
   const found = filters.find((item) => item.id === id)
@@ -52,7 +94,7 @@ function buildColumnFiltersFromParams(
 ): ColumnFiltersState {
   return FILTER_KEYS.flatMap((key) => {
     const values = params[key] ?? []
-    return values.length > 0 ? [{ id: key, value: values }] : []
+    return values.length > 0 ? [{ id: toColumnId(key), value: values }] : []
   })
 }
 
@@ -84,9 +126,30 @@ function setFilterParam<K extends MultiFilterKey>(
 function buildFilterParamsFromColumnFilters(
   filters: ColumnFiltersState
 ): MultiFilterParams {
-  const next: MultiFilterParams = { type: [], accreditationStatus: [] }
+  const next: MultiFilterParams = {
+    type: [],
+    tagName: [],
+    dateRange: [],
+    durationRange: [],
+    accreditationStatus: [],
+  }
 
   for (const key of FILTER_KEYS) {
+    if (key === 'tagName') {
+      setFilterParam(next, key, getFilterValues(filters, key))
+      continue
+    }
+
+    if (key === 'dateRange') {
+      setFilterParam(next, key, getNumericFilterValues(filters, key))
+      continue
+    }
+
+    if (key === 'durationRange') {
+      setFilterParam(next, key, getNumericFilterValues(filters, 'duration'))
+      continue
+    }
+
     const values = pickAllowed(
       getFilterValues(filters, key),
       FILTER_ALLOWED[key]
@@ -138,6 +201,9 @@ export function useCourseTableController() {
       params.limit,
       params.search,
       params.type.join(','),
+      params.tagName.join(','),
+      params.dateRange.join(','),
+      params.durationRange.join(','),
       params.accreditationStatus.join(','),
     ],
     [params]

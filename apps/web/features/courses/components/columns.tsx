@@ -116,7 +116,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     enableColumnFilter: true,
   },
   {
-    id: 'tag',
+    id: 'tagName',
     accessorFn: (row) => row.tag?.name,
     size: 160,
     minSize: 120,

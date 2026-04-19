@@ -68,6 +68,13 @@ export const courseQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).catch(25),
   search: z.string().optional(),
   type: z.pipe(toArray, z.array(z.enum(courseType))).optional(),
+  tagName: z.pipe(toArray, z.array(z.string().min(1))).optional(),
+  dateRange: z
+    .pipe(toArray, z.array(z.coerce.number().int().nonnegative()))
+    .optional(),
+  durationRange: z
+    .pipe(toArray, z.array(z.coerce.number().nonnegative()))
+    .optional(),
   accreditationStatus: z
     .pipe(toArray, z.array(z.enum(accreditationStatus)))
     .optional(),

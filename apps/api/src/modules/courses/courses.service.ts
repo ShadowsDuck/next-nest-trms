@@ -36,6 +36,9 @@ export class CoursesService {
       limit,
       search,
       type,
+      tagName,
+      dateRange,
+      durationRange,
       accreditationStatus,
       tagId,
       includeEmployees,
@@ -51,16 +54,52 @@ export class CoursesService {
       where.accreditationStatus = { in: accreditationStatus };
     }
 
+    if (tagName && tagName.length > 0) {
+      where.tag = { name: { in: tagName } };
+    }
+
     if (tagId && tagId.length > 0) {
       where.tagId = { in: tagId };
     }
 
+    if (dateRange && dateRange.length > 0) {
+      const from = this.parseCourseDate(dateRange[0]);
+      const to = this.parseCourseDate(dateRange[1] ?? dateRange[0]);
+      const dateConditions: Prisma.CourseWhereInput[] = [];
+
+      if (to) {
+        dateConditions.push({ startDate: { lte: to } });
+      }
+
+      if (from) {
+        dateConditions.push({ endDate: { gte: from } });
+      }
+
+      if (dateConditions.length > 0) {
+        const existingConditions = Array.isArray(where.AND)
+          ? where.AND
+          : where.AND
+            ? [where.AND]
+            : [];
+
+        where.AND = [...existingConditions, ...dateConditions];
+      }
+    }
+
+    if (durationRange && durationRange.length > 0) {
+      const minDuration = this.parseNumber(durationRange[0]);
+      const maxDuration = this.parseNumber(
+        durationRange[1] ?? durationRange[0],
+      );
+
+      where.duration = {
+        ...(minDuration != null ? { gte: minDuration } : {}),
+        ...(maxDuration != null ? { lte: maxDuration } : {}),
+      };
+    }
+
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { lecturer: { contains: search, mode: 'insensitive' } },
-        { institute: { contains: search, mode: 'insensitive' } },
-      ];
+      where.title = { contains: search, mode: 'insensitive' };
     }
 
     const [courses, total] = await Promise.all([
@@ -144,6 +183,23 @@ export class CoursesService {
           (orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
           (orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER),
       );
+  }
+
+  private parseCourseDate(value: unknown): Date | undefined {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return undefined;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  }
+
+  private parseNumber(value: unknown): number | undefined {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return undefined;
+    }
+
+    return value;
   }
 
   private formatCourse(

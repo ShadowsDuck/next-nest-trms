@@ -13,6 +13,9 @@ export const courseParsers = {
   limit: parseAsInteger.withDefault(25).withOptions({ clearOnDefault: false }),
   search: parseAsString.withDefault(''),
   type: parseAsArrayOf(parseAsStringEnum([...courseType])).withDefault([]),
+  tagName: parseAsArrayOf(parseAsString).withDefault([]),
+  dateRange: parseAsArrayOf(parseAsInteger).withDefault([]),
+  durationRange: parseAsArrayOf(parseAsInteger).withDefault([]),
   accreditationStatus: parseAsArrayOf(
     parseAsStringEnum([...accreditationStatus])
   ).withDefault([]),

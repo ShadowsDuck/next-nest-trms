@@ -14,9 +14,12 @@ import {
 } from '@workspace/ui/components/dropdown-menu'
 import { EllipsisVertical, Loader2, Plus, Upload } from 'lucide-react'
 import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
+import { DataTableDateFilter } from '@/components/niko-table/components/data-table-date-filter'
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
+import { DataTableSliderFilter } from '@/components/niko-table/components/data-table-slider-filter'
 import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
+import { useCourseFilterOptions } from '../hooks/use-course-filter-options'
 import { exportCoursesCSV } from '../lib/export-courses-csv'
 import { exportCoursesWithEmployeesCSV } from '../lib/export-courses-with-employees-csv'
 import {
@@ -25,6 +28,7 @@ import {
 } from '../lib/filter-options'
 
 export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
+  const { data: filterOptions } = useCourseFilterOptions()
   const [isExportingWithEmployees, setIsExportingWithEmployees] =
     useState(false)
   const exportTimestamp = useMemo(() => {
@@ -68,7 +72,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
       </DataTableToolbarSection>
 
       <DataTableToolbarSection className="px-0">
-        <DataTableSearchFilter placeholder="ค้นหาด้วย ชื่อหลักสูตร, วิทยากร หรือ สถาบัน..." />
+        <DataTableSearchFilter placeholder="ค้นหาด้วย ชื่อหลักสูตร..." />
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -145,12 +149,33 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
       <DataTableToolbarSection className="px-0">
         <DataTableFacetedFilter
           accessorKey="type"
+          title="ประเภท"
           options={courseTypeOptions}
           multiple
           showCounts={false}
+          limitToFilteredRows={false}
+        />
+        <DataTableFacetedFilter
+          accessorKey="tagName"
+          title="หมวดหมู่"
+          options={filterOptions?.tagOptions}
+          multiple
+          showCounts={false}
+          limitToFilteredRows={false}
+        />
+        <DataTableDateFilter
+          accessorKey="dateRange"
+          title="วันที่จัดอบรม"
+          multiple
+        />
+        <DataTableSliderFilter
+          accessorKey="duration"
+          title="รวมเวลา"
+          unit="ชม."
         />
         <DataTableFacetedFilter
           accessorKey="accreditationStatus"
+          title="สถานะการรับรอง"
           options={accreditationStatusOptions}
           multiple
           showCounts={false}
