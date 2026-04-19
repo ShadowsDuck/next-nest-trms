@@ -1,6 +1,6 @@
 import { TagResponse } from '@workspace/schemas';
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TagsService {

@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ZodSerializationException } from 'nestjs-zod';
 import {
   ArgumentsHost,
@@ -14,6 +14,7 @@ export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
+    const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
 
@@ -29,13 +30,23 @@ export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
       response.status(500).json({
         message: 'Internal server error: response serialization failed',
         statusCode: 500,
+        path: request.url,
+        timestamp: new Date().toISOString(),
       });
       return;
+    }
+
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url} -> ${status}: ${exception.message}`,
+      );
     }
 
     response.status(status).json({
       statusCode: status,
       message: exception.message,
+      path: request.url,
+      timestamp: new Date().toISOString(),
     });
   }
 }

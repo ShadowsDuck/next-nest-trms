@@ -1,16 +1,3 @@
-import {
-  BusinessUnit,
-  Course,
-  Department,
-  Division,
-  Employee,
-  OrgFunction,
-  Plant,
-  Prisma,
-  Tag,
-  TrainingRecord,
-} from '@workspace/database';
-import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BadRequestException,
@@ -21,19 +8,8 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { EmployeeResponseDto } from './dto/employee-response.dto';
-
-type EmployeeWithRelations = Employee & {
-  plant: Plant;
-  businessUnit: BusinessUnit;
-  orgFunction: OrgFunction;
-  division: Division;
-  department: Department;
-  trainingRecords?: (TrainingRecord & {
-    course?: Course & {
-      tag?: Tag | null;
-    };
-  })[];
-};
+import { buildEmployeeWhereInput } from './employee-where.builder';
+import { formatEmployee } from './employees.mapper';
 
 @Injectable()
 export class EmployeesService {
@@ -98,66 +74,14 @@ export class EmployeesService {
       },
     });
 
-    return this.formatEmployee(employee);
+    return formatEmployee(employee);
   }
 
   async findAll(
     queryDto: EmployeeQueryDto,
   ): Promise<EmployeePaginationResponseDto> {
-    const {
-      page,
-      limit,
-      search,
-      prefix,
-      jobLevel,
-      divisionName,
-      departmentName,
-      status,
-      includeTrainingRecords,
-    } = queryDto;
-
-    const where: Prisma.EmployeeWhereInput = {};
-
-    if (prefix && prefix.length > 0) {
-      where.prefix = { in: prefix };
-    }
-
-    if (jobLevel && jobLevel.length > 0) {
-      where.jobLevel = { in: jobLevel };
-    }
-
-    if (divisionName && divisionName.length > 0) {
-      where.division = {
-        name: { in: divisionName },
-      };
-    }
-
-    if (departmentName && departmentName.length > 0) {
-      where.department = {
-        name: { in: departmentName },
-      };
-    }
-
-    if (status && status.length > 0) {
-      where.status = { in: status };
-    }
-
-    if (search) {
-      where.OR = [
-        {
-          employeeNo: { contains: search, mode: 'insensitive' },
-        },
-        {
-          firstName: { contains: search, mode: 'insensitive' },
-        },
-        {
-          lastName: { contains: search, mode: 'insensitive' },
-        },
-        {
-          idCardNo: { contains: search, mode: 'insensitive' },
-        },
-      ];
-    }
+    const { page, limit, includeTrainingRecords } = queryDto;
+    const where = buildEmployeeWhereInput(queryDto);
 
     const [employees, total] = await Promise.all([
       this.prismaService.employee.findMany({
@@ -192,7 +116,7 @@ export class EmployeesService {
     ]);
 
     return {
-      data: employees.map((employee) => this.formatEmployee(employee)),
+      data: employees.map((employee) => formatEmployee(employee)),
       meta: {
         total,
         page,
@@ -236,65 +160,12 @@ export class EmployeesService {
     );
 
     return employees
-      .map((employee) => this.formatEmployee(employee))
+      .map((employee) => formatEmployee(employee))
       .sort(
         (a, b) =>
           (orderMap.get(a.employeeNo) ?? Number.MAX_SAFE_INTEGER) -
           (orderMap.get(b.employeeNo) ?? Number.MAX_SAFE_INTEGER),
       );
-  }
-
-  private formatEmployee(employee: EmployeeWithRelations): EmployeeResponseDto {
-    const {
-      plant,
-      businessUnit,
-      orgFunction,
-      division,
-      department,
-      trainingRecords,
-      ...employeeData
-    } = employee;
-
-    return {
-      ...employeeData,
-      hireDate: toIsoDate(employee.hireDate),
-      createdAt: toIsoDateTime(employee.createdAt),
-      updatedAt: toIsoDateTime(employee.updatedAt),
-      plantName: plant.name,
-      buName: businessUnit.name,
-      functionName: orgFunction.name,
-      divisionName: division.name,
-      departmentName: department.name,
-      trainingRecords: (trainingRecords ?? []).map((trainingRecord) => ({
-        ...trainingRecord,
-        createdAt: toIsoDateTime(trainingRecord.createdAt),
-        updatedAt: toIsoDateTime(trainingRecord.updatedAt),
-        course: trainingRecord.course
-          ? {
-              ...trainingRecord.course,
-              startDate: toIsoDate(trainingRecord.course.startDate),
-              endDate: toIsoDate(trainingRecord.course.endDate),
-              startTime: trainingRecord.course.startTime
-                ? trainingRecord.course.startTime.toISOString().slice(11, 19)
-                : null,
-              endTime: trainingRecord.course.endTime
-                ? trainingRecord.course.endTime.toISOString().slice(11, 19)
-                : null,
-              duration: Number(trainingRecord.course.duration),
-              expense: Number(trainingRecord.course.expense),
-              createdAt: toIsoDateTime(trainingRecord.course.createdAt),
-              updatedAt: toIsoDateTime(trainingRecord.course.updatedAt),
-              tag: trainingRecord.course.tag
-                ? {
-                    id: trainingRecord.course.tag.id,
-                    name: trainingRecord.course.tag.name,
-                    colorCode: trainingRecord.course.tag.colorCode,
-                  }
-                : undefined,
-            }
-          : undefined,
-      })),
-    };
   }
 
   private async validateOrganizationChain(

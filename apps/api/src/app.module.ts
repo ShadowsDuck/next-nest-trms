@@ -2,12 +2,14 @@ import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { auth } from './auth/auth';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ZodValidationExceptionFilter } from './filters/zod-validation-exception.filter';
 import { CoursesModule } from './modules/courses/courses.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { HealthModule } from './modules/health/health.module';
 import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
 import { SummaryReportsModule } from './modules/summary-reports/summary-reports.module';
 import { TagsModule } from './modules/tags/tags.module';
@@ -18,9 +20,16 @@ import { PrismaModule } from './prisma/prisma.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     BetterAuthModule.forRoot({ auth }), // Global Guard (ทุก route protected by default)
+    ThrottlerModule.forRoot([
+      {
+        ttl: Number(process.env.THROTTLE_TTL_MS ?? 60_000),
+        limit: Number(process.env.THROTTLE_LIMIT ?? 300),
+      },
+    ]),
     PrismaModule,
     CoursesModule,
     EmployeesModule,
+    HealthModule,
     OrganizationUnitsModule,
     SummaryReportsModule,
     TagsModule,
@@ -36,6 +45,11 @@ import { PrismaModule } from './prisma/prisma.module';
       // for zod response data
       provide: APP_INTERCEPTOR,
       useClass: ZodSerializerInterceptor,
+    },
+    {
+      // for global rate limiting
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       // for http exception filter
