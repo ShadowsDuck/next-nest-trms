@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { CourseQuery } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import {
@@ -12,7 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import { EllipsisVertical, Loader2, Plus, Upload } from 'lucide-react'
+import {
+  EllipsisVertical,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Upload,
+} from 'lucide-react'
 import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
 import { DataTableDateFilter } from '@/components/niko-table/components/data-table-date-filter'
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
@@ -27,10 +34,17 @@ import {
   courseTypeOptions,
 } from '../lib/filter-options'
 
+/**
+ * Toolbar สำหรับกรองข้อมูลหลักสูตร
+ */
 export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
   const { data: filterOptions } = useCourseFilterOptions()
   const [isExportingWithEmployees, setIsExportingWithEmployees] =
     useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const queryClient = useQueryClient()
+
+  // สร้าง timestamp สำหรับชื่อไฟล์ export
   const exportTimestamp = useMemo(() => {
     const now = new Date()
     const date = now.toISOString().split('T')[0] ?? ''
@@ -38,6 +52,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
     return `${date}_${time}`
   }, [])
 
+  // ส่งออกข้อมูลหลักสูตร (ไม่มีรายชื่อพนักงาน)
   async function handleExportCourses() {
     await exportCoursesCSV({
       params,
@@ -45,6 +60,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
     })
   }
 
+  // ส่งออกข้อมูลหลักสูตรพร้อมรายชื่อพนักงาน
   async function handleExportCoursesWithEmployees() {
     try {
       setIsExportingWithEmployees(true)
@@ -55,6 +71,13 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
     } finally {
       setIsExportingWithEmployees(false)
     }
+  }
+
+  // รีเฟรชข้อมูล
+  async function handleRefresh() {
+    setIsRefreshing(true)
+    await queryClient.invalidateQueries({ queryKey: ['courses'] })
+    setIsRefreshing(false)
   }
 
   return (
@@ -182,6 +205,21 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
           limitToFilteredRows={false}
         />
         <DataTableClearFilter>ล้างตัวกรอง</DataTableClearFilter>
+
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => void handleRefresh()}
+            disabled={isRefreshing}
+          >
+            <RefreshCw
+              className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            รีเฟรชข้อมูล
+          </Button>
+        </div>
       </DataTableToolbarSection>
     </DataTableToolbarSection>
   )

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { EmployeeQuery } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import {
@@ -12,7 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import { EllipsisVertical, Loader2, Plus, Upload } from 'lucide-react'
+import {
+  EllipsisVertical,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Upload,
+} from 'lucide-react'
 import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
 import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
@@ -36,18 +43,25 @@ export function EmployeeTableFilterToolbar({
   params: EmployeeQuery
 }) {
   const { data: orgFilterOptions } = useEmployeeOrgFilterOptions()
+  const [isExportingCourses, setIsExportingCourses] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const queryClient = useQueryClient()
+
+  // สร้าง timestamp สำหรับ export filename
   const exportTimestamp = useMemo(() => {
     const now = new Date()
     const date = now.toISOString().split('T')[0] ?? ''
     const time = (now.toTimeString().split(' ')[0] ?? '').replace(/:/g, '-')
     return `${date}_${time}`
   }, [])
+
+  // สร้าง export filename สำหรับส่งออกข้อมูล
   const allExportFilename = useMemo(
     () => `ข้อมูลพนักงานทั้งหมด-${exportTimestamp}`,
     [exportTimestamp]
   )
-  const [isExportingCourses, setIsExportingCourses] = useState(false)
 
+  // ส่งออกข้อมูลพนักงานทั้งหมดพร้อมหลักสูตร
   async function handleExportEmployeesWithCourses() {
     try {
       setIsExportingCourses(true)
@@ -60,11 +74,19 @@ export function EmployeeTableFilterToolbar({
     }
   }
 
+  // ส่งออกข้อมูลพนักงานทั้งหมด
   async function handleExportAllEmployees() {
     await exportEmployeesCSV({
       params,
       filename: allExportFilename,
     })
+  }
+
+  // รีเฟรชข้อมูล
+  async function handleRefresh() {
+    setIsRefreshing(true)
+    await queryClient.invalidateQueries({ queryKey: ['employees'] })
+    setIsRefreshing(false)
   }
 
   return (
@@ -193,6 +215,21 @@ export function EmployeeTableFilterToolbar({
           limitToFilteredRows={false}
         />
         <DataTableClearFilter>ล้างตัวกรอง</DataTableClearFilter>
+
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => void handleRefresh()}
+            disabled={isRefreshing}
+          >
+            <RefreshCw
+              className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            รีเฟรชข้อมูล
+          </Button>
+        </div>
       </DataTableToolbarSection>
     </DataTableToolbarSection>
   )
