@@ -19,8 +19,8 @@ import {
   jobLevelOptions,
   statusOptions,
 } from '@/features/employees/lib/filter-options'
-import { FormSectionShell } from '@/features/new-employee/components/form-section-shell'
-import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
+import { FormSectionShell } from './form-section-shell'
+import type { CreateEmployeeForm } from './new-employee-page'
 
 function parseIsoDate(value?: string) {
   if (!value) {

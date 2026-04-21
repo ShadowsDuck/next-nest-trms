@@ -1,4 +1,4 @@
-import { SectionCards } from '@/components/sidebar/section-cards'
+import { SectionCards } from '@/shared/components/sidebar/section-cards'
 
 export default function DashboardPage() {
   return <SectionCards />

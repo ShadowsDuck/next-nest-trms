@@ -1,6 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@workspace/ui/components/sidebar'
 import { TooltipProvider } from '@workspace/ui/components/tooltip'
-import { AppSidebar } from '@/components/sidebar/app-sidebar'
+import { AppSidebar } from '@/shared/components/sidebar/app-sidebar'
 
 export default function AdminLayout({
   children,

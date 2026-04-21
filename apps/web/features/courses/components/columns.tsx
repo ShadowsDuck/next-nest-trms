@@ -5,18 +5,18 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Checkbox } from '@workspace/ui/components/checkbox'
 import { EllipsisVertical } from 'lucide-react'
-import { DataTableColumnHeader } from '@/components/niko-table/components/data-table-column-header'
-import { DataTableColumnSortMenu } from '@/components/niko-table/components/data-table-column-sort'
-import { DataTableColumnTitle } from '@/components/niko-table/components/data-table-column-title'
-import {
-  FILTER_VARIANTS,
-  SYSTEM_COLUMN_IDS,
-} from '@/components/niko-table/lib/constants'
-import type { DataTableColumnDef } from '@/components/niko-table/types'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '../lib/filter-options'
+} from '@/features/courses/lib/filter-options'
+import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
+import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
+import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
+import {
+  FILTER_VARIANTS,
+  SYSTEM_COLUMN_IDS,
+} from '@/shared/components/niko-table/lib/constants'
+import type { DataTableColumnDef } from '@/shared/components/niko-table/types'
 
 const courseTypeLabelByValue = new Map<string, string>(
   courseTypeOptions.map((option) => [option.value, option.label] as const)

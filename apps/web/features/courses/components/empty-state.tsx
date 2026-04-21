@@ -6,8 +6,8 @@ import {
   DataTableEmptyDescription,
   DataTableEmptyIcon,
   DataTableEmptyTitle,
-} from '@/components/niko-table/components/data-table-empty-state'
-import { useDataTable } from '@/components/niko-table/core/data-table-context'
+} from '@/shared/components/niko-table/components/data-table-empty-state'
+import { useDataTable } from '@/shared/components/niko-table/core/data-table-context'
 
 interface iAppProps {
   visible: boolean

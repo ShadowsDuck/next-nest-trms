@@ -20,18 +20,18 @@ import {
   RefreshCw,
   Upload,
 } from 'lucide-react'
-import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
-import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
-import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
-import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
-import { useEmployeeOrgFilterOptions } from '../hooks/use-employee-org-filter-options'
-import { exportEmployeesCSV } from '../lib/export-employees-csv'
-import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 import {
   jobLevelOptions,
   prefixOptions,
   statusOptions,
-} from '../lib/filter-options'
+} from '@/features/employees/lib/filter-options'
+import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
+import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
+import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'
+import { DataTableToolbarSection } from '@/shared/components/niko-table/components/data-table-toolbar-section'
+import { useEmployeeOrgFilterOptions } from '../hooks/use-employee-org-filter-options'
+import { exportEmployeesCSV } from '../lib/export-employees-csv'
+import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 
 /**
  * Toolbar filters using built-in niko-table controls.

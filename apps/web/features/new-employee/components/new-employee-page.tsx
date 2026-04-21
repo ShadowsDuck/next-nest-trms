@@ -8,11 +8,11 @@ import { ChevronLeft } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import { BasicInfoSection } from '@/features/new-employee/components/basic-info-section'
-import { EmploymentInfoSection } from '@/features/new-employee/components/employment-info-section'
-import { OrganizationUnitSection } from '@/features/new-employee/components/organization-unit-section'
-import { useOrganizationUnitOptions } from '@/features/new-employee/hooks/use-organization-unit-options'
-import { createEmployee } from '../actions'
+import { createEmployee } from '@/domains/employees/actions'
+import { useOrganizationUnitOptions } from '../hooks/use-organization-unit-options'
+import { BasicInfoSection } from './basic-info-section'
+import { EmploymentInfoSection } from './employment-info-section'
+import { OrganizationUnitSection } from './organization-unit-section'
 
 const createEmployeeSchema = z.object({
   employeeNo: z.string().min(1, 'กรุณากรอกรหัสพนักงาน'),

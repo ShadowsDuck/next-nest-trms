@@ -1,8 +1,8 @@
-import { SummaryReportPage } from '@/features/summary-report/components/summary-report-page'
 import {
   getLatestSummaryReport,
   getSummaryReportById,
-} from '@/features/summary-report/data/get-summary-report'
+} from '@/domains/summary-reports/data/get-summary-report'
+import { SummaryReportPage } from '@/features/summary-report/components/summary-report-page'
 
 export default async function AdminSummaryReportPage({
   searchParams,

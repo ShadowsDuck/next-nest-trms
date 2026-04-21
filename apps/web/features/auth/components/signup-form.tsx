@@ -17,8 +17,8 @@ import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import { GoogleButton } from '@/components/google-button'
-import { authClient } from '@/lib/auth-client'
+import { GoogleButton } from '@/shared/components/google-button'
+import { authClient } from '@/shared/lib/auth-client'
 
 const signupSchema = z
   .object({

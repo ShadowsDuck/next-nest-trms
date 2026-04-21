@@ -20,19 +20,19 @@ import {
   RefreshCw,
   Upload,
 } from 'lucide-react'
-import { DataTableClearFilter } from '@/components/niko-table/components/data-table-clear-filter'
-import { DataTableDateFilter } from '@/components/niko-table/components/data-table-date-filter'
-import { DataTableFacetedFilter } from '@/components/niko-table/components/data-table-faceted-filter'
-import { DataTableSearchFilter } from '@/components/niko-table/components/data-table-search-filter'
-import { DataTableSliderFilter } from '@/components/niko-table/components/data-table-slider-filter'
-import { DataTableToolbarSection } from '@/components/niko-table/components/data-table-toolbar-section'
-import { useCourseFilterOptions } from '../hooks/use-course-filter-options'
-import { exportCoursesCSV } from '../lib/export-courses-csv'
-import { exportCoursesWithEmployeesCSV } from '../lib/export-courses-with-employees-csv'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '../lib/filter-options'
+} from '@/features/courses/lib/filter-options'
+import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
+import { DataTableDateFilter } from '@/shared/components/niko-table/components/data-table-date-filter'
+import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
+import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'
+import { DataTableSliderFilter } from '@/shared/components/niko-table/components/data-table-slider-filter'
+import { DataTableToolbarSection } from '@/shared/components/niko-table/components/data-table-toolbar-section'
+import { useCourseFilterOptions } from '../hooks/use-course-filter-options'
+import { exportCoursesCSV } from '../lib/export-courses-csv'
+import { exportCoursesWithEmployeesCSV } from '../lib/export-courses-with-employees-csv'
 
 /**
  * Toolbar สำหรับกรองข้อมูลหลักสูตร

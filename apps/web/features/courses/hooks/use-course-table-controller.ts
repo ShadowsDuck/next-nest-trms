@@ -10,8 +10,8 @@ import type {
 import { accreditationStatus, courseType } from '@workspace/schemas'
 import type { CourseQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { getAllCourses } from '../data/get-all-courses'
-import { courseParsers } from '../lib/search-params'
+import { getAllCourses } from '@/domains/courses/data/get-all-courses'
+import { courseParsers } from '@/domains/courses/lib/search-params'
 
 type MultiFilterKey =
   | 'type'

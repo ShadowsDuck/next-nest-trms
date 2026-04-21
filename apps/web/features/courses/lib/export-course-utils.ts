@@ -1,5 +1,4 @@
 import type { CourseParticipant, CourseResponse } from '@workspace/schemas'
-import { escapeCsvValue } from '@/components/niko-table/filters/table-export-button'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
@@ -8,6 +7,7 @@ import {
   prefixOptions,
   statusOptions,
 } from '@/features/employees/lib/filter-options'
+import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
 
 const courseTypeLabelMap = new Map<string, string>(
   courseTypeOptions.map((option) => [option.value, option.label] as const)

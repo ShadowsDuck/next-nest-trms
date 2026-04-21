@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { buttonVariants } from '@workspace/ui/components/button'
-import { Navbar } from '@/components/navbar'
+import { Navbar } from '@/shared/components/navbar'
 
 export default function HomePage() {
   return (

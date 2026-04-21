@@ -1,6 +1,9 @@
 import type { EmployeeResponse } from '@workspace/schemas'
-import { escapeCsvValue } from '@/components/niko-table/filters/table-export-button'
-import { prefixOptions, statusOptions } from './filter-options'
+import {
+  prefixOptions,
+  statusOptions,
+} from '@/features/employees/lib/filter-options'
+import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
 
 const prefixLabelMap = new Map<string, string>(
   prefixOptions.map((item) => [item.value, item.label])

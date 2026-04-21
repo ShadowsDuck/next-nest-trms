@@ -1,6 +1,6 @@
 import type { EmployeeQuery } from '@workspace/schemas'
-import { triggerCsvDownload } from '@/components/niko-table/filters/table-export-button'
-import { getAllEmployeesExport } from '../data/get-all-employees-export'
+import { getAllEmployeesExport } from '@/domains/employees/data/get-all-employees-export'
+import { triggerCsvDownload } from '@/shared/components/niko-table/filters/table-export-button'
 import { buildEmployeeRows } from './export-employee-utils'
 
 export async function exportEmployeesCSV({

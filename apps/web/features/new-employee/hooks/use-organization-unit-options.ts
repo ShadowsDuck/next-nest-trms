@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import type { Control, UseFormSetValue } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import type { CreateEmployeeForm } from '@/features/new-employee/components/new-employee-page'
 import {
   type OrganizationOption,
   getBusinessUnits,
@@ -13,7 +12,8 @@ import {
   getFunctions,
   getPlants,
   sortOrgUnitsByName,
-} from '@/features/new-employee/data/get-org-unit'
+} from '@/domains/org-units/data/get-org-units'
+import type { CreateEmployeeForm } from '@/features/new-employee/schemas/create-employee-form'
 
 type UseOrganizationUnitOptionsParams = {
   control: Control<CreateEmployeeForm>

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { authSession } from '@/lib/session'
+import { authSession } from '@/shared/lib/session'
 
 export default async function AuthLayout({
   children,

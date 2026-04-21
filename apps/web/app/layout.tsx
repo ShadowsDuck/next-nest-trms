@@ -2,7 +2,7 @@ import { Kanit } from 'next/font/google'
 import { Toaster } from '@workspace/ui/components/sonner'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
-import Provider from '@/components/provider'
+import Provider from '@/shared/components/provider'
 
 const fontKanit = Kanit({
   variable: '--font-kanit',

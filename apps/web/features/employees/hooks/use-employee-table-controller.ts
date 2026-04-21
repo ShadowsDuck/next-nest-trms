@@ -10,8 +10,8 @@ import type {
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
 import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { getAllEmployees } from '../data/get-all-employees'
-import { employeeParsers } from '../lib/search-params'
+import { getAllEmployees } from '@/domains/employees/data/get-all-employees'
+import { employeeParsers } from '@/domains/employees/lib/search-params'
 
 type MultiFilterKey =
   | 'prefix'

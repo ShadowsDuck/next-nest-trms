@@ -53,11 +53,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { deleteSummaryReport } from '@/domains/summary-reports/actions'
 import {
   buildPeopleProfileRows,
   buildSummaryReportAnalytics,
 } from '@/features/summary-report/lib/report-analytics'
-import { deleteSummaryReport } from '../actions'
 import { SummaryEmptyState } from './empty-state'
 
 const chartConfig = {

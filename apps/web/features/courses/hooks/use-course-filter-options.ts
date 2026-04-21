@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getTagOptions } from '../data/get-tag-filter-options'
+import { getTagOptions } from '@/domains/tags/data/get-tags'
 
 export function useCourseFilterOptions() {
   return useQuery({

@@ -1,13 +1,13 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import type { Option } from '@/components/niko-table/types'
 import {
   type OrganizationOption,
   getDepartments,
   getDivisions,
   sortOrgUnitsByName,
-} from '@/features/new-employee/data/get-org-unit'
+} from '@/domains/org-units/data/get-org-units'
+import type { Option } from '@/shared/components/niko-table/types'
 
 function toUniqueOptions(items: OrganizationOption[]): Option[] {
   const seen = new Set<string>()
