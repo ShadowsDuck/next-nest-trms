@@ -4,10 +4,13 @@ import {
   summaryReportResponseSchema,
 } from '@workspace/schemas'
 import { env } from '@/shared/lib/env'
+import { requireAdmin } from '@/shared/lib/session'
 
 async function safeFetchSummaryReport(
   endpoint: string
 ): Promise<SummaryReportResponse | null> {
+  await requireAdmin()
+
   const cookieHeader = (await headers()).get('cookie')
   const response = await fetch(
     `${env.NEXT_PUBLIC_API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,

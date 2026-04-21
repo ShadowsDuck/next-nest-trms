@@ -2,7 +2,7 @@ import type { EmployeeResponse } from '@workspace/schemas'
 import {
   prefixOptions,
   statusOptions,
-} from '@/features/employees/lib/filter-options'
+} from '@/domains/employees/lib/filter-options'
 import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
 
 const prefixLabelMap = new Map<string, string>(

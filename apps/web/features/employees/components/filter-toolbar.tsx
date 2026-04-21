@@ -24,7 +24,7 @@ import {
   jobLevelOptions,
   prefixOptions,
   statusOptions,
-} from '@/features/employees/lib/filter-options'
+} from '@/domains/employees/lib/filter-options'
 import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
 import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'

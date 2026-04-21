@@ -18,7 +18,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 import {
   jobLevelOptions,
   statusOptions,
-} from '@/features/employees/lib/filter-options'
+} from '@/domains/employees/lib/filter-options'
 import { FormSectionShell } from './form-section-shell'
 import type { CreateEmployeeForm } from './new-employee-page'
 

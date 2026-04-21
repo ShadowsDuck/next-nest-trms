@@ -4,12 +4,15 @@ import {
   employeePaginationResponseSchema,
 } from '@workspace/schemas'
 import { fetcher } from '@/shared/lib/fetcher'
+import { requireAdmin } from '@/shared/lib/session'
 import { serializeEmployeeParams } from '../lib/search-params'
 
 export async function getAllEmployeesExport(
   params: EmployeeQuery,
   options?: { includeTrainingRecords?: boolean }
 ): Promise<EmployeePaginationResponse> {
+  await requireAdmin()
+
   const baseQuery = serializeEmployeeParams(params)
   const separator = baseQuery.includes('?') ? '&' : '?'
   const endpoint = options?.includeTrainingRecords

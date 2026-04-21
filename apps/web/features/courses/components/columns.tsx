@@ -8,7 +8,7 @@ import { EllipsisVertical } from 'lucide-react'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/features/courses/lib/filter-options'
+} from '@/domains/courses/lib/filter-options'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'

@@ -9,7 +9,7 @@ import {
   jobLevelOptions,
   prefixOptions,
   statusOptions,
-} from '@/features/employees/lib/filter-options'
+} from '@/domains/employees/lib/filter-options'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'

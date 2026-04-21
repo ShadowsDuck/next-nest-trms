@@ -2,11 +2,11 @@ import type { CourseParticipant, CourseResponse } from '@workspace/schemas'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/features/courses/lib/filter-options'
+} from '@/domains/courses/lib/filter-options'
 import {
   prefixOptions,
   statusOptions,
-} from '@/features/employees/lib/filter-options'
+} from '@/domains/employees/lib/filter-options'
 import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
 
 const courseTypeLabelMap = new Map<string, string>(

@@ -23,7 +23,7 @@ import {
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/features/courses/lib/filter-options'
+} from '@/domains/courses/lib/filter-options'
 import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
 import { DataTableDateFilter } from '@/shared/components/niko-table/components/data-table-date-filter'
 import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'

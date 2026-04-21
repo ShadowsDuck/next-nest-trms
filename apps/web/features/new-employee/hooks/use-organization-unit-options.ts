@@ -13,7 +13,7 @@ import {
   getPlants,
   sortOrgUnitsByName,
 } from '@/domains/org-units/data/get-org-units'
-import type { CreateEmployeeForm } from '@/features/new-employee/schemas/create-employee-form'
+import type { CreateEmployeeForm } from '../components/new-employee-page'
 
 type UseOrganizationUnitOptionsParams = {
   control: Control<CreateEmployeeForm>
