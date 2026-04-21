@@ -454,3 +454,4 @@ export function buildPeopleProfileRows(context: SummaryReportSnapshot) {
     participantMap.size
   )
 }
+

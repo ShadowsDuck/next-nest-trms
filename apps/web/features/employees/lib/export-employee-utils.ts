@@ -2,8 +2,8 @@ import type { EmployeeResponse } from '@workspace/schemas'
 import {
   prefixOptions,
   statusOptions,
-} from '@/domains/employees/lib/filter-options'
-import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
+} from '@/domains/employees'
+import { escapeCsvValue } from '@/shared/lib/csv'
 
 const prefixLabelMap = new Map<string, string>(
   prefixOptions.map((item) => [item.value, item.label])
@@ -199,3 +199,4 @@ export function buildEmployeeCourseRows(
 
   return rows
 }
+

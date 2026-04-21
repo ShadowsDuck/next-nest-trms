@@ -6,8 +6,9 @@ import {
   getDepartments,
   getDivisions,
   sortOrgUnitsByName,
-} from '@/domains/org-units/data/get-org-units'
+} from '@/domains/org-units'
 import type { Option } from '@/shared/components/niko-table/types'
+import { EMPLOYEE_FILTER_OPTIONS_QUERY_KEY } from '../options/query-options'
 
 function toUniqueOptions(items: OrganizationOption[]): Option[] {
   const seen = new Set<string>()
@@ -22,9 +23,9 @@ function toUniqueOptions(items: OrganizationOption[]): Option[] {
   })
 }
 
-export function useEmployeeOrgFilterOptions() {
+export function useEmployeeFilterOptions() {
   return useQuery({
-    queryKey: ['employee-org-filter-options'],
+    queryKey: EMPLOYEE_FILTER_OPTIONS_QUERY_KEY,
     queryFn: async () => {
       const [divisions, departments] = await Promise.all([
         getDivisions(),

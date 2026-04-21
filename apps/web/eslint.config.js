@@ -20,6 +20,26 @@ export default [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/components', '@/components/*'],
+              message:
+                'Legacy path is forbidden. Import from @/shared/components/*',
+            },
+            {
+              group: ['@/hooks', '@/hooks/*'],
+              message: 'Legacy path is forbidden. Import from @/shared/hooks/*',
+            },
+            {
+              group: ['@/lib', '@/lib/*'],
+              message: 'Legacy path is forbidden. Import from @/shared/lib/*',
+            },
+          ],
+        },
+      ],
     },
   },
 
@@ -45,19 +65,23 @@ export default [
           project: path.resolve(__dirname, 'tsconfig.json'),
         },
       },
+      'boundaries/root-path': __dirname,
+      'boundaries/flag-as-external': {
+        outsideRootPath: true,
+      },
       'boundaries/elements': [
-        { type: 'shared', pattern: ['shared/**/*'] },
+        { type: 'shared', pattern: ['shared/**'] },
         {
           type: 'domains',
-          pattern: ['domains/*/**/*'],
+          pattern: ['domains/*/**'],
           capture: ['domainName'],
         },
         {
           type: 'features',
-          pattern: ['features/*/**/*'],
+          pattern: ['features/*/**'],
           capture: ['featureName'],
         },
-        { type: 'app', pattern: ['app/**/*'] },
+        { type: 'app', pattern: ['app/**'] },
       ],
     },
 
@@ -69,36 +93,54 @@ export default [
           default: 'disallow',
           rules: [
             // 🚫 shared → พึ่งพาแค่ shared ด้วยกันเอง (external ใช้อัตโนมัติอยู่แล้ว)
-            { from: ['shared'], allow: ['shared'] },
+            {
+              from: { type: 'shared' },
+              allow: { to: { type: 'shared' } },
+            },
 
             // 📦 domains → พึ่งพิง shared และ โดเมนเดียวกันเองเท่านั้น
             {
-              from: ['domains'],
+              from: { type: 'domains' },
               allow: [
-                'shared',
-                ['domains', { domainName: '{{from.domainName}}' }],
+                { to: { type: 'shared' } },
+                {
+                  to: {
+                    type: 'domains',
+                    captured: {
+                      domainName: '{{from.captured.domainName}}',
+                    },
+                  },
+                },
               ],
             },
 
             // 🎨 features → พึ่งพิง shared, domains(ทั้งหมด) และ Feature ตัวเองเท่านั้น
             {
-              from: ['features'],
+              from: { type: 'features' },
               allow: [
-                'shared',
-                'domains',
-                ['features', { featureName: '{{from.featureName}}' }],
+                { to: { type: 'shared' } },
+                { to: { type: 'domains' } },
+                {
+                  to: {
+                    type: 'features',
+                    captured: {
+                      featureName: '{{from.captured.featureName}}',
+                    },
+                  },
+                },
               ],
             },
 
             // 🚀 app → ประกอบร่าง ดึงได้ทุกอย่าง
-            { from: ['app'], allow: ['shared', 'domains', 'features'] },
+            {
+              from: { type: 'app' },
+              allow: { to: { type: ['shared', 'domains', 'features'] } },
+            },
           ],
         },
       ],
 
-      // External libraries generate a lot of warnings. Disabling this rule to keep logs clean.
-      // Eslint will still check boundaries between your own files perfectly.
-      'boundaries/no-unknown': 'off',
+      'boundaries/no-unknown': 2,
     },
   },
 ]

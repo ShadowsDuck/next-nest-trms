@@ -37,3 +37,4 @@ export function EmployeeTableEmptyState({ visible, isFiltered }: iAppProps) {
     </TableRow>
   )
 }
+

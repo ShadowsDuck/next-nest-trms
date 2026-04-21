@@ -37,3 +37,4 @@ export function CourseTableEmptyState({ visible, isFiltered }: iAppProps) {
     </TableRow>
   )
 }
+

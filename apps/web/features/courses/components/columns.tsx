@@ -8,7 +8,7 @@ import { EllipsisVertical } from 'lucide-react'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/domains/courses/lib/filter-options'
+} from '@/domains/courses'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
@@ -222,3 +222,4 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     enableHiding: false,
   },
 ]
+

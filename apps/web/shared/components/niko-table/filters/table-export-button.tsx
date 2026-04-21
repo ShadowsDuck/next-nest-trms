@@ -5,51 +5,7 @@ import * as React from 'react'
 import type { Table } from '@tanstack/react-table'
 import { Button } from '@workspace/ui/components/button'
 import { Upload } from 'lucide-react'
-
-/**
- * Trigger CSV download
- */
-export function triggerCsvDownload(filename: string, rows: string[]) {
-  const csvContent = rows.join('\n')
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}.csv`)
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-}
-
-/**
- * Escape a cell value for CSV output.
- * Handles strings, numbers, booleans, dates, arrays, null, and undefined.
- */
-export function escapeCsvValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
-
-  if (value instanceof Date) {
-    return `"${value.toISOString()}"`
-  }
-
-  if (Array.isArray(value)) {
-    const joined = value.map(String).join(', ')
-    return `"${joined.replace(/"/g, '""')}"`
-  }
-
-  if (typeof value === 'boolean') return value ? 'true' : 'false'
-  if (typeof value === 'number') return String(value)
-
-  // Default: treat as string and escape quotes
-  const str = String(value)
-  // Wrap in quotes if the value contains commas, quotes, or newlines
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
+import { escapeCsvValue, triggerCsvDownload } from '@/shared/lib/csv'
 
 export interface ExportTableToCSVOptions<TData> {
   /** Filename for the exported CSV (without extension). @default "table" */
@@ -274,18 +230,7 @@ export function exportTableToCSV<TData>(
   })
 
   const csvContent = [headerRow, ...dataRows].join('\n')
-
-  // Create blob and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}.csv`)
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  triggerCsvDownload(filename, [csvContent])
 }
 
 export interface TableExportButtonProps<TData> {

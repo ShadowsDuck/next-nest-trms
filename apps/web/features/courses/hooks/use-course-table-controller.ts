@@ -10,8 +10,9 @@ import type {
 import { accreditationStatus, courseType } from '@workspace/schemas'
 import type { CourseQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { getAllCourses } from '@/domains/courses/data/get-all-courses'
-import { courseParsers } from '@/domains/courses/lib/search-params'
+import { getAllCourses } from '@/domains/courses'
+import { courseParsers } from '@/domains/courses'
+import { buildCoursesQueryKey } from '../options/query-options'
 
 type MultiFilterKey =
   | 'type'
@@ -194,20 +195,7 @@ export function useCourseTableController() {
     [setParams]
   )
 
-  const queryKey = useMemo(
-    () => [
-      'courses',
-      params.page,
-      params.limit,
-      params.search,
-      params.type.join(','),
-      params.tagName.join(','),
-      params.dateRange.join(','),
-      params.durationRange.join(','),
-      params.accreditationStatus.join(','),
-    ],
-    [params]
-  )
+  const queryKey = useMemo(() => buildCoursesQueryKey(params), [params])
 
   const query = useQuery({
     queryKey,
@@ -302,3 +290,4 @@ export function useCourseTableController() {
     handleColumnFiltersChange,
   }
 }
+

@@ -18,9 +18,9 @@ import { Controller, useFormContext } from 'react-hook-form'
 import {
   jobLevelOptions,
   statusOptions,
-} from '@/domains/employees/lib/filter-options'
+} from '@/domains/employees'
+import type { CreateEmployeeForm } from '../schemas/form-schema'
 import { FormSectionShell } from './form-section-shell'
-import type { CreateEmployeeForm } from './new-employee-page'
 
 function parseIsoDate(value?: string) {
   if (!value) {
@@ -148,3 +148,4 @@ export function EmploymentInfoSection() {
     </FormSectionShell>
   )
 }
+

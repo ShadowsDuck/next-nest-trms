@@ -10,8 +10,9 @@ import type {
 import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
 import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { getAllEmployees } from '@/domains/employees/data/get-all-employees'
-import { employeeParsers } from '@/domains/employees/lib/search-params'
+import { getAllEmployees } from '@/domains/employees'
+import { employeeParsers } from '@/domains/employees'
+import { buildEmployeesQueryKey } from '../options/query-options'
 
 type MultiFilterKey =
   | 'prefix'
@@ -206,20 +207,7 @@ export function useEmployeeTableController() {
     [setParams]
   )
 
-  const queryKey = useMemo(
-    () => [
-      'employees',
-      params.page,
-      params.limit,
-      params.search,
-      params.prefix.join(','),
-      params.jobLevel.join(','),
-      params.divisionName.join(','),
-      params.departmentName.join(','),
-      params.status.join(','),
-    ],
-    [params]
-  )
+  const queryKey = useMemo(() => buildEmployeesQueryKey(params), [params])
 
   /**
    * Load employees from API (keep previous rows during refetch).
@@ -345,3 +333,4 @@ export function useEmployeeTableController() {
     handleColumnFiltersChange,
   }
 }
+

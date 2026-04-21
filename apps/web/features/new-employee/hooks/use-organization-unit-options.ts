@@ -12,8 +12,8 @@ import {
   getFunctions,
   getPlants,
   sortOrgUnitsByName,
-} from '@/domains/org-units/data/get-org-units'
-import type { CreateEmployeeForm } from '../components/new-employee-page'
+} from '@/domains/org-units'
+import type { CreateEmployeeForm } from '../schemas/form-schema'
 
 type UseOrganizationUnitOptionsParams = {
   control: Control<CreateEmployeeForm>
@@ -248,3 +248,4 @@ export function useOrganizationUnitOptions({
     selectedDivisionId,
   }
 }
+

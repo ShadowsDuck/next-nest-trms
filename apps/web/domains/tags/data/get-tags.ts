@@ -1,4 +1,4 @@
-import { tagSchema } from '@workspace/schemas'
+import { TagResponse, tagSchema } from '@workspace/schemas'
 import * as z from 'zod'
 import { fetcher } from '@/shared/lib/fetcher'
 import { requireAdmin } from '@/shared/lib/session'
@@ -8,7 +8,7 @@ const tagListSchema = z.array(tagSchema)
 export async function getTagOptions() {
   await requireAdmin()
 
-  const data = await fetcher<unknown>('/api/tags', {
+  const data = await fetcher<TagResponse>('/api/tags', {
     cache: 'no-store',
   })
 

@@ -2,12 +2,12 @@ import type { CourseParticipant, CourseResponse } from '@workspace/schemas'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/domains/courses/lib/filter-options'
+} from '@/domains/courses'
 import {
   prefixOptions,
   statusOptions,
-} from '@/domains/employees/lib/filter-options'
-import { escapeCsvValue } from '@/shared/components/niko-table/filters/table-export-button'
+} from '@/domains/employees'
+import { escapeCsvValue } from '@/shared/lib/csv'
 
 const courseTypeLabelMap = new Map<string, string>(
   courseTypeOptions.map((option) => [option.value, option.label] as const)
@@ -128,3 +128,4 @@ export const COURSE_PARTICIPANT_HEADER = [
   'ส่วนงาน',
   'สถานะ',
 ]
+

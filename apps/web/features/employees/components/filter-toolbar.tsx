@@ -24,14 +24,15 @@ import {
   jobLevelOptions,
   prefixOptions,
   statusOptions,
-} from '@/domains/employees/lib/filter-options'
+} from '@/domains/employees'
 import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
 import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'
 import { DataTableToolbarSection } from '@/shared/components/niko-table/components/data-table-toolbar-section'
-import { useEmployeeOrgFilterOptions } from '../hooks/use-employee-org-filter-options'
 import { exportEmployeesCSV } from '../lib/export-employees-csv'
 import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
+import { EMPLOYEES_QUERY_KEY } from '../options/query-options'
+import { useEmployeeFilterOptions } from '../queries/use-employee-filter-options'
 
 /**
  * Toolbar filters using built-in niko-table controls.
@@ -42,7 +43,7 @@ export function EmployeeTableFilterToolbar({
 }: {
   params: EmployeeQuery
 }) {
-  const { data: orgFilterOptions } = useEmployeeOrgFilterOptions()
+  const { data: filterOptions } = useEmployeeFilterOptions()
   const [isExportingCourses, setIsExportingCourses] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const queryClient = useQueryClient()
@@ -85,7 +86,7 @@ export function EmployeeTableFilterToolbar({
   // รีเฟรชข้อมูล
   async function handleRefresh() {
     setIsRefreshing(true)
-    await queryClient.invalidateQueries({ queryKey: ['employees'] })
+    await queryClient.invalidateQueries({ queryKey: [EMPLOYEES_QUERY_KEY] })
     setIsRefreshing(false)
   }
 
@@ -193,7 +194,7 @@ export function EmployeeTableFilterToolbar({
         <DataTableFacetedFilter
           accessorKey="divisionName"
           title="ฝ่าย"
-          options={orgFilterOptions?.divisionOptions}
+          options={filterOptions?.divisionOptions}
           multiple
           showCounts={false}
           limitToFilteredRows={false}
@@ -201,7 +202,7 @@ export function EmployeeTableFilterToolbar({
         <DataTableFacetedFilter
           accessorKey="departmentName"
           title="ส่วนงาน"
-          options={orgFilterOptions?.departmentOptions}
+          options={filterOptions?.departmentOptions}
           multiple
           showCounts={false}
           limitToFilteredRows={false}

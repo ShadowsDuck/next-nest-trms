@@ -1,6 +1,6 @@
 import type { EmployeeQuery } from '@workspace/schemas'
-import { getAllEmployeesExport } from '@/domains/employees/data/get-all-employees-export'
-import { triggerCsvDownload } from '@/shared/components/niko-table/filters/table-export-button'
+import { getAllEmployeesExport } from '@/domains/employees'
+import { triggerCsvDownload } from '@/shared/lib/csv'
 import { buildEmployeeCourseRows } from './export-employee-utils'
 
 export async function exportEmployeesWithCoursesCSV({
@@ -27,3 +27,4 @@ export async function exportEmployeesWithCoursesCSV({
 
   triggerCsvDownload(filename, buildEmployeeCourseRows(employees))
 }
+

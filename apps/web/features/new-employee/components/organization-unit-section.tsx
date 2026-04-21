@@ -15,9 +15,9 @@ import {
 import { cn } from '@workspace/ui/lib/utils'
 import { Building2 } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
-import type { OrganizationOption } from '@/domains/org-units/data/get-org-units'
+import type { OrganizationOption } from '@/domains/org-units'
+import type { CreateEmployeeForm } from '../schemas/form-schema'
 import { FormSectionShell } from './form-section-shell'
-import type { CreateEmployeeForm } from './new-employee-page'
 
 type OrganizationUnitSectionProps = {
   plantOptions: OrganizationOption[]
@@ -273,3 +273,4 @@ export function OrganizationUnitSection({
     </FormSectionShell>
   )
 }
+

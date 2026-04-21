@@ -9,7 +9,7 @@ import {
   jobLevelOptions,
   prefixOptions,
   statusOptions,
-} from '@/domains/employees/lib/filter-options'
+} from '@/domains/employees'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
@@ -186,3 +186,4 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     enableHiding: false,
   },
 ]
+

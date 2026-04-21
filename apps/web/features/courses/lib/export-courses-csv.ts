@@ -1,6 +1,6 @@
 import type { CourseQuery } from '@workspace/schemas'
-import { getAllCoursesExport } from '@/domains/courses/data/get-all-courses-export'
-import { triggerCsvDownload } from '@/shared/components/niko-table/filters/table-export-button'
+import { getAllCoursesExport } from '@/domains/courses'
+import { triggerCsvDownload } from '@/shared/lib/csv'
 import {
   COURSE_EXPORT_HEADER,
   buildCourseSummaryRow,
@@ -33,3 +33,4 @@ export async function exportCoursesCSV({
 
   triggerCsvDownload(filename, rows)
 }
+

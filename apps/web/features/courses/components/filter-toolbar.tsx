@@ -23,16 +23,17 @@ import {
 import {
   accreditationStatusOptions,
   courseTypeOptions,
-} from '@/domains/courses/lib/filter-options'
+} from '@/domains/courses'
 import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
 import { DataTableDateFilter } from '@/shared/components/niko-table/components/data-table-date-filter'
 import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'
 import { DataTableSliderFilter } from '@/shared/components/niko-table/components/data-table-slider-filter'
 import { DataTableToolbarSection } from '@/shared/components/niko-table/components/data-table-toolbar-section'
-import { useCourseFilterOptions } from '../hooks/use-course-filter-options'
 import { exportCoursesCSV } from '../lib/export-courses-csv'
 import { exportCoursesWithEmployeesCSV } from '../lib/export-courses-with-employees-csv'
+import { COURSES_QUERY_KEY } from '../options/query-options'
+import { useCourseFilterOptions } from '../queries/use-course-filter-options'
 
 /**
  * Toolbar สำหรับกรองข้อมูลหลักสูตร
@@ -76,7 +77,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
   // รีเฟรชข้อมูล
   async function handleRefresh() {
     setIsRefreshing(true)
-    await queryClient.invalidateQueries({ queryKey: ['courses'] })
+    await queryClient.invalidateQueries({ queryKey: [COURSES_QUERY_KEY] })
     setIsRefreshing(false)
   }
 
@@ -224,3 +225,4 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
     </DataTableToolbarSection>
   )
 }
+

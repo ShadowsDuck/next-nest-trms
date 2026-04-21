@@ -15,9 +15,9 @@ import {
 } from '@workspace/ui/components/select'
 import { UserRound } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { prefixOptions } from '@/domains/employees/lib/filter-options'
+import { prefixOptions } from '@/domains/employees'
+import type { CreateEmployeeForm } from '../schemas/form-schema'
 import { FormSectionShell } from './form-section-shell'
-import type { CreateEmployeeForm } from './new-employee-page'
 
 export function BasicInfoSection() {
   const { control } = useFormContext<CreateEmployeeForm>()
@@ -151,3 +151,4 @@ export function BasicInfoSection() {
     </FormSectionShell>
   )
 }
+
