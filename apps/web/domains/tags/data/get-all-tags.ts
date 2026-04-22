@@ -4,7 +4,7 @@ import { api } from '@/shared/lib/fetcher'
 
 const tagListSchema = z.array(tagSchema)
 
-export async function getAllTags() {
+export async function getAllTags(): Promise<TagResponse[]> {
   const data = await api.get<TagResponse[]>('/api/tags', {
     cache: 'no-store',
   })
