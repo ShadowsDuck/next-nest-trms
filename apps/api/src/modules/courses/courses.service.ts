@@ -1,10 +1,10 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { buildCourseWhereInput } from './course-where.builder';
-import { formatCourse } from './courses.mapper';
 import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 import { CourseResponseDto } from './dto/course-response.dto';
+import { buildCourseWhereInput } from './lib/course-where.builder';
+import { formatCourse } from './lib/courses.mapper';
 
 @Injectable()
 export class CoursesService {

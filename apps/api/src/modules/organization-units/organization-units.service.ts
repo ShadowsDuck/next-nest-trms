@@ -5,7 +5,7 @@ import {
   OrgFunction,
   Plant,
 } from '@workspace/database';
-import { toIsoDateTime } from 'src/libs/date.mapper';
+import { toIsoDateTime } from 'src/lib/date.mapper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   ConflictException,

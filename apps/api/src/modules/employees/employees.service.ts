@@ -8,8 +8,8 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { EmployeeResponseDto } from './dto/employee-response.dto';
-import { buildEmployeeWhereInput } from './employee-where.builder';
-import { formatEmployee } from './employees.mapper';
+import { buildEmployeeWhereInput } from './lib/employee-where.builder';
+import { formatEmployee } from './lib/employees.mapper';
 
 @Injectable()
 export class EmployeesService {

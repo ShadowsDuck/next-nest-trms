@@ -1,5 +1,5 @@
 import { Prisma } from '@workspace/database';
-import { EmployeeQueryDto } from './dto/employee-query.dto';
+import { EmployeeQueryDto } from '../dto/employee-query.dto';
 
 export function buildEmployeeWhereInput(
   queryDto: EmployeeQueryDto,

@@ -6,7 +6,7 @@ import {
   SummaryReportSnapshot,
   summaryReportResponseSchema,
 } from '@workspace/schemas';
-import { toIsoDateTime } from 'src/libs/date.mapper';
+import { toIsoDateTime } from 'src/lib/date.mapper';
 import {
   BadRequestException,
   Injectable,

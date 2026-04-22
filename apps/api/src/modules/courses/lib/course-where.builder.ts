@@ -1,5 +1,5 @@
 import { Prisma } from '@workspace/database';
-import { CourseQueryDto } from './dto/course-query.dto';
+import { CourseQueryDto } from '../dto/course-query.dto';
 
 function parseCourseDate(value: unknown): Date | undefined {
   if (typeof value !== 'number' || Number.isNaN(value)) {

@@ -9,8 +9,8 @@ import {
   Tag,
   TrainingRecord,
 } from '@workspace/database';
-import { toIsoDate, toIsoDateTime } from 'src/libs/date.mapper';
-import { EmployeeResponseDto } from './dto/employee-response.dto';
+import { toIsoDate, toIsoDateTime } from 'src/lib/date.mapper';
+import { EmployeeResponseDto } from '../dto/employee-response.dto';
 
 export type EmployeeWithRelations = Employee & {
   plant: Plant;
