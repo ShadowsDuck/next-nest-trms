@@ -1,12 +1,13 @@
 'use server'
 
+import { revalidateTag } from 'next/cache'
 import {
   type CourseQuery,
   type CreateSummaryReportResponse,
   type EmployeeQuery,
   createSummaryReportResponseSchema,
 } from '@workspace/schemas'
-import { fetcher } from '@/shared/lib/fetcher'
+import { api } from '@/shared/lib/fetcher'
 
 export async function createEmployeeSummaryReport({
   params,
@@ -15,18 +16,16 @@ export async function createEmployeeSummaryReport({
   params: EmployeeQuery
   selectedEmployeeNos: string[]
 }): Promise<CreateSummaryReportResponse> {
-  const data = await fetcher<CreateSummaryReportResponse>(
+  const data = await api.post<CreateSummaryReportResponse>(
     '/api/summary-reports',
     {
-      method: 'POST',
-      body: JSON.stringify({
-        source: 'employees',
-        selectedIds: selectedEmployeeNos,
-        filtersSnapshot: params,
-      }),
+      source: 'employees',
+      selectedIds: selectedEmployeeNos,
+      filtersSnapshot: params,
     }
   )
 
+  revalidateTag('summary-reports', 'max')
   return createSummaryReportResponseSchema.parse(data)
 }
 
@@ -37,23 +36,20 @@ export async function createCourseSummaryReport({
   params: CourseQuery
   selectedCourseIds: string[]
 }): Promise<CreateSummaryReportResponse> {
-  const data = await fetcher<CreateSummaryReportResponse>(
+  const data = await api.post<CreateSummaryReportResponse>(
     '/api/summary-reports',
     {
-      method: 'POST',
-      body: JSON.stringify({
-        source: 'courses',
-        selectedIds: selectedCourseIds,
-        filtersSnapshot: params,
-      }),
+      source: 'courses',
+      selectedIds: selectedCourseIds,
+      filtersSnapshot: params,
     }
   )
 
+  revalidateTag('summary-reports', 'max')
   return createSummaryReportResponseSchema.parse(data)
 }
 
 export async function deleteSummaryReport(reportId: string) {
-  await fetcher(`/api/summary-reports/${reportId}`, {
-    method: 'DELETE',
-  })
+  await api.delete(`/api/summary-reports/${reportId}`)
+  revalidateTag('summary-reports', 'max')
 }

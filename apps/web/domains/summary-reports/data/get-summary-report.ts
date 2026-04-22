@@ -15,7 +15,8 @@ async function safeFetchSummaryReport(
   const response = await fetch(
     `${env.NEXT_PUBLIC_API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,
     {
-      cache: 'no-store',
+      cache: 'force-cache',
+      next: { tags: ['summary-reports'] },
       headers: cookieHeader ? { cookie: cookieHeader } : undefined,
       credentials: 'same-origin',
     }

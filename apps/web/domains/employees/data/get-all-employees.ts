@@ -3,18 +3,15 @@ import {
   type EmployeeQuery,
   employeePaginationResponseSchema,
 } from '@workspace/schemas'
-import { fetcher } from '@/shared/lib/fetcher'
-import { requireAdmin } from '@/shared/lib/session'
+import { api } from '@/shared/lib/fetcher'
 import { serializeEmployeeParams } from '../lib/search-params'
 
 export async function getAllEmployees(
   params: EmployeeQuery
 ): Promise<EmployeePaginationResponse> {
-  await requireAdmin()
-
   const endpoint = `/api/employees${serializeEmployeeParams(params)}`
 
-  const data = await fetcher<EmployeePaginationResponse>(endpoint, {
+  const data = await api.get<EmployeePaginationResponse>(endpoint, {
     cache: 'no-store',
   })
 

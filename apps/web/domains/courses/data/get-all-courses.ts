@@ -3,18 +3,15 @@ import {
   type CourseQuery,
   coursePaginationResponseSchema,
 } from '@workspace/schemas'
-import { fetcher } from '@/shared/lib/fetcher'
-import { requireAdmin } from '@/shared/lib/session'
+import { api } from '@/shared/lib/fetcher'
 import { serializeCourseParams } from '../lib/search-params'
 
 export async function getAllCourses(
   params: CourseQuery
 ): Promise<CoursePaginationResponse> {
-  await requireAdmin()
-
   const endpoint = `/api/courses${serializeCourseParams(params)}`
 
-  const data = await fetcher<CoursePaginationResponse>(endpoint, {
+  const data = await api.get<CoursePaginationResponse>(endpoint, {
     cache: 'no-store',
   })
 

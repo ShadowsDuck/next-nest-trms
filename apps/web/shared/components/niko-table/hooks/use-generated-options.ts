@@ -73,10 +73,7 @@ export function useGeneratedOptions<TData>(
    * and would cause stale column data.
    */
 
-  const columns = React.useMemo(
-    () => table.getAllColumns(),
-    [table, table.options.columns]
-  )
+  const columns = React.useMemo(() => table.getAllColumns(), [table])
 
   /**
    * REACTIVITY FIX: Extract coreRows outside memos so that when async data

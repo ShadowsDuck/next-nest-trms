@@ -1,15 +1,12 @@
 import * as z from 'zod'
-import { fetcher } from '@/shared/lib/fetcher'
-import { requireAdmin } from '@/shared/lib/session'
+import { api } from '@/shared/lib/fetcher'
 import type { OrganizationOption } from './types'
 
 export async function getOrganizationOptions<T extends OrganizationOption>(
   path: string,
   schema: z.ZodType<T[]>
 ): Promise<OrganizationOption[]> {
-  await requireAdmin()
-
-  const data = await fetcher<unknown>(path, {
+  const data = await api.get<unknown>(path, {
     cache: 'no-store',
   })
 

@@ -5,15 +5,12 @@ import {
   type EmployeeType,
   employeeResponseSchema,
 } from '@workspace/schemas'
-import { fetcher } from '@/shared/lib/fetcher'
+import { api } from '@/shared/lib/fetcher'
 
 export async function createEmployee(
   payload: EmployeeType
 ): Promise<EmployeeResponse> {
-  const data = await fetcher<EmployeeResponse>('/api/employees', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
+  const data = await api.post<EmployeeResponse>('/api/employees', payload)
 
   return employeeResponseSchema.parse(data)
 }

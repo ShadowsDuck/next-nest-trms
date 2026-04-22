@@ -57,7 +57,6 @@ export function NewEmployeePage() {
       await createEmployee(payload)
       toast.success('สร้างพนักงานสำเร็จ')
       router.push('/admin/employees')
-      router.refresh()
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'สร้างพนักงานไม่สำเร็จ'
@@ -108,4 +107,3 @@ export function NewEmployeePage() {
     </div>
   )
 }
-

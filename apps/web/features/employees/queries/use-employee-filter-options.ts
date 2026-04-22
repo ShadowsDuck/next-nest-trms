@@ -10,6 +10,7 @@ import {
 import type { Option } from '@/shared/components/niko-table/types'
 import { EMPLOYEE_FILTER_OPTIONS_QUERY_KEY } from '../options/query-options'
 
+// กรองชื่อองค์กรที่ซ้ำกันออกเพื่อป้องกันตัวเลือกที่ซ้ำกันในตัวกรอง
 function toUniqueOptions(items: OrganizationOption[]): Option[] {
   const seen = new Set<string>()
 
@@ -37,6 +38,5 @@ export function useEmployeeFilterOptions() {
         departmentOptions: toUniqueOptions(departments),
       }
     },
-    staleTime: 5 * 60 * 1000,
   })
 }

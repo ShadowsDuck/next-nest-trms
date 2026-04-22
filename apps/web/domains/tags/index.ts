@@ -1,1 +1,1 @@
-export * from './data/get-tags'
+export * from './data/get-all-tags'
