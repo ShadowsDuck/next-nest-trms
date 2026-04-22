@@ -18,7 +18,7 @@ import { BasicInfoSection } from './basic-info-section'
 import { EmploymentInfoSection } from './employment-info-section'
 import { OrganizationUnitSection } from './organization-unit-section'
 
-export function NewEmployeePage() {
+export function CreateEmployeePage() {
   const router = useRouter()
   const form = useForm<CreateEmployeeForm>({
     resolver: zodResolver(createEmployeeSchema),
