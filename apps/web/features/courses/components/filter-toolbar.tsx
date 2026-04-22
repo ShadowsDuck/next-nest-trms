@@ -121,7 +121,6 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
 
               <DropdownMenuItem
                 onSelect={(event) => {
-                  event.preventDefault()
                   void handleExportCourses()
                 }}
                 className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
@@ -141,7 +140,6 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
 
               <DropdownMenuItem
                 onSelect={(event) => {
-                  event.preventDefault()
                   if (!isExportingWithEmployees) {
                     void handleExportCoursesWithEmployees()
                   }

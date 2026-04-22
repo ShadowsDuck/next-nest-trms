@@ -15,6 +15,7 @@ import { formatEmployee } from './lib/employees.mapper';
 export class EmployeesService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  // สร้างพนักงานใหม่ 1 รายการ พร้อมตรวจข้อมูลซ้ำและความถูกต้องของ chain หน่วยงาน
   async create(
     createEmployeeDto: CreateEmployeeDto,
   ): Promise<EmployeeResponseDto> {
@@ -77,6 +78,7 @@ export class EmployeesService {
     return formatEmployee(employee);
   }
 
+  // ดึงข้อมูลพนักงานแบบแบ่งหน้า รองรับตัวกรอง และเลือกว่าจะ include training records หรือไม่
   async findAll(
     queryDto: EmployeeQueryDto,
   ): Promise<EmployeePaginationResponseDto> {
@@ -126,6 +128,7 @@ export class EmployeesService {
     };
   }
 
+  // ดึงพนักงานตาม employeeNo หลายรายการ โดยคงลำดับผลลัพธ์ตาม input เดิม
   async findByEmployeeNosForReport(
     employeeNos: string[],
   ): Promise<EmployeeResponseDto[]> {
@@ -168,9 +171,24 @@ export class EmployeesService {
       );
   }
 
+  // ใช้ตรวจความสัมพันธ์ของหน่วยงานจาก id ก่อนบันทึกพนักงาน
   private async validateOrganizationChain(
     createEmployeeDto: CreateEmployeeDto,
   ) {
+    const errors = await this.getOrganizationChainErrors(createEmployeeDto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors[0]);
+    }
+  }
+
+  // ตรวจความสัมพันธ์ chain หน่วยงานจาก id แล้วคืน error list (ไม่ throw)
+  private async getOrganizationChainErrors(
+    createEmployeeDto: Pick<
+      CreateEmployeeDto,
+      'plantId' | 'buId' | 'functionId' | 'divisionId' | 'departmentId'
+    >,
+  ): Promise<string[]> {
+    const errors: string[] = [];
     const [plant, businessUnit, orgFunction, division, department] =
       await Promise.all([
         this.prismaService.plant.findUnique({
@@ -191,43 +209,41 @@ export class EmployeesService {
       ]);
 
     if (!plant) {
-      throw new BadRequestException('ไม่พบ Plant ที่ระบุ');
+      errors.push('ไม่พบ Plant ที่ระบุ');
     }
     if (!businessUnit) {
-      throw new BadRequestException('ไม่พบ Business Unit ที่ระบุ');
+      errors.push('ไม่พบ Business Unit ที่ระบุ');
     }
     if (!orgFunction) {
-      throw new BadRequestException('ไม่พบ Function ที่ระบุ');
+      errors.push('ไม่พบ Function ที่ระบุ');
     }
     if (!division) {
-      throw new BadRequestException('ไม่พบ Division ที่ระบุ');
+      errors.push('ไม่พบ Division ที่ระบุ');
     }
     if (!department) {
-      throw new BadRequestException('ไม่พบ Department ที่ระบุ');
+      errors.push('ไม่พบ Department ที่ระบุ');
+    }
+
+    if (errors.length > 0) {
+      return errors;
     }
 
     if (businessUnit.plantId !== createEmployeeDto.plantId) {
-      throw new BadRequestException(
-        'Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน',
-      );
+      errors.push('Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน');
     }
 
     if (orgFunction.businessUnitId !== createEmployeeDto.buId) {
-      throw new BadRequestException(
-        'Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน',
-      );
+      errors.push('Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน');
     }
 
     if (division.functionId !== createEmployeeDto.functionId) {
-      throw new BadRequestException(
-        'Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน',
-      );
+      errors.push('Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน');
     }
 
     if (department.divisionId !== createEmployeeDto.divisionId) {
-      throw new BadRequestException(
-        'Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน',
-      );
+      errors.push('Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน');
     }
+
+    return errors;
   }
 }

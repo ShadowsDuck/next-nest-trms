@@ -10,11 +10,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
+import { Separator } from '@workspace/ui/components/separator'
 import {
   EllipsisVertical,
+  FileSpreadsheet,
   Loader2,
   Plus,
   RefreshCw,
@@ -33,6 +34,7 @@ import { exportEmployeesCSV } from '../lib/export-employees-csv'
 import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
 import { EMPLOYEES_QUERY_KEY } from '../options/query-options'
 import { useEmployeeFilterOptions } from '../queries/use-employee-filter-options'
+import { EmployeeCsvImportDialog } from './employee-csv-import-dialog'
 
 /**
  * Toolbar filters using built-in niko-table controls.
@@ -46,6 +48,7 @@ export function EmployeeTableFilterToolbar({
   const { data: filterOptions } = useEmployeeFilterOptions()
   const [isExportingCourses, setIsExportingCourses] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
   const queryClient = useQueryClient()
 
   // สร้าง timestamp สำหรับ export filename
@@ -95,7 +98,7 @@ export function EmployeeTableFilterToolbar({
       <DataTableToolbarSection className="w-full justify-between px-0">
         <h1 className="text-2xl font-semibold tracking-tight">ข้อมูลพนักงาน</h1>
         <Button asChild className="gap-1.5">
-          <Link href="/admin/employees/new">
+          <Link href="/admin/employees/create">
             <Plus className="size-4" />
             สร้างพนักงานใหม่
           </Link>
@@ -124,11 +127,10 @@ export function EmployeeTableFilterToolbar({
                 เมนูส่งออกข้อมูล
               </DropdownMenuLabel>
 
-              <DropdownMenuSeparator className="my-1" />
+              <Separator className="my-1" />
 
               <DropdownMenuItem
-                onSelect={(event) => {
-                  event.preventDefault()
+                onSelect={() => {
                   void handleExportAllEmployees()
                 }}
                 className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
@@ -146,8 +148,7 @@ export function EmployeeTableFilterToolbar({
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={(event) => {
-                  event.preventDefault()
+                onSelect={() => {
                   if (!isExportingCourses) {
                     void handleExportEmployeesWithCourses()
                   }
@@ -168,6 +169,27 @@ export function EmployeeTableFilterToolbar({
                   </span>
                   <span className="text-muted-foreground text-xs">
                     รายชื่อพนักงานพร้อมประวัติการฝึกอบรมของแต่ละคน
+                  </span>
+                </span>
+              </DropdownMenuItem>
+
+              <Separator className="my-1" />
+
+              <DropdownMenuItem
+                onSelect={() => {
+                  setIsImportDialogOpen(true)
+                }}
+                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
+              >
+                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
+                  <FileSpreadsheet className="size-4" />
+                </span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm leading-none font-medium">
+                    นำเข้าข้อมูลจาก CSV
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    นำเข้าข้อมูลพนักงานบันทึกลงในระบบ
                   </span>
                 </span>
               </DropdownMenuItem>
@@ -232,6 +254,11 @@ export function EmployeeTableFilterToolbar({
           </Button>
         </div>
       </DataTableToolbarSection>
+
+      <EmployeeCsvImportDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+      />
     </DataTableToolbarSection>
   )
 }

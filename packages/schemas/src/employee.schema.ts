@@ -6,6 +6,7 @@ export const prefix = ["Mr", "Mrs", "Miss"] as const
 export const jobLevel = ["S1", "S2", "M1", "M2"] as const
 export const employeeStatus = ["Active", "Resigned"] as const
 
+// Default Schema
 export const employeeSchema = z.object({
   employeeNo: z.string().min(1, { message: "รหัสพนักงานห้ามว่าง" }),
   prefix: z.enum(prefix, { message: "คำนำหน้าไม่ถูกต้อง" }),
@@ -26,6 +27,7 @@ export const employeeSchema = z.object({
   departmentId: z.string().min(1, { message: "Department ห้ามว่าง" }),
 })
 
+// Response Schema
 export const employeeResponseSchema = employeeSchema.extend({
   id: z.string(),
   createdAt: z.iso.datetime(),
@@ -38,6 +40,7 @@ export const employeeResponseSchema = employeeSchema.extend({
   trainingRecords: z.array(trainingRecordResponseSchema),
 })
 
+// Pagination Response Schema
 export const employeePaginationResponseSchema = z.object({
   data: z.array(employeeResponseSchema),
   meta: z.object({
@@ -48,6 +51,7 @@ export const employeePaginationResponseSchema = z.object({
   }),
 })
 
+// Query Schema
 export const employeeQuerySchema = z.object({
   page: z.coerce.number().int().positive().catch(1),
   limit: z.coerce.number().int().positive().max(100).catch(25),
@@ -60,9 +64,97 @@ export const employeeQuerySchema = z.object({
   includeTrainingRecords: z.coerce.boolean().optional(),
 })
 
+// Import CSV Schema
+export const employeeImportRawRowSchema = z.object({
+  sourceRow: z.coerce.number().int().positive(),
+  employeeNo: z.unknown().optional(),
+  prefix: z.unknown().optional(),
+  fullName: z.unknown().optional(),
+  idCardNo: z.unknown().optional(),
+  hireDate: z.unknown().optional(),
+  jobLevel: z.unknown().optional(),
+  plantName: z.unknown().optional(),
+  buName: z.unknown().optional(),
+  functionName: z.unknown().optional(),
+  divisionName: z.unknown().optional(),
+  departmentName: z.unknown().optional(),
+})
+
+export const employeeImportRowSchema = z.object({
+  sourceRow: z.number().int().positive(),
+  employeeNo: z.string().min(1, { message: "รหัสพนักงานห้ามว่าง" }),
+  prefix: z.enum(prefix, { message: "คำนำหน้าไม่ถูกต้อง" }),
+  fullName: z.string().min(1, { message: "ชื่อ-นามสกุลห้ามว่าง" }),
+  idCardNo: z
+    .string()
+    .length(13, { message: "เลขบัตรประชาชนต้องมี 13 หลัก" })
+    .regex(/^\d{13}$/, { message: "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น" })
+    .optional(),
+  hireDate: z.string().optional(),
+  jobLevel: z.enum(jobLevel, { message: "ระดับตำแหน่งไม่ถูกต้อง" }),
+  plantName: z.string().min(1, { message: "Plant ห้ามว่าง" }),
+  buName: z.string().min(1, { message: "BU ห้ามว่าง" }),
+  functionName: z.string().min(1, { message: "สายงานห้ามว่าง" }),
+  divisionName: z.string().min(1, { message: "ฝ่ายห้ามว่าง" }),
+  departmentName: z.string().min(1, { message: "ส่วนงานห้ามว่าง" }),
+})
+
+export const employeeImportDryRunRequestSchema = z.object({
+  rows: z.array(employeeImportRawRowSchema),
+})
+
+export const employeeImportDryRunRowResultSchema = z.object({
+  sourceRow: z.number().int().positive(),
+  employeeNo: z.string().optional(),
+  ok: z.boolean(),
+  errors: z.array(z.string()),
+})
+
+export const employeeImportDryRunResponseSchema = z.object({
+  summary: z.object({
+    total: z.number().int().nonnegative(),
+    valid: z.number().int().nonnegative(),
+    invalid: z.number().int().nonnegative(),
+  }),
+  rows: z.array(employeeImportDryRunRowResultSchema),
+})
+
+export const employeeImportRequestSchema = employeeImportDryRunRequestSchema
+
+export const employeeImportRowResultSchema = z.object({
+  sourceRow: z.number().int().positive(),
+  employeeNo: z.string().optional(),
+  ok: z.boolean(),
+  error: z.string().optional(),
+})
+
+export const employeeImportResponseSchema = z.object({
+  summary: z.object({
+    total: z.number().int().nonnegative(),
+    imported: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+  }),
+  rows: z.array(employeeImportRowResultSchema),
+})
+
+// Employee Types
 export type EmployeeType = z.infer<typeof employeeSchema>
 export type EmployeeResponse = z.infer<typeof employeeResponseSchema>
 export type EmployeeQuery = z.infer<typeof employeeQuerySchema>
 export type EmployeePaginationResponse = z.infer<
   typeof employeePaginationResponseSchema
+>
+
+// Import CSV Types
+export type EmployeeImportRawRow = z.infer<typeof employeeImportRawRowSchema>
+export type EmployeeImportRow = z.infer<typeof employeeImportRowSchema>
+export type EmployeeImportDryRunRequest = z.infer<
+  typeof employeeImportDryRunRequestSchema
+>
+export type EmployeeImportDryRunResponse = z.infer<
+  typeof employeeImportDryRunResponseSchema
+>
+export type EmployeeImportRequest = z.infer<typeof employeeImportRequestSchema>
+export type EmployeeImportResponse = z.infer<
+  typeof employeeImportResponseSchema
 >
