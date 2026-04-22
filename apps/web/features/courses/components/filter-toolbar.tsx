@@ -120,7 +120,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
               <DropdownMenuSeparator className="my-1" />
 
               <DropdownMenuItem
-                onSelect={(event) => {
+                onSelect={() => {
                   void handleExportCourses()
                 }}
                 className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
@@ -139,7 +139,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                onSelect={(event) => {
+                onSelect={() => {
                   if (!isExportingWithEmployees) {
                     void handleExportCoursesWithEmployees()
                   }
@@ -223,4 +223,3 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
     </DataTableToolbarSection>
   )
 }
-
