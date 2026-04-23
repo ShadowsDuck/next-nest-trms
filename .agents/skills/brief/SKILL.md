@@ -12,7 +12,7 @@ This skill handles the initial phase of any feature or fix. It combines deep thi
 1.  **Understand**: Review the conversation and codebase.
 2.  **Interview (Grill)**: Ask one question at a time to resolve ambiguities. Provide recommended answers. Be relentless about edge cases.
 3.  **Synthesize**: Once the plan is solid, summarize the "Why", "What", and "Constraints".
-4.  **Document (Spec)**: Create/Update the spec file in `.ai/specs/<slug>.md` using the SDD template.
+4.  **Document (Spec)**: Create/Update the spec file in `docs/specs/<slug>.md` using the SDD template.
 5.  **Dashboard**: Update `docs/README.md` with the feature name, `Draft` status, and the link.
 
 ## Rules
@@ -32,4 +32,4 @@ This skill handles the initial phase of any feature or fix. It combines deep thi
 
 Maintain a list in `docs/README.md`:
 
-- [ ] **[Feature Name]** (`Status`) — [View Spec](../.ai/specs/[slug].md) — [Date]
+- [ ] **[Feature Name]** (`Status`) — [View Spec](./specs/[slug].md) — [Date]
