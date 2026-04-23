@@ -4,6 +4,5 @@ This directory contains the product and technical specifications for the feature
 
 ## Feature Dashboard
 
-| Feature                | Status      | Spec File | Last Updated |
-| :--------------------- | :---------- | :-------- | :----------- |
-| Project Initialization | `Completed` | N/A       | 2024-04-23   |
+- [x] **Project Initialization** (`Completed`) — 2024-04-23
+- [x] **Shared Data Table Row Actions** (`Completed`) — [View Spec](../.ai/specs/shared-data-table-row-actions.md) — 2026-04-24

@@ -2,9 +2,7 @@
 
 import type { CourseResponse } from '@workspace/schemas'
 import { Badge } from '@workspace/ui/components/badge'
-import { Button } from '@workspace/ui/components/button'
 import { Checkbox } from '@workspace/ui/components/checkbox'
-import { EllipsisVertical } from 'lucide-react'
 import {
   accreditationStatusOptions,
   courseTypeOptions,
@@ -12,6 +10,7 @@ import {
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
+import { DataTableRowActions } from '@/shared/components/niko-table/components/data-table-row-actions'
 import {
   FILTER_VARIANTS,
   SYSTEM_COLUMN_IDS,
@@ -210,16 +209,21 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
   },
   {
     id: 'actions',
-    size: 56,
-    minSize: 56,
-    header: () => null,
-    cell: () => (
-      <Button variant="ghost" size="icon" className="size-7" disabled>
-        <EllipsisVertical className="size-4" />
-      </Button>
+    size: 80,
+    minSize: 80,
+    header: () => (
+      <DataTableColumnHeader>
+        <DataTableColumnTitle />
+      </DataTableColumnHeader>
+    ),
+    meta: { label: 'จัดการ' },
+    cell: ({ row }) => (
+      <DataTableRowActions
+        viewHref={`/admin/courses/${row.original.id}`}
+        editHref={`/admin/courses/${row.original.id}/edit`}
+      />
     ),
     enableSorting: false,
     enableHiding: false,
   },
 ]
-

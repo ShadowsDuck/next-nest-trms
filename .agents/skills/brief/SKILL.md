@@ -27,3 +27,9 @@ This skill handles the initial phase of any feature or fix. It combines deep thi
 - **What**: Concrete deliverable.
 - **Constraints**: Must (Thai comments, surgical), Must Not, Out of Scope.
 - **Tasks**: T1, T2... with Verify steps.
+
+## Dashboard Update (docs/README.md)
+
+Maintain a list in `docs/README.md`:
+
+- [ ] **[Feature Name]** (`Status`) — [View Spec](../.ai/specs/[slug].md) — [Date]
