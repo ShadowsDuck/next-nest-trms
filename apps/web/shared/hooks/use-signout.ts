@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 import { authClient } from '@/shared/lib/auth-client'
 
 export function useSignOut() {

@@ -1,5 +1,4 @@
 import { Kanit } from 'next/font/google'
-import { Toaster } from '@workspace/ui/components/sonner'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
 import Provider from '@/shared/components/provider'
@@ -23,7 +22,6 @@ export default function RootLayout({
     >
       <body>
         <Provider>{children}</Provider>
-        <Toaster closeButton />
       </body>
     </html>
   )

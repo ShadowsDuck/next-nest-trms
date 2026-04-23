@@ -31,7 +31,7 @@ import {
   UploadIcon,
 } from 'lucide-react'
 import Papa from 'papaparse'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 import {
   dryRunImportEmployees,
   importEmployees,

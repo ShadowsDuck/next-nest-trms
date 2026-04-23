@@ -2,8 +2,30 @@
 
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider, useTheme } from 'next-themes'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { Bounce, ToastContainer } from 'react-toastify'
+
+function AppToastContainer() {
+  const { resolvedTheme } = useTheme()
+
+  return (
+    <ToastContainer
+      position="bottom-right"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover={false}
+      stacked
+      theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+      transition={Bounce}
+    />
+  )
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -28,6 +50,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <NuqsAdapter>{children}</NuqsAdapter>
+        <AppToastContainer />
       </QueryClientProvider>
     </ThemeProvider>
   )

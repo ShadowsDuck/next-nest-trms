@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@workspace/ui/components/button'
 import { ChevronLeft } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 import { createEmployee } from '@/domains/employees/actions'
 import { useOrganizationUnitOptions } from '../hooks/use-organization-unit-options'
 import {

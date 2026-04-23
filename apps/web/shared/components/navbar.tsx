@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button, buttonVariants } from '@workspace/ui/components/button'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 import { authClient } from '@/shared/lib/auth-client'
 import { ThemeToggle } from './theme-toggle'
 
