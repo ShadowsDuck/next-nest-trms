@@ -280,12 +280,15 @@ export function TableFacetedFilterContent({
                 <div
                   className={cn(
                     'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
-                    isSelected
-                      ? 'bg-primary text-primary-foreground'
-                      : 'opacity-50 [&_svg]:invisible'
+                    isSelected ? 'bg-primary' : 'opacity-50 [&_svg]:invisible'
                   )}
                 >
-                  <Check className="size-4" />
+                  <Check
+                    className={cn(
+                      'size-4',
+                      isSelected && 'text-primary-foreground!'
+                    )}
+                  />
                 </div>
                 {option.icon && <option.icon className="mr-2 size-4" />}
                 <span className="truncate">{option.label}</span>
