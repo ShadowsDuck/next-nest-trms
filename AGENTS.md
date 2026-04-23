@@ -25,7 +25,7 @@ Use skills by workstream. If multiple workstreams apply, use the minimum set nee
 
 - For new code, refactor, debugging, and code review:
   - Prefer `karpathy-guidelines` if available.
-  - If unavailable, follow this AGENTS.md baseline strictly and state assumptions before coding.
+  - If unavailable, follow this AGENTS.md baseline strictly.
 
 ### Backend / API (NestJS)
 
@@ -75,24 +75,41 @@ Use skills by workstream. If multiple workstreams apply, use the minimum set nee
   - Clear: proceed.
   - Ambiguous: ask concise clarifying questions first.
   - Underspecified: list explicit assumptions and confirm when risk is high.
+- State assumptions explicitly before coding when requirements are unclear.
+- If multiple interpretations exist, present them instead of choosing silently.
+- If something is confusing or business-critical, stop and ask.
+- If a simpler approach exists, say so.
 
 ### 2. Choose approach
 
 - Trivial: implement directly.
 - Moderate: simple implementation with minimal explanation.
-- Complex: define short plan + testable success criteria before coding.
+- Complex: define a short plan and testable success criteria before coding.
+- Use the minimum code that solves the problem.
+- Do not add features, abstractions, configurability, or speculative error handling that were not requested.
+- If the solution feels overcomplicated, simplify it.
 
 ### 3. Execute
 
 - Keep implementation minimal and surgical.
 - Match existing code style and architecture.
 - Do not introduce unrelated improvements.
+- Do not improve adjacent code, comments, or formatting unless required by the task.
+- Do not refactor things that are not broken.
+- Remove imports, variables, or functions made unused by your own changes.
+- Mention unrelated dead code if relevant, but do not delete it unless asked.
+- Every changed line should trace directly to the user's request.
 
 ### 4. Verify (non-trivial changes)
 
 - Define what success looks like.
 - Run appropriate checks/tests.
 - Report constraints or unverified areas explicitly.
+- Prefer verifiable outcomes over vague goals.
+- When useful, turn work into a concrete check:
+  - "Add validation" -> "Write tests for invalid inputs, then make them pass."
+  - "Fix the bug" -> "Write a test that reproduces it, then make it pass."
+  - "Refactor X" -> "Ensure tests pass before and after."
 
 ## Communication Style
 
@@ -108,6 +125,8 @@ Use skills by workstream. If multiple workstreams apply, use the minimum set nee
 - Do not refactor unrelated code.
 - Do not change formatting/style unnecessarily.
 - Do not hide uncertainty or guess silently.
+- For new code, when a comment is warranted, write the comment in Thai.
+- For every new function, add a Thai comment that states what the function is responsible for.
 
 ## Exceptions
 
