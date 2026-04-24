@@ -49,4 +49,14 @@ export const data = {
       icon: IconAdjustmentsHorizontal,
     },
   ],
+  subPathMap: {
+    create: 'เพิ่มข้อมูล',
+    edit: 'แก้ไข',
+    summary: 'รายงานสรุป',
+    employees: 'ข้อมูลพนักงาน',
+    courses: 'ข้อมูลหลักสูตร',
+    activities: 'บันทึกกิจกรรม',
+    users: 'ผู้ใช้ในระบบ',
+    settings: 'ตั้งค่าระบบ',
+  } as Record<string, string>,
 }
