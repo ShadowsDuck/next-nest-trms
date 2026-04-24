@@ -6,3 +6,4 @@ This directory contains the product and technical specifications for the feature
 
 - [x] **Project Initialization** (`Completed`) — 2024-04-23
 - [x] **Shared Data Table Row Actions** (`Completed`) — [View Spec](./specs/shared-data-table-row-actions.md) — 2026-04-24
+- [x] **Employee Table Redesign** (`Completed`) — [View Spec](./specs/employee-table-redesign.md) — 2026-04-24

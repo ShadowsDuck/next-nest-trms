@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import { EllipsisVertical, Eye, SquarePen, Trash } from 'lucide-react'
+import { Ellipsis, Eye, SquarePen, Trash } from 'lucide-react'
 
 export interface DataTableRowActionsProps {
   /** ลิงก์สำหรับไปหน้าดูรายละเอียด */
@@ -36,7 +36,7 @@ export function DataTableRowActions({
           size="icon"
           className="hover:bg-input/40 aria-expanded:bg-input/40 size-7 focus-visible:border-transparent focus-visible:ring-0"
         >
-          <EllipsisVertical className="size-4" />
+          <Ellipsis className="size-4" />
           <span className="sr-only">เปิดเมนู</span>
         </Button>
       </DropdownMenuTrigger>

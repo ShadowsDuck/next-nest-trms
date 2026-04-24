@@ -12,10 +12,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
 import {
-  EllipsisVertical,
-  FileSpreadsheet,
+  ChevronDown,
+  Download,
+  Filter,
   Loader2,
   Plus,
   RefreshCw,
@@ -95,33 +101,41 @@ export function EmployeeTableFilterToolbar({
 
   return (
     <DataTableToolbarSection className="w-full flex-col justify-between gap-2.5">
-      <DataTableToolbarSection className="w-full justify-between px-0">
-        <h1 className="text-2xl font-semibold tracking-tight">ข้อมูลพนักงาน</h1>
-        <Button asChild className="gap-1.5">
-          <Link href="/admin/employees/create">
-            <Plus className="size-4" />
-            สร้างพนักงานใหม่
-          </Link>
-        </Button>
-      </DataTableToolbarSection>
+      <DataTableToolbarSection className="mb-2 w-full justify-between px-0">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            ข้อมูลพนักงาน
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            จัดการและดูข้อมูลพนักงานทั้งหมดได้ในที่เดียว
+          </p>
+        </div>
 
-      <DataTableToolbarSection className="px-0">
-        <DataTableSearchFilter placeholder="ค้นหาด้วย รหัสพนักงาน หรือ ชื่อ-นามสกุล..." />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* ปุ่มนำเข้าข้อมูล */}
+          <Button
+            variant="outline"
+            className="gap-2"
+            size="lg"
+            onClick={() => setIsImportDialogOpen(true)}
+          >
+            <Download className="mr-1 size-4" />
+            นำเข้า
+          </Button>
+
+          {/* ปุ่มส่งออกข้อมูล */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="เมนูส่งออกข้อมูล"
-              >
-                <EllipsisVertical className="size-4" />
+              <Button variant="outline" className="gap-2" size="lg">
+                <Upload className="mr-1 size-4" />
+                ส่งออก
+                <ChevronDown className="text-muted-foreground size-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               sideOffset={8}
-              className="border-border/70 bg-popover/95 w-64 min-w-64 rounded-xl border p-1.5 shadow-xl backdrop-blur"
+              className="border-border/70 bg-popover/95 w-64 min-w-64 rounded-xl border p-1.5 shadow-xl ring-0 backdrop-blur"
             >
               <DropdownMenuLabel className="text-muted-foreground px-2.5 pb-1 text-[11px] tracking-wide">
                 เมนูส่งออกข้อมูล
@@ -133,7 +147,7 @@ export function EmployeeTableFilterToolbar({
                 onSelect={() => {
                   void handleExportAllEmployees()
                 }}
-                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
+                className="focus:bg-muted/80 cursor-pointer gap-3 rounded-lg px-2.5 py-2"
               >
                 <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
                   <Upload className="size-4" />
@@ -154,7 +168,7 @@ export function EmployeeTableFilterToolbar({
                   }
                 }}
                 disabled={isExportingCourses}
-                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
+                className="focus:bg-muted/80 cursor-pointer gap-3 rounded-lg px-2.5 py-2"
               >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {isExportingCourses ? (
@@ -172,39 +186,23 @@ export function EmployeeTableFilterToolbar({
                   </span>
                 </span>
               </DropdownMenuItem>
-
-              <Separator className="my-1" />
-
-              <DropdownMenuItem
-                onSelect={() => {
-                  setIsImportDialogOpen(true)
-                }}
-                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
-              >
-                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
-                  <FileSpreadsheet className="size-4" />
-                </span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-sm leading-none font-medium">
-                    นำเข้าข้อมูลจาก CSV
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    นำเข้าข้อมูลพนักงานบันทึกลงในระบบ
-                  </span>
-                </span>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* ปุ่มเพิ่มพนักงาน */}
+          <Button asChild size="lg">
+            <Link href="/admin/employees/create">
+              <Plus className="mr-1 size-4" />
+              เพิ่มพนักงาน
+            </Link>
+          </Button>
         </div>
       </DataTableToolbarSection>
 
-      <DataTableToolbarSection className="px-0">
-        <DataTableFacetedFilter
-          accessorKey="prefix"
-          title="คำนำหน้า"
-          options={prefixOptions}
-          multiple
-          showCounts={false}
+      <DataTableToolbarSection className="w-full flex-wrap gap-3 px-0">
+        <DataTableSearchFilter
+          placeholder="ค้นหาด้วย รหัสพนักงาน หรือ ชื่อ-นามสกุล..."
+          className="w-[350px] flex-none"
         />
         <DataTableFacetedFilter
           accessorKey="jobLevel"
@@ -212,6 +210,7 @@ export function EmployeeTableFilterToolbar({
           options={jobLevelOptions}
           multiple
           showCounts={false}
+          showSearch={false}
         />
         <DataTableFacetedFilter
           accessorKey="divisionName"
@@ -236,19 +235,44 @@ export function EmployeeTableFilterToolbar({
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          showSearch={false}
         />
-        <DataTableClearFilter>ล้างตัวกรอง</DataTableClearFilter>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="lg">
+              <Filter className="mr-1 size-4" />
+              ตัวกรองเพิ่มเติม
+              <ChevronDown className="text-muted-foreground size-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[280px] p-4">
+            <div className="space-y-4">
+              <h4 className="text-sm leading-none font-medium">ตัวกรองอื่นๆ</h4>
+              <div className="flex flex-col gap-3">
+                <DataTableFacetedFilter
+                  accessorKey="prefix"
+                  title="คำนำหน้า"
+                  options={prefixOptions}
+                  multiple
+                  showCounts={false}
+                />
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <DataTableClearFilter size="lg" className="h-9">
+          ล้างตัวกรอง
+        </DataTableClearFilter>
 
         <div className="ml-auto">
           <Button
             variant="outline"
-            size="sm"
-            className="gap-2"
+            size="lg"
             onClick={() => void handleRefresh()}
             disabled={isRefreshing}
           >
             <RefreshCw
-              className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`mr-1 size-4 ${isRefreshing ? 'animate-spin' : ''}`}
             />
             รีเฟรชข้อมูล
           </Button>

@@ -92,7 +92,7 @@ export function TableSearchFilter<TData>({
         placeholder={placeholder}
         value={currentValue}
         onChange={handleChange}
-        className="pr-9 pl-9"
+        className="placeholder:text-muted-foreground/70 pr-9 pl-9"
         aria-label="Search table"
       />
       {hasValue && showClearButton && (

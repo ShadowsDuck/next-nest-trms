@@ -372,6 +372,7 @@ export function DataTableFacetedFilterContent<TData, TValue = unknown>({
   title,
   multiple,
   onValueChange,
+  showSearch = true,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   // Default: multi-select shows all options, single-select filters to visible rows
   limitToFilteredRows ??= !multiple
@@ -390,7 +391,7 @@ export function DataTableFacetedFilterContent<TData, TValue = unknown>({
   })
 
   // Use the shared hook for filter logic
-  const { selectedValues, onItemSelect, onReset } = useTableFacetedFilter({
+  const { selectedValues, onItemSelect, onReset, onToggleAll } = useTableFacetedFilter({
     column,
     onValueChange,
     multiple,
@@ -405,6 +406,9 @@ export function DataTableFacetedFilterContent<TData, TValue = unknown>({
       selectedValues={selectedValues}
       onItemSelect={onItemSelect}
       onReset={onReset}
+      showSearch={showSearch}
+      multiple={multiple}
+      onToggleAll={onToggleAll}
     />
   )
 }

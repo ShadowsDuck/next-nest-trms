@@ -5,12 +5,9 @@ import React from 'react'
 import type { Column, Table } from '@tanstack/react-table'
 import { Button } from '@workspace/ui/components/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
 import {
   Tooltip,
@@ -18,7 +15,13 @@ import {
   TooltipTrigger,
 } from '@workspace/ui/components/tooltip'
 import { cn } from '@workspace/ui/lib/utils'
-import { Check, CircleHelp } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  CircleHelp,
+} from 'lucide-react'
 import { SORT_ICONS, SORT_LABELS } from '../config/data-table'
 import type { SortIconVariant } from '../config/data-table'
 import { useDataTable } from '../core/data-table-context'
@@ -199,16 +202,16 @@ export function TableColumnSortOptions<TData, TValue>({
  *   <TableColumnSortOptions column={column} />
  * </TableColumnActions>
  * ```
+ *
+ * เมนูจัดการการจัดเรียงข้อมูลคอลัมน์แบบคลิกเปลี่ยนสถานะโดยตรง (Toggle)
  */
 export function TableColumnSortMenu<TData, TValue>({
   column,
   table: propTable,
-  variant: propVariant,
   className,
 }: {
   column: Column<TData, TValue>
   table?: Table<TData>
-  variant?: SortIconVariant
   className?: string
 }) {
   const context = useDataTable<TData>()
@@ -216,56 +219,45 @@ export function TableColumnSortMenu<TData, TValue>({
   const canSort = column.getCanSort()
   const sortState = column.getIsSorted()
 
-  const variant: FilterVariant =
-    propVariant || column.columnDef.meta?.variant || FILTER_VARIANTS.TEXT
-
-  const icons = SORT_ICONS[variant] || SORT_ICONS[FILTER_VARIANTS.TEXT]
-
   if (!canSort) return null
 
   const SortIcon =
     sortState === 'asc'
-      ? icons.asc
+      ? ChevronUp
       : sortState === 'desc'
-        ? icons.desc
-        : icons.unsorted
+        ? ChevronDown
+        : ChevronsUpDown
 
   const sortIndex = column.getSortIndex()
   const isMultiSort = table && table.getState().sorting.length > 1
   const showSortBadge = isMultiSort && sortIndex !== -1
 
+  const handleSort = (e: React.MouseEvent) => {
+    const isMulti = e.shiftKey
+    column.toggleSorting(undefined, isMulti)
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            'dark:text-muted-foreground size-7 transition-opacity',
-            sortState && 'text-primary',
-            className
-          )}
-        >
-          <div className="relative flex items-center justify-center">
-            <SortIcon className="size-4" />
-            {showSortBadge && (
-              <span className="bg-primary text-primary-foreground absolute -top-1 -right-2 flex size-3 items-center justify-center rounded-full text-[9px]">
-                {sortIndex + 1}
-              </span>
-            )}
-          </div>
-          <span className="sr-only">จัดเรียงคอลัมน์</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <TableColumnSortOptions
-          column={column}
-          table={table}
-          variant={variant}
-          withSeparator={false}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn(
+        'text-muted-foreground/70 hover:text-foreground size-7 transition-opacity active:translate-y-0',
+        sortState && 'text-muted-foreground',
+        className
+      )}
+      onClick={handleSort}
+    >
+      <div className="relative flex items-center justify-center">
+        <SortIcon className="size-4" />
+        {showSortBadge && (
+          <span className="bg-primary text-primary-foreground absolute -top-1 -right-2 flex size-3 items-center justify-center rounded-full text-[9px]">
+            {sortIndex + 1}
+          </span>
+        )}
+      </div>
+      <span className="sr-only">จัดเรียงคอลัมน์</span>
+    </Button>
   )
 }
 

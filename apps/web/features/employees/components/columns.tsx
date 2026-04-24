@@ -3,6 +3,7 @@
 import type { EmployeeResponse } from '@workspace/schemas'
 import { Badge } from '@workspace/ui/components/badge'
 import { Checkbox } from '@workspace/ui/components/checkbox'
+import { cn } from '@workspace/ui/lib/utils'
 import {
   jobLevelOptions,
   prefixOptions,
@@ -12,10 +13,7 @@ import { DataTableColumnHeader } from '@/shared/components/niko-table/components
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
 import { DataTableRowActions } from '@/shared/components/niko-table/components/data-table-row-actions'
-import {
-  FILTER_VARIANTS,
-  SYSTEM_COLUMN_IDS,
-} from '@/shared/components/niko-table/lib/constants'
+import { SYSTEM_COLUMN_IDS } from '@/shared/components/niko-table/lib/constants'
 import type { DataTableColumnDef } from '@/shared/components/niko-table/types'
 
 const prefixLabelByValue = new Map<string, string>(
@@ -44,7 +42,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all employees"
-        className="border-input dark:bg-sidebar ml-2 bg-white shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
+        className="border-input dark:bg-sidebar mb-[5px] ml-2 bg-white shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
       />
     ),
     cell: ({ row }) => (
@@ -52,7 +50,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select employee row"
-        className="border-input ml-2 shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
+        className="border-input mb-[5px] ml-2 shadow-[0_1px_0px_rgba(0,0,0,0.1)]"
       />
     ),
     enableSorting: false,
@@ -71,6 +69,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     meta: {
       label: 'รหัสพนักงาน',
     },
+    cell: ({ row }) => <div className="py-2">{row.getValue('employeeNo')}</div>,
   },
   {
     accessorKey: 'prefix',
@@ -86,12 +85,12 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
   {
     id: 'fullName',
     accessorFn: (row) => getFullName(row),
-    size: 500,
-    minSize: 500,
+    size: 400,
+    minSize: 400,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -106,7 +105,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -118,12 +117,12 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
   },
   {
     accessorKey: 'divisionName',
-    size: 220,
-    minSize: 180,
+    size: 250,
+    minSize: 200,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -133,12 +132,12 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
   },
   {
     accessorKey: 'departmentName',
-    size: 240,
+    size: 250,
     minSize: 200,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -153,7 +152,7 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -164,7 +163,18 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge variant={status === 'Active' ? 'default' : 'secondary'}>
+        <Badge
+          variant={status === 'Active' ? 'success' : 'inactive'}
+          className="h-[22px] w-fit gap-2"
+        >
+          <span
+            className={cn(
+              'size-[5px] rounded-full',
+              status === 'Active'
+                ? 'bg-success'
+                : 'bg-gray-400 dark:bg-gray-500'
+            )}
+          />
           {statusLabelByValue.get(status) ?? status}
         </Badge>
       )
@@ -175,12 +185,6 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     id: 'actions',
     size: 80,
     minSize: 80,
-    header: () => (
-      <DataTableColumnHeader>
-        <DataTableColumnTitle />
-      </DataTableColumnHeader>
-    ),
-    meta: { label: 'จัดการ' },
     cell: ({ row }) => (
       <DataTableRowActions
         viewHref={`/admin/employees/${row.original.id}`}

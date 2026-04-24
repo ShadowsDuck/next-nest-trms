@@ -11,7 +11,6 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -25,7 +24,7 @@ import {
 } from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
-import { Check, PlusCircle, XCircle, XIcon } from 'lucide-react'
+import { Check, ChevronDown, XCircle, XIcon } from 'lucide-react'
 import {
   FILTER_OPERATORS,
   FILTER_VARIANTS,
@@ -38,6 +37,11 @@ export interface TableFacetedFilterProps<TData, TValue> {
   title?: string
   options: Option[]
   multiple?: boolean
+  /**
+   * Whether to show the search input inside the popover
+   * @default true
+   */
+  showSearch?: boolean
   /**
    * Callback fired when filter value changes
    * Useful for server-side filtering or external state management
@@ -142,10 +146,46 @@ export function useTableFacetedFilter<TData>({
     [column, onValueChange]
   )
 
+  const onToggleAll = React.useCallback(
+    (targetOptions: Option[], select: boolean) => {
+      if (!column) return
+
+      const newSelectedValues = new Set(selectedValues)
+
+      targetOptions.forEach((opt) => {
+        if (select) {
+          newSelectedValues.add(opt.value)
+        } else {
+          newSelectedValues.delete(opt.value)
+        }
+      })
+
+      const filterValues = Array.from(newSelectedValues)
+
+      if (filterValues.length === 0) {
+        column.setFilterValue(undefined)
+        onValueChange?.(undefined)
+      } else {
+        const extendedFilter: ExtendedColumnFilter<TData> = {
+          id: column.id as Extract<keyof TData, string>,
+          value: filterValues,
+          variant: FILTER_VARIANTS.MULTI_SELECT,
+          operator: FILTER_OPERATORS.IN,
+          filterId: `faceted-${column.id}`,
+          joinOperator: JOIN_OPERATORS.AND,
+        }
+        column.setFilterValue(extendedFilter)
+        onValueChange?.(filterValues)
+      }
+    },
+    [column, selectedValues, onValueChange]
+  )
+
   return {
     selectedValues,
     onItemSelect,
     onReset,
+    onToggleAll,
   }
 }
 
@@ -154,16 +194,18 @@ export function TableFacetedFilter<TData, TValue>({
   title,
   options = [],
   multiple,
+  showSearch = true,
   onValueChange,
   trigger,
 }: TableFacetedFilterProps<TData, TValue>) {
   const [open, setOpen] = React.useState(false)
 
-  const { selectedValues, onItemSelect, onReset } = useTableFacetedFilter({
-    column,
-    onValueChange,
-    multiple,
-  })
+  const { selectedValues, onItemSelect, onReset, onToggleAll } =
+    useTableFacetedFilter({
+      column,
+      onValueChange,
+      multiple,
+    })
 
   // Wrap onItemSelect to close multiple=false popover
   const handleItemSelect = React.useCallback(
@@ -180,30 +222,11 @@ export function TableFacetedFilter<TData, TValue>({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-8 border-dashed">
-            {selectedValues?.size > 0 ? (
-              <div
-                role="button"
-                aria-label={`Clear ${title} filter`}
-                tabIndex={0}
-                onClick={onReset}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onReset(e as unknown as React.MouseEvent)
-                  }
-                }}
-                className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
-              >
-                <XCircle className="size-4" />
-              </div>
-            ) : (
-              <PlusCircle className="size-4" />
-            )}
+          <Button variant="outline" size="lg" className="border-border h-9">
             {title}
             {selectedValues?.size > 0 && (
               <>
-                <Separator orientation="vertical" className="mx-2 h-4" />
+                <Separator orientation="vertical" className="mx-2 h-full" />
                 <Badge
                   variant="secondary"
                   className="rounded-sm px-1 font-normal lg:hidden"
@@ -234,6 +257,30 @@ export function TableFacetedFilter<TData, TValue>({
                 </div>
               </>
             )}
+            {selectedValues?.size > 0 ? (
+              <div
+                role="button"
+                aria-label={`Clear ${title} filter`}
+                tabIndex={0}
+                onClick={onReset}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onReset(e as unknown as React.MouseEvent)
+                  }
+                }}
+                className="focus-visible:ring-ring ml-1 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
+              >
+                <XCircle className="size-4" />
+              </div>
+            ) : (
+              <ChevronDown
+                className={cn(
+                  'text-muted-foreground ml-1 size-4 transition-transform duration-200',
+                  open && 'rotate-180'
+                )}
+              />
+            )}
           </Button>
         )}
       </PopoverTrigger>
@@ -244,6 +291,9 @@ export function TableFacetedFilter<TData, TValue>({
           selectedValues={selectedValues}
           onItemSelect={handleItemSelect}
           onReset={onReset}
+          showSearch={showSearch}
+          multiple={multiple}
+          onToggleAll={onToggleAll}
         />
       </PopoverContent>
     </Popover>
@@ -256,20 +306,77 @@ export function TableFacetedFilterContent({
   selectedValues,
   onItemSelect,
   onReset,
+  showSearch = true,
+  multiple,
+  onToggleAll,
 }: {
   title?: string
   options: Option[]
   selectedValues: Set<string>
   onItemSelect: (option: Option, isSelected: boolean) => void
   onReset: (event?: React.MouseEvent) => void
+  showSearch?: boolean
+  multiple?: boolean
+  onToggleAll?: (options: Option[], select: boolean) => void
 }) {
+  const [searchValue, setSearchValue] = React.useState('')
+
+  const filteredOptions = React.useMemo(() => {
+    if (!searchValue) return options
+    const lower = searchValue.toLowerCase()
+    return options.filter(
+      (o) =>
+        o.label.toLowerCase().includes(lower) ||
+        String(o.value).toLowerCase().includes(lower)
+    )
+  }, [options, searchValue])
+
+  const isAllFilteredSelected =
+    filteredOptions.length > 0 &&
+    filteredOptions.every((opt) => selectedValues.has(opt.value))
+
+  const handleSelectAll = () => {
+    onToggleAll?.(filteredOptions, !isAllFilteredSelected)
+  }
+
   return (
-    <Command>
-      <CommandInput placeholder={title} className="pl-2" />
+    <Command shouldFilter={false}>
+      {showSearch && (
+        <CommandInput
+          placeholder={title}
+          className="pl-2"
+          value={searchValue}
+          onValueChange={setSearchValue}
+        />
+      )}
       <CommandList className="max-h-full">
-        <CommandEmpty>ไม่พบข้อมูล</CommandEmpty>
+        {filteredOptions.length === 0 && (
+          <div className="text-muted-foreground py-6 text-center text-sm">
+            ไม่พบข้อมูล
+          </div>
+        )}
         <CommandGroup className="max-h-75 overflow-x-hidden overflow-y-auto">
-          {options.map((option) => {
+          {multiple && filteredOptions.length > 0 && (
+            <CommandItem key="select-all" onSelect={handleSelectAll}>
+              <div
+                className={cn(
+                  'border-muted-foreground/50 mr-2 flex size-4 items-center justify-center rounded-[4px] border',
+                  isAllFilteredSelected
+                    ? 'bg-primary border-primary'
+                    : 'opacity-50 [&_svg]:invisible'
+                )}
+              >
+                <Check
+                  className={cn(
+                    'size-4',
+                    isAllFilteredSelected && 'text-primary-foreground!'
+                  )}
+                />
+              </div>
+              <span className="truncate">เลือกทั้งหมด</span>
+            </CommandItem>
+          )}
+          {filteredOptions.map((option) => {
             const isSelected = selectedValues.has(option.value)
 
             return (
@@ -279,8 +386,10 @@ export function TableFacetedFilterContent({
               >
                 <div
                   className={cn(
-                    'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
-                    isSelected ? 'bg-primary' : 'opacity-50 [&_svg]:invisible'
+                    'border-muted-foreground/50 mr-2 flex size-4 items-center justify-center rounded-[4px] border',
+                    isSelected
+                      ? 'bg-primary border-primary'
+                      : 'opacity-50 [&_svg]:invisible'
                   )}
                 >
                   <Check

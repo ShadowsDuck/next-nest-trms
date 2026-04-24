@@ -79,7 +79,7 @@ export function DataTableColumnHeader({
     <TooltipProvider>
       <div
         className={cn(
-          'group flex w-full items-center justify-between gap-1',
+          'group flex w-full items-center justify-start gap-1',
           className
         )}
         {...props}
