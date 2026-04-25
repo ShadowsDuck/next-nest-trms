@@ -146,46 +146,10 @@ export function useTableFacetedFilter<TData>({
     [column, onValueChange]
   )
 
-  const onToggleAll = React.useCallback(
-    (targetOptions: Option[], select: boolean) => {
-      if (!column) return
-
-      const newSelectedValues = new Set(selectedValues)
-
-      targetOptions.forEach((opt) => {
-        if (select) {
-          newSelectedValues.add(opt.value)
-        } else {
-          newSelectedValues.delete(opt.value)
-        }
-      })
-
-      const filterValues = Array.from(newSelectedValues)
-
-      if (filterValues.length === 0) {
-        column.setFilterValue(undefined)
-        onValueChange?.(undefined)
-      } else {
-        const extendedFilter: ExtendedColumnFilter<TData> = {
-          id: column.id as Extract<keyof TData, string>,
-          value: filterValues,
-          variant: FILTER_VARIANTS.MULTI_SELECT,
-          operator: FILTER_OPERATORS.IN,
-          filterId: `faceted-${column.id}`,
-          joinOperator: JOIN_OPERATORS.AND,
-        }
-        column.setFilterValue(extendedFilter)
-        onValueChange?.(filterValues)
-      }
-    },
-    [column, selectedValues, onValueChange]
-  )
-
   return {
     selectedValues,
     onItemSelect,
     onReset,
-    onToggleAll,
   }
 }
 
@@ -200,12 +164,11 @@ export function TableFacetedFilter<TData, TValue>({
 }: TableFacetedFilterProps<TData, TValue>) {
   const [open, setOpen] = React.useState(false)
 
-  const { selectedValues, onItemSelect, onReset, onToggleAll } =
-    useTableFacetedFilter({
-      column,
-      onValueChange,
-      multiple,
-    })
+  const { selectedValues, onItemSelect, onReset } = useTableFacetedFilter({
+    column,
+    onValueChange,
+    multiple,
+  })
 
   // Wrap onItemSelect to close multiple=false popover
   const handleItemSelect = React.useCallback(
@@ -292,8 +255,6 @@ export function TableFacetedFilter<TData, TValue>({
           onItemSelect={handleItemSelect}
           onReset={onReset}
           showSearch={showSearch}
-          multiple={multiple}
-          onToggleAll={onToggleAll}
         />
       </PopoverContent>
     </Popover>
@@ -307,8 +268,6 @@ export function TableFacetedFilterContent({
   onItemSelect,
   onReset,
   showSearch = true,
-  multiple,
-  onToggleAll,
 }: {
   title?: string
   options: Option[]
@@ -316,8 +275,6 @@ export function TableFacetedFilterContent({
   onItemSelect: (option: Option, isSelected: boolean) => void
   onReset: (event?: React.MouseEvent) => void
   showSearch?: boolean
-  multiple?: boolean
-  onToggleAll?: (options: Option[], select: boolean) => void
 }) {
   const [searchValue, setSearchValue] = React.useState('')
 
@@ -330,14 +287,6 @@ export function TableFacetedFilterContent({
         String(o.value).toLowerCase().includes(lower)
     )
   }, [options, searchValue])
-
-  const isAllFilteredSelected =
-    filteredOptions.length > 0 &&
-    filteredOptions.every((opt) => selectedValues.has(opt.value))
-
-  const handleSelectAll = () => {
-    onToggleAll?.(filteredOptions, !isAllFilteredSelected)
-  }
 
   return (
     <Command shouldFilter={false}>
@@ -356,26 +305,6 @@ export function TableFacetedFilterContent({
           </div>
         )}
         <CommandGroup className="max-h-75 overflow-x-hidden overflow-y-auto">
-          {multiple && filteredOptions.length > 0 && (
-            <CommandItem key="select-all" onSelect={handleSelectAll}>
-              <div
-                className={cn(
-                  'border-muted-foreground/50 mr-2 flex size-4 items-center justify-center rounded-[4px] border',
-                  isAllFilteredSelected
-                    ? 'bg-primary border-primary'
-                    : 'opacity-50 [&_svg]:invisible'
-                )}
-              >
-                <Check
-                  className={cn(
-                    'size-4',
-                    isAllFilteredSelected && 'text-primary-foreground!'
-                  )}
-                />
-              </div>
-              <span className="truncate">เลือกทั้งหมด</span>
-            </CommandItem>
-          )}
           {filteredOptions.map((option) => {
             const isSelected = selectedValues.has(option.value)
 

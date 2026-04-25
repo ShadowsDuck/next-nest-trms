@@ -391,7 +391,7 @@ export function DataTableFacetedFilterContent<TData, TValue = unknown>({
   })
 
   // Use the shared hook for filter logic
-  const { selectedValues, onItemSelect, onReset, onToggleAll } = useTableFacetedFilter({
+  const { selectedValues, onItemSelect, onReset } = useTableFacetedFilter({
     column,
     onValueChange,
     multiple,
@@ -407,8 +407,6 @@ export function DataTableFacetedFilterContent<TData, TValue = unknown>({
       onItemSelect={onItemSelect}
       onReset={onReset}
       showSearch={showSearch}
-      multiple={multiple}
-      onToggleAll={onToggleAll}
     />
   )
 }
