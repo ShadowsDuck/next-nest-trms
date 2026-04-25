@@ -19,13 +19,13 @@ Currently, the `SiteHeader` only displays the title of the current page if it ma
 ## Tasks
 
 ### T1: Implement Breadcrumb Logic in `SiteHeader`
-- [ ] Parse `pathname` to find the corresponding item in `data.navMain`, `data.report`, or `data.setting`.
-- [ ] Determine the group label.
-- [ ] Extract sub-path segments and map them to Thai labels.
-- [ ] Render the breadcrumb with `/` separators.
+- [x] Parse `pathname` to find the corresponding item in `data.navMain`, `data.report`, or `data.setting`.
+- [x] Determine the group label.
+- [x] Extract sub-path segments and map them to Thai labels.
+- [x] Render the breadcrumb with `/` separators.
 - **Verify**: Navigate to `/admin/employees`, `/admin/employees/create`, and `/admin/reports/summary` to ensure correct display.
 
 ### T2: Styling & Polish
-- [ ] Apply `text-muted-foreground` and appropriate font weights to distinguish between levels.
-- [ ] Ensure proper spacing and alignment.
+- [x] Apply `text-muted-foreground` and appropriate font weights to distinguish between levels.
+- [x] Ensure proper spacing and alignment.
 - **Verify**: Visual check against the requested breadcrumb style.

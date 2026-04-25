@@ -21,6 +21,10 @@ This skill handles the initial phase of any feature or fix. It combines deep thi
 - **One Question at a Time**: Ask only one question at a time with a recommended answer to avoid overwhelming the user.
 - **Context First**: Always explore the codebase before asking a question. If you can find the answer yourself, do it.
 - **English Specs**: All generated specifications and markdown files in `docs/specs/` MUST be written entirely in English.
+- **No Placeholders**: Never use vague terms like "TBD", "TODO", or "add validation/error handling". Tasks must include specific file paths and explicit logic descriptions.
+- **Scope Check & Decomposition**: A Spec should ideally have 5 tasks. If a feature is too large, propose breaking it down into sub-features. If decomposed, you MUST create separate Spec files for those sub-features.
+- **Self-Review**: Before finalizing the Spec, silently review it for contradictions, missing file paths, or ambiguous logic. Fix them inline.
+- **Targeted Refactoring**: If the code you need to modify is tangled or overly large, add a specific task to cleanly extract or refactor that code _before_ adding the new feature. Unrelated refactoring is strictly forbidden.
 
 ## Spec Template Reminder
 
