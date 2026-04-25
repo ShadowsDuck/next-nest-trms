@@ -204,7 +204,7 @@ export function TableSliderFilter<TData>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="border-dashed">
+        <Button variant="outline" size="sm" className="border-border h-9">
           {columnFilterValue ? (
             <div
               role="button"
@@ -313,7 +313,7 @@ export function TableSliderFilter<TData>({
           size="sm"
           onClick={onReset}
         >
-          Clear
+          ล้างตัวกรอง
         </Button>
       </PopoverContent>
     </Popover>

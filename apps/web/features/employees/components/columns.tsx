@@ -183,13 +183,23 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
   },
   {
     id: 'actions',
-    size: 80,
-    minSize: 80,
+    size: 100,
+    minSize: 100,
+    header: () => (
+      <DataTableColumnHeader className="justify-center">
+        <DataTableColumnTitle />
+      </DataTableColumnHeader>
+    ),
+    meta: {
+      label: 'จัดการ',
+    },
     cell: ({ row }) => (
-      <DataTableRowActions
-        viewHref={`/admin/employees/${row.original.id}`}
-        editHref={`/admin/employees/${row.original.id}/edit`}
-      />
+      <div className="flex justify-center">
+        <DataTableRowActions
+          viewHref={`/admin/employees/${row.original.id}`}
+          editHref={`/admin/employees/${row.original.id}/edit`}
+        />
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,

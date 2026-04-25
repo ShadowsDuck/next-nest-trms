@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
 import {
-  EllipsisVertical,
+  ChevronDown,
+  Download,
   Loader2,
   Plus,
   RefreshCw,
@@ -83,35 +84,36 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
 
   return (
     <DataTableToolbarSection className="w-full flex-col justify-between gap-2.5">
-      <DataTableToolbarSection className="w-full justify-between px-0">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          ข้อมูลหลักสูตร
-        </h1>
-        <Button asChild className="gap-1.5">
-          <Link href="/admin/courses/new">
-            <Plus className="size-4" />
-            สร้างหลักสูตรใหม่
-          </Link>
-        </Button>
-      </DataTableToolbarSection>
+      <DataTableToolbarSection className="mb-2 w-full justify-between px-0">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            ข้อมูลหลักสูตร
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            จัดการและดูข้อมูลหลักสูตรทั้งหมดได้ในที่เดียว
+          </p>
+        </div>
 
-      <DataTableToolbarSection className="px-0">
-        <DataTableSearchFilter placeholder="ค้นหาด้วย ชื่อหลักสูตร..." />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* ปุ่มนำเข้าข้อมูล */}
+          <Button variant="outline" className="gap-2" size="lg">
+            <Download className="mr-1 size-4" />
+            นำเข้า
+          </Button>
+
+          {/* ปุ่มส่งออกข้อมูล */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="เมนูส่งออกข้อมูลหลักสูตร"
-              >
-                <EllipsisVertical className="size-4" />
+              <Button variant="outline" className="gap-2" size="lg">
+                <Upload className="mr-1 size-4" />
+                ส่งออก
+                <ChevronDown className="text-muted-foreground size-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               sideOffset={8}
-              className="border-border/70 bg-popover/95 w-64 min-w-64 rounded-xl border p-1.5 shadow-xl backdrop-blur"
+              className="border-border/70 bg-popover/95 w-64 min-w-64 rounded-xl border p-1.5 shadow-xl ring-0 backdrop-blur"
             >
               <DropdownMenuLabel className="text-muted-foreground px-2.5 pb-1 text-[11px] tracking-wide">
                 เมนูส่งออกข้อมูล
@@ -123,7 +125,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
                 onSelect={() => {
                   void handleExportCourses()
                 }}
-                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
+                className="focus:bg-muted/80 cursor-pointer gap-3 rounded-lg px-2.5 py-2"
               >
                 <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
                   <Upload className="size-4" />
@@ -145,7 +147,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
                   }
                 }}
                 disabled={isExportingWithEmployees}
-                className="focus:bg-muted/80 cursor-pointer rounded-lg px-2.5 py-2"
+                className="focus:bg-muted/80 cursor-pointer gap-3 rounded-lg px-2.5 py-2"
               >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {isExportingWithEmployees ? (
@@ -165,10 +167,22 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* ปุ่มสร้างหลักสูตรใหม่ */}
+          <Button asChild size="lg">
+            <Link href="/admin/courses/create">
+              <Plus className="mr-1 size-4" />
+              สร้างหลักสูตร
+            </Link>
+          </Button>
         </div>
       </DataTableToolbarSection>
 
-      <DataTableToolbarSection className="px-0">
+      <DataTableToolbarSection className="w-full flex-wrap gap-3 px-0">
+        <DataTableSearchFilter
+          placeholder="ค้นหาด้วย ชื่อหลักสูตร..."
+          className="w-[350px] flex-none"
+        />
         <DataTableFacetedFilter
           accessorKey="type"
           title="ประเภท"
@@ -176,6 +190,7 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          showSearch={false}
         />
         <DataTableFacetedFilter
           accessorKey="tagName"
@@ -202,19 +217,21 @@ export function CourseTableFilterToolbar({ params }: { params: CourseQuery }) {
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          showSearch={false}
         />
-        <DataTableClearFilter>ล้างตัวกรอง</DataTableClearFilter>
+        <DataTableClearFilter size="lg" className="h-9">
+          ล้างตัวกรอง
+        </DataTableClearFilter>
 
         <div className="ml-auto">
           <Button
             variant="outline"
-            size="sm"
-            className="gap-2"
+            size="lg"
             onClick={() => void handleRefresh()}
             disabled={isRefreshing}
           >
             <RefreshCw
-              className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`mr-1 size-4 ${isRefreshing ? 'animate-spin' : ''}`}
             />
             รีเฟรชข้อมูล
           </Button>

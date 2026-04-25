@@ -24,6 +24,8 @@ const badgeVariants = cva(
         success:
           "bg-success/8 text-success dark:bg-success/15 [a]:hover:bg-success/80",
         inactive: "bg-inactive text-gray-500 dark:text-gray-400",
+        primary:
+          "bg-primary/10 text-primary dark:bg-primary/15 [a]:hover:bg-primary/80",
       },
     },
     defaultVariants: {

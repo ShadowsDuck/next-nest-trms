@@ -11,10 +11,7 @@ import { DataTableColumnHeader } from '@/shared/components/niko-table/components
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
 import { DataTableRowActions } from '@/shared/components/niko-table/components/data-table-row-actions'
-import {
-  FILTER_VARIANTS,
-  SYSTEM_COLUMN_IDS,
-} from '@/shared/components/niko-table/lib/constants'
+import { SYSTEM_COLUMN_IDS } from '@/shared/components/niko-table/lib/constants'
 import type { DataTableColumnDef } from '@/shared/components/niko-table/types'
 
 const courseTypeLabelByValue = new Map<string, string>(
@@ -78,15 +75,16 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
   },
   {
     accessorKey: 'title',
-    size: 380,
-    minSize: 200,
+    size: 450,
+    minSize: 450,
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: { label: 'ชื่อหลักสูตร' },
+    cell: ({ row }) => <div className="py-2">{row.getValue('title')}</div>,
   },
   {
     accessorKey: 'type',
@@ -95,7 +93,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -107,7 +105,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
       const type = row.getValue('type') as string
       const label = courseTypeLabelByValue.get(type) ?? type
       return (
-        <Badge variant={type === 'Internal' ? 'secondary' : 'outline'}>
+        <Badge variant={type === 'Internal' ? 'primary' : 'success'}>
           {label}
         </Badge>
       )
@@ -122,7 +120,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: { label: 'หมวดหมู่' },
@@ -155,7 +153,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.DATE_RANGE} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: { label: 'วันที่จัดอบรม' },
@@ -191,7 +189,7 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
     header: () => (
       <DataTableColumnHeader>
         <DataTableColumnTitle />
-        <DataTableColumnSortMenu variant={FILTER_VARIANTS.TEXT} />
+        <DataTableColumnSortMenu />
       </DataTableColumnHeader>
     ),
     meta: {
@@ -209,19 +207,23 @@ export const courseTableColumns: DataTableColumnDef<CourseResponse>[] = [
   },
   {
     id: 'actions',
-    size: 80,
-    minSize: 80,
+    size: 100,
+    minSize: 100,
     header: () => (
-      <DataTableColumnHeader>
+      <DataTableColumnHeader className="justify-center">
         <DataTableColumnTitle />
       </DataTableColumnHeader>
     ),
-    meta: { label: 'จัดการ' },
+    meta: {
+      label: 'จัดการ',
+    },
     cell: ({ row }) => (
-      <DataTableRowActions
-        viewHref={`/admin/courses/${row.original.id}`}
-        editHref={`/admin/courses/${row.original.id}/edit`}
-      />
+      <div className="flex justify-center">
+        <DataTableRowActions
+          viewHref={`/admin/courses/${row.original.id}`}
+          editHref={`/admin/courses/${row.original.id}/edit`}
+        />
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,

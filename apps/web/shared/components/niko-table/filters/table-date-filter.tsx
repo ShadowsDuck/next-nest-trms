@@ -183,7 +183,7 @@ export function TableDateFilter<TData>({
     <Popover>
       <PopoverTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-8 border-dashed">
+          <Button variant="outline" size="sm" className="border-border h-9">
             {hasValue ? (
               <div
                 role="button"
