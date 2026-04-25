@@ -1,20 +1,27 @@
 ---
 name: do
-description: The "Execute" phase. Implement a specific task (e.g., T1) from a spec file. Focuses on surgical changes and following constraints.
+description: The "Execute" phase. Implement a specific task (e.g., T1) from a spec file. Surgical changes only.
 ---
 
 # Do
 
-This skill is for active implementation of a specific task.
-
 ## Process
 
-1.  **Context**: Read the spec (e.g., `docs/specs/feature.md`) and the target task (e.g., `T1`).
-2.  **Pre-flight Review**: Before writing any code, quickly review the target files and the task. If there's a missing dependency, unclear instruction, or an obvious conflict, stop and ask the user. Do not guess.
-3.  **Surgical Implementation**:
-    - Only touch files listed in the task.
-    - Follow **Thai Comment** rules (as per AGENTS.md).
-    - No unrelated refactors.
-4.  **Verify**: Run the verification command or perform manual check.
-5.  **Task Tracking**: Once the task is successfully implemented and verified, update the spec file (`docs/specs/*.md`) to change the task's checkboxes from `- [ ]` to `- [x]`.
-6.  **Report**: State what was done and the result of verification. Suggest `ship` if all tasks are done.
+1. **Context** — Read `docs/specs/<feature>.md` and identify the target task.
+2. **Pre-flight** — Review target files before writing any code. Stop and ask if:
+   - A dependency is missing or the instruction is unclear.
+   - The spec is stale (file paths no longer match reality).
+   - The task conflicts with existing code.
+   - Do not guess. Do not proceed with a stale spec without confirming.
+3. **Implement**:
+   - Touch only files listed in the task.
+   - If the worktree has unrelated user changes, work around them. Stop if they cause a direct conflict.
+   - Follow Thai Comment rules (one comment per new function, in Thai).
+   - No unrelated refactors.
+4. **Verify** — Run the task's verification step. If the verify instruction is vague, define the smallest concrete check that proves completion before writing code.
+5. **Track** — Mark the task `- [x]` in the spec file after successful verification.
+6. **Report** — State what was done and the verification result. Suggest `ship` if all tasks are complete.
+
+## Scope Control
+
+If implementation reveals the task is larger than described, stop at the nearest safe checkpoint and propose a spec update. Do not silently expand scope.

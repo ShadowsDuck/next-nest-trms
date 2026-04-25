@@ -1,36 +1,54 @@
 ---
 name: ship
-description: The "Review & Commit" phase. Verify code quality, check for Thai comments, and commit the changes with a high-quality message.
+description: The "Review & Commit" phase. Verify quality, check Thai comments, and commit with a structured message.
 ---
 
 # Ship
 
-This skill is the final gatekeeper before code is merged/committed.
-
 ## Process
 
-1.  **The Iron Law of Verification**:
-    - **NO COMPLETION CLAIMS WITHOUT EVIDENCE.**
-    - Determine which app was modified (e.g., `web` or `api`).
-    - You MUST run `pnpm --filter <app-name> typecheck` and `pnpm --filter <app-name> lint`.
-    - If verification fails, STOP immediately and report the error to the user. Do not proceed to drafting a commit.
-2.  **Code Review**:
-    - Check for simplicity and surgical changes.
-    - **Verify Thai Comments**: Every new function must have one.
-    - Check against Spec constraints.
-3.  **Draft Commit**:
-    - Use `git diff --staged` or `git diff` to analyze changes.
-    - Format: `<type>(<scope>): <description>` (description must be <72 chars, present tense, imperative mood).
-    - Body: Explain WHAT and WHY using a **concise** bulleted list (`-`). Keep it short.
-      ```text
-      feat(ui): add row actions to data tables
-      - Add DataTableRowActions with DropdownMenu to unify table actions
-      - Replace placeholder icons in Course and Employee tables
-      ```
-4.  **Present Options (Execute)**:
-    - Present the verification results, the drafted commit message, and ask the user to choose exactly one of these options:
-      1. Run the commit for me (AI executes `git commit`).
-      2. I will copy the message and commit it myself.
-      3. Discard / Hold off (Do not commit).
-    - Wait for the user's explicit choice.
-    - Once successfully committed, update `docs/README.md` if the entire feature is `Completed`.
+### 1. Verify (Iron Law — No Evidence = No Completion)
+
+- Identify the full change scope (e.g., `web`, `api`, shared packages).
+- Run the **smallest verification set** that covers all changed targets:
+  1. Task-specific or file-specific tests (preferred).
+  2. Typecheck for each affected target.
+  3. Lint for each affected target.
+- If a bug fix lacks test coverage and the surrounding code already has tests, add a focused test first.
+- **If any check fails, STOP. Report the error. Do not draft a commit.**
+
+### 2. Code Review
+
+- Surgical changes only — no scope creep.
+- Every new function has a Thai comment.
+- Implementation matches Spec constraints.
+
+### 3. Draft Commit
+
+Analyze `git diff --staged` (or `git diff`) and write:
+
+```
+<type>(<scope>): <description under 72 chars, present tense, imperative>
+
+- <why / what bullet 1>
+- <why / what bullet 2>
+```
+
+### 4. Present & Execute
+
+Report:
+
+- ✅ / ❌ What was verified and what was not.
+- Readiness level — pick exactly one:
+  - `Review-ready` — all runnable checks in scope passed; no known gaps.
+  - `Commit-ready` — required local checks passed; non-local checks remain and must be listed.
+  - `Needs-fix` — failed check or unacceptable gap remains.
+- The drafted commit message.
+
+Then ask the user to choose **one**:
+
+1. Run the commit for me.
+2. I will copy the message and commit myself.
+3. Discard / Hold off.
+
+After a successful commit, update `docs/README.md` status to `Completed` if all spec tasks are done.

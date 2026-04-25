@@ -1,40 +1,62 @@
 ---
 name: brief
-description: The "Think & Draft" phase. Interview the user to refine the plan, find edge cases, and then generate an AI Spec in .ai/specs/ and update the dashboard.
+description: The "Think & Draft" phase. Interview the user, refine the plan, find edge cases, then generate a Spec in docs/specs/ and update the dashboard.
 ---
 
 # Brief
 
-This skill handles the initial phase of any feature or fix. It combines deep thinking (grilling) with documentation (spec generation).
+## Mode Selection (Decide First)
 
-## Workflow
+| Signal                                                                                              | Mode            |
+| --------------------------------------------------------------------------------------------------- | --------------- |
+| Small, localized change with obvious expected behavior — no ambiguity about what "done" looks like  | **Lightweight** |
+| New feature, unclear requirements, UX flow, or any change that requires thinking through edge cases | **Full**        |
 
-1.  **Understand**: Review the conversation and codebase.
-2.  **Interview (Grill)**: Ask one question at a time to resolve ambiguities. Provide recommended answers. Be relentless about edge cases.
-3.  **Synthesize**: Once the plan is solid, summarize the "Why", "What", and "Constraints".
-4.  **Document (Spec)**: Create/Update the spec file in `docs/specs/<slug>.md` using the SDD template. All Spec files MUST be written in English.
-5.  **Dashboard**: Update `docs/README.md` with the feature name, `Draft` status, and the link.
+### Lightweight Mode
+
+1. Confirm objective + constraints in one message.
+2. State assumptions explicitly.
+3. Write execution plan inline — no Spec file.
+4. **If ambiguity appears at any point, switch to Full mode immediately.**
+5. Proceed to `do`.
+
+### Full Mode — Workflow
+
+1. **Understand** — Explore the codebase before asking anything.
+2. **Grill** — One question at a time with a recommended answer. Be relentless about edge cases.
+3. **Synthesize** — Summarize Why / What / Constraints when plan is solid.
+4. **Spec** — Create `docs/specs/<slug>.md` (English only) only after **✅ แผนโอเคแล้ว**.
+5. **Dashboard** — Add a `Draft` entry to `docs/README.md`.
+   - Format: `[Feature Name]` (`Status`) — [View Spec](./specs/<slug>.md) — `[Date]`
 
 ## Rules
 
-- **Hard Rule**: Do NOT draft the Spec until you receive the "**✅ แผนโอเคแล้ว**" signal or explicit confirmation from the user that the plan is finalized.
-- **One Question at a Time**: Ask only one question at a time with a recommended answer to avoid overwhelming the user.
-- **Context First**: Always explore the codebase before asking a question. If you can find the answer yourself, do it.
-- **English Specs**: All generated specifications and markdown files in `docs/specs/` MUST be written entirely in English.
-- **No Placeholders**: Never use vague terms like "TBD", "TODO", or "add validation/error handling". Tasks must include specific file paths and explicit logic descriptions.
-- **Scope Check & Decomposition**: A Spec should ideally have 5 tasks. If a feature is too large, propose breaking it down into sub-features. If decomposed, you MUST create separate Spec files for those sub-features.
-- **Self-Review**: Before finalizing the Spec, silently review it for contradictions, missing file paths, or ambiguous logic. Fix them inline.
-- **Targeted Refactoring**: If the code you need to modify is tangled or overly large, add a specific task to cleanly extract or refactor that code _before_ adding the new feature. Unrelated refactoring is strictly forbidden.
+- **Hard Gate**: No Spec until user sends **✅ แผนโอเคแล้ว**.
+- **Context First**: Find answers in the codebase before asking the user.
+- **No Placeholders**: No "TBD", "TODO", or vague logic — use explicit file paths and behavior descriptions.
+- **Decompose**: Target 5 tasks per Spec. If larger, split into separate Spec files.
+- **Self-Review**: Silently check for contradictions, missing paths, or ambiguous logic before finalizing.
+- **Targeted Refactor Only**: If affected code is tangled, add a dedicated refactor task before the feature task. No unrelated changes.
 
-## Spec Template Reminder
+## Spec Template
 
-- **Why**: Problem/Motivation.
-- **What**: Concrete deliverable.
-- **Constraints**: Must (Thai comments, surgical), Must Not, Out of Scope.
-- **Tasks**: T1, T2... with Verify steps.
+```md
+## Why
 
-## Dashboard Update (docs/README.md)
+<problem / motivation>
 
-Maintain a list in `docs/README.md`:
+## What
 
-- [ ] **[Feature Name]** (`Status`) — [View Spec](./specs/[slug].md) — [Date]
+<concrete deliverable>
+
+## Constraints
+
+- Must: Thai comments, surgical edits only
+- Must Not: <list>
+- Out of Scope: <list>
+
+## Tasks
+
+- [ ] T1 — <action> · File: `<path>` · Verify: <command or check>
+- [ ] T2 …
+```
