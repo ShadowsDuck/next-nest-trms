@@ -6,7 +6,7 @@ export const courseTypeOptions = [
 ] satisfies { label: string; value: (typeof courseType)[number] }[]
 
 export const accreditationStatusOptions = [
-  { label: 'รอกระบวนการ', value: 'Pending' },
+  { label: 'รอการอนุมัติ', value: 'Pending' },
   { label: 'อนุมัติแล้ว', value: 'Approved' },
   { label: 'ปฏิเสธ', value: 'Rejected' },
 ] satisfies { label: string; value: (typeof accreditationStatus)[number] }[]
