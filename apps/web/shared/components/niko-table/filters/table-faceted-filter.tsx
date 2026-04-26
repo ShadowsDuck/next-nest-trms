@@ -24,7 +24,7 @@ import {
 } from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
-import { Check, ChevronDown, XCircle, XIcon } from 'lucide-react'
+import { Check, ChevronDown, Loader2, XCircle, XIcon } from 'lucide-react'
 import {
   FILTER_OPERATORS,
   FILTER_VARIANTS,
@@ -51,6 +51,11 @@ export interface TableFacetedFilterProps<TData, TValue> {
    * Optional custom trigger element
    */
   trigger?: React.ReactNode
+  /**
+   * Whether the filter options are loading
+   * @default false
+   */
+  isLoading?: boolean
 }
 
 export function useTableFacetedFilter<TData>({
@@ -161,6 +166,7 @@ export function TableFacetedFilter<TData, TValue>({
   showSearch = true,
   onValueChange,
   trigger,
+  isLoading = false,
 }: TableFacetedFilterProps<TData, TValue>) {
   const [open, setOpen] = React.useState(false)
 
@@ -255,6 +261,7 @@ export function TableFacetedFilter<TData, TValue>({
           onItemSelect={handleItemSelect}
           onReset={onReset}
           showSearch={showSearch}
+          isLoading={isLoading}
         />
       </PopoverContent>
     </Popover>
@@ -268,6 +275,7 @@ export function TableFacetedFilterContent({
   onItemSelect,
   onReset,
   showSearch = true,
+  isLoading = false,
 }: {
   title?: string
   options: Option[]
@@ -275,6 +283,7 @@ export function TableFacetedFilterContent({
   onItemSelect: (option: Option, isSelected: boolean) => void
   onReset: (event?: React.MouseEvent) => void
   showSearch?: boolean
+  isLoading?: boolean
 }) {
   const [searchValue, setSearchValue] = React.useState('')
 
@@ -290,7 +299,7 @@ export function TableFacetedFilterContent({
 
   return (
     <Command shouldFilter={false}>
-      {showSearch && (
+      {showSearch && !isLoading && (
         <CommandInput
           placeholder={title}
           className="pl-2"
@@ -299,12 +308,19 @@ export function TableFacetedFilterContent({
         />
       )}
       <CommandList className="max-h-full">
-        {filteredOptions.length === 0 && (
+        {isLoading && (
+          <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-sm">
+            <Loader2 className="size-4 animate-spin" />
+            กำลังโหลด...
+          </div>
+        )}
+        {!isLoading && filteredOptions.length === 0 && (
           <div className="text-muted-foreground py-6 text-center text-sm">
             ไม่พบข้อมูล
           </div>
         )}
-        <CommandGroup className="max-h-75 overflow-x-hidden overflow-y-auto">
+        {!isLoading && (
+          <CommandGroup className="max-h-75 overflow-x-hidden overflow-y-auto">
           {filteredOptions.map((option) => {
             const isSelected = selectedValues.has(option.value)
 
@@ -338,7 +354,8 @@ export function TableFacetedFilterContent({
               </CommandItem>
             )
           })}
-        </CommandGroup>
+          </CommandGroup>
+        )}
         {selectedValues.size > 0 && (
           <>
             <CommandSeparator />

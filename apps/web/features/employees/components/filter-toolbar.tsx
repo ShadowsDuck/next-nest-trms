@@ -51,7 +51,8 @@ export function EmployeeTableFilterToolbar({
 }: {
   params: EmployeeQuery
 }) {
-  const { data: filterOptions } = useEmployeeFilterOptions()
+  const { data: filterOptions, isLoading: isFilterOptionsLoading } =
+    useEmployeeFilterOptions()
   const [isExportingCourses, setIsExportingCourses] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
@@ -219,6 +220,7 @@ export function EmployeeTableFilterToolbar({
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          isLoading={isFilterOptionsLoading}
         />
         <DataTableFacetedFilter
           accessorKey="departmentName"
@@ -227,6 +229,7 @@ export function EmployeeTableFilterToolbar({
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          isLoading={isFilterOptionsLoading}
         />
         <DataTableFacetedFilter
           accessorKey="status"
