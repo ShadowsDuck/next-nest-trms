@@ -14,11 +14,12 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 
 ### Lightweight Mode
 
-1. Confirm objective + constraints in one message.
-2. State assumptions explicitly.
-3. Write execution plan inline — no Spec file.
-4. **If ambiguity appears at any point, switch to Full mode immediately.**
-5. Proceed to `do`.
+1. Ask at least **one** clarifying question before starting implementation.
+2. Confirm objective + constraints in one message.
+3. State assumptions explicitly.
+4. Write execution plan inline — no Spec file.
+5. **If ambiguity appears at any point, switch to Full mode immediately.**
+6. Proceed to `do`.
 
 ### Full Mode — Workflow
 
@@ -32,6 +33,7 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 ## Rules
 
 - **Hard Gate**: No Spec until user sends **✅ แผนโอเคแล้ว**.
+- **Hard Gate**: Ask at least **one** clarifying question and receive user input before starting implementation.
 - **Context First**: Find answers in the codebase before asking the user.
 - **No Placeholders**: No "TBD", "TODO", or vague logic — use explicit file paths and behavior descriptions.
 - **Decompose**: Target 5 tasks per Spec. If larger, split into separate Spec files.
