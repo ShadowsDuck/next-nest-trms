@@ -60,7 +60,11 @@ export function BasicInfoSection() {
                 <p>คำนำหน้า</p>
                 <span className="text-destructive">*</span>
               </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select
+                key={field.value ?? 'empty-prefix'}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
                 <SelectTrigger
                   id="prefix"
                   className="w-full"

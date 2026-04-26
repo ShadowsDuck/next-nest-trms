@@ -25,10 +25,12 @@ export type CreateEmployeeForm = z.infer<typeof createEmployeeSchema>
 
 export const defaultCreateEmployeeValues: Partial<CreateEmployeeForm> = {
   employeeNo: '',
+  prefix: undefined,
   firstName: '',
   lastName: '',
   idCardNo: '',
   hireDate: '',
+  jobLevel: undefined,
   status: 'Active',
   plantId: '',
   buId: '',
@@ -36,4 +38,3 @@ export const defaultCreateEmployeeValues: Partial<CreateEmployeeForm> = {
   divisionId: '',
   departmentId: '',
 }
-

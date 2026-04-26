@@ -66,7 +66,11 @@ export function EmploymentInfoSection() {
                 <p>ระดับงาน</p>
                 <span className="text-destructive">*</span>
               </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select
+                key={field.value ?? 'empty-job-level'}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
                 <SelectTrigger
                   id="jobLevel"
                   className="w-full"
