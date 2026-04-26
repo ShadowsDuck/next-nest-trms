@@ -1,3 +1,4 @@
+import { DateTimePicker } from '@workspace/ui/components/date-picker'
 import {
   Field,
   FieldError,
@@ -8,6 +9,30 @@ import { Input } from '@workspace/ui/components/input'
 import { Controller, useFormContext } from 'react-hook-form'
 import type { CreateCourseForm } from '../schemas/form-schema'
 import { FormSectionShell } from './form-section-shell'
+
+// แปลงวันที่รูปแบบ ISO (yyyy-MM-dd) ให้เป็น Date สำหรับแสดงผลในตัวเลือกวันที่
+function parseIsoDate(value?: string) {
+  if (!value) {
+    return undefined
+  }
+
+  const [year, month, day] = value.split('-').map(Number)
+
+  if (!year || !month || !day) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+// แปลงค่า Date จากตัวเลือกวันที่กลับเป็นสตริงรูปแบบ ISO (yyyy-MM-dd)
+function toIsoDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
 
 // แสดงฟอร์มกำหนดช่วงวัน เวลา และระยะเวลาการอบรมของหลักสูตร
 export function ScheduleDetailsSection() {
@@ -32,11 +57,18 @@ export function ScheduleDetailsSection() {
                 <p>วันที่เริ่ม</p>
                 <span className="text-destructive">*</span>
               </FieldLabel>
-              <Input
-                {...field}
-                id="startDate"
-                type="date"
-                aria-invalid={fieldState.invalid}
+              <DateTimePicker
+                value={parseIsoDate(field.value)}
+                onChange={(date) => {
+                  field.onChange(date ? toIsoDate(date) : '')
+                }}
+                placeholder="เลือกวันที่เริ่ม"
+                granularity="day"
+                className={
+                  fieldState.invalid ? 'border-destructive' : undefined
+                }
+                displayFormat={{ hour24: 'dd/MM/yyyy' }}
+                buddhist
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
@@ -51,11 +83,18 @@ export function ScheduleDetailsSection() {
                 <p>วันที่สิ้นสุด</p>
                 <span className="text-destructive">*</span>
               </FieldLabel>
-              <Input
-                {...field}
-                id="endDate"
-                type="date"
-                aria-invalid={fieldState.invalid}
+              <DateTimePicker
+                value={parseIsoDate(field.value)}
+                onChange={(date) => {
+                  field.onChange(date ? toIsoDate(date) : '')
+                }}
+                placeholder="เลือกวันที่สิ้นสุด"
+                granularity="day"
+                className={
+                  fieldState.invalid ? 'border-destructive' : undefined
+                }
+                displayFormat={{ hour24: 'dd/MM/yyyy' }}
+                buddhist
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
