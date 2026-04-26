@@ -18,7 +18,7 @@ import {
 import { Separator } from '@workspace/ui/components/separator'
 import { Slider } from '@workspace/ui/components/slider'
 import { cn } from '@workspace/ui/lib/utils'
-import { PlusCircle, XCircle } from 'lucide-react'
+import { ChevronDown, XCircle, XIcon } from 'lucide-react'
 
 interface Range {
   min: number
@@ -88,6 +88,7 @@ export function TableSliderFilter<TData>({
   onValueChange,
 }: TableSliderFilterProps<TData>) {
   const id = React.useId()
+  const [open, setOpen] = React.useState(false)
 
   const columnFilterValue = parseValuesAsNumbers(column.getFilterValue())
 
@@ -202,22 +203,9 @@ export function TableSliderFilter<TData>({
   )
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="border-border h-9">
-          {columnFilterValue ? (
-            <div
-              role="button"
-              aria-label={`Clear ${label} filter`}
-              tabIndex={0}
-              className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
-              onClick={onReset}
-            >
-              <XCircle />
-            </div>
-          ) : (
-            <PlusCircle />
-          )}
           <span>{label}</span>
           {columnFilterValue ? (
             <>
@@ -230,6 +218,24 @@ export function TableSliderFilter<TData>({
               {unit ? ` ${unit}` : ''}
             </>
           ) : null}
+          {columnFilterValue ? (
+            <div
+              role="button"
+              aria-label={`Clear ${label} filter`}
+              tabIndex={0}
+              className="focus-visible:ring-ring ml-1 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
+              onClick={onReset}
+            >
+              <XCircle className="size-4" />
+            </div>
+          ) : (
+            <ChevronDown
+              className={cn(
+                'text-muted-foreground ml-1 size-4 transition-transform duration-200',
+                open && 'rotate-180'
+              )}
+            />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="flex w-auto flex-col gap-4">
@@ -313,6 +319,7 @@ export function TableSliderFilter<TData>({
           size="sm"
           onClick={onReset}
         >
+          <XIcon className="mr-1 size-4" />
           ล้างตัวกรอง
         </Button>
       </PopoverContent>

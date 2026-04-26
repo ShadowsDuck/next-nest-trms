@@ -16,7 +16,8 @@ import {
   PopoverTrigger,
 } from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
-import { CalendarIcon, XCircle } from 'lucide-react'
+import { cn } from '@workspace/ui/lib/utils'
+import { ChevronDown, XCircle } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
 import { formatDate } from '../lib/format'
 
@@ -68,6 +69,7 @@ export function TableDateFilter<TData>({
   multiple,
   trigger,
 }: TableDateFilterProps<TData>) {
+  const [open, setOpen] = React.useState(false)
   const columnFilterValue = column.getFilterValue()
 
   const selectedDates = React.useMemo<DateSelection>(() => {
@@ -180,24 +182,29 @@ export function TableDateFilter<TData>({
   }, [selectedDates, multiple, formatDateRange, title])
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm" className="border-border h-9">
+            {label}
             {hasValue ? (
               <div
                 role="button"
                 aria-label={`Clear ${title} filter`}
                 tabIndex={0}
                 onClick={onReset}
-                className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
+                className="focus-visible:ring-ring ml-1 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
               >
                 <XCircle className="size-4" />
               </div>
             ) : (
-              <CalendarIcon className="size-4" />
+              <ChevronDown
+                className={cn(
+                  'text-muted-foreground ml-1 size-4 transition-transform duration-200',
+                  open && 'rotate-180'
+                )}
+              />
             )}
-            {label}
           </Button>
         )}
       </PopoverTrigger>
