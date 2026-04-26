@@ -5,6 +5,7 @@ The system currently has a course listing page but no full create flow. Users ca
 ## What
 
 Deliver a full-stack "Create Course" flow with:
+
 - A new web create page under `/admin/courses/create` using the same visual pattern as the current employee create page.
 - A validated multi-section form (general info, schedule/details, instructor/cost, accreditation/attachments).
 - Real save behavior to backend via `POST /courses`.
@@ -21,8 +22,8 @@ Deliver a full-stack "Create Course" flow with:
 
 ## Tasks
 
-- [ ] T1 — Add API create endpoint for courses (`POST /courses`) and DTO for create payload. · File: `apps/api/src/modules/courses/courses.controller.ts`, `apps/api/src/modules/courses/courses.service.ts`, `apps/api/src/modules/courses/dto/create-course.dto.ts` · Verify: `pnpm --filter api typecheck`
-- [ ] T2 — Implement course create persistence and mapping with schema-compatible response. · File: `apps/api/src/modules/courses/courses.service.ts`, `apps/api/src/modules/courses/lib/courses.mapper.ts` · Verify: create request returns `CourseResponseDto` with normalized date/time fields
-- [ ] T3 — Add web domain action for course creation and export from domain index. · File: `apps/web/domains/courses/actions.ts`, `apps/web/domains/courses/index.ts` · Verify: `pnpm --filter web typecheck`
-- [ ] T4 — Build create course feature UI and route with employee-create style sections and controls. · File: `apps/web/app/admin/courses/create/page.tsx`, `apps/web/features/courses/create/components/*` · Verify: route renders with 4 section cards, segmented course type, and Thai labels
-- [ ] T5 — Wire form validation, tag options, submit/redirect flow, and attachment string handling. · File: `apps/web/features/courses/create/schemas/form-schema.ts`, `apps/web/features/courses/create/components/create-course-page.tsx` · Verify: `pnpm --filter web lint` and `pnpm --filter web typecheck`
+- [x] T1 — Add API create endpoint for courses (`POST /courses`) and DTO for create payload. · File: `apps/api/src/modules/courses/courses.controller.ts`, `apps/api/src/modules/courses/courses.service.ts`, `apps/api/src/modules/courses/dto/create-course.dto.ts` · Verify: `pnpm --filter api typecheck`
+- [x] T2 — Implement course create persistence and mapping with schema-compatible response. · File: `apps/api/src/modules/courses/courses.service.ts`, `apps/api/src/modules/courses/lib/courses.mapper.ts` · Verify: create request returns `CourseResponseDto` with normalized date/time fields
+- [x] T3 — Add web domain action for course creation and export from domain index. · File: `apps/web/domains/courses/actions.ts`, `apps/web/domains/courses/index.ts` · Verify: `pnpm --filter web typecheck`
+- [x] T4 — Build create course feature UI and route with employee-create style sections and controls. · File: `apps/web/app/admin/courses/create/page.tsx`, `apps/web/features/courses/create/components/*` · Verify: route renders with 4 section cards, segmented course type, and Thai labels
+- [x] T5 — Wire form validation, tag options, submit/redirect flow, and attachment string handling. · File: `apps/web/features/courses/create/schemas/form-schema.ts`, `apps/web/features/courses/create/components/create-course-page.tsx` · Verify: `pnpm --filter web lint` and `pnpm --filter web typecheck`

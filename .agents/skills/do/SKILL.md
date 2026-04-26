@@ -8,6 +8,7 @@ description: The "Execute" phase. Implement a specific task (e.g., T1) from a sp
 ## Process
 
 1. **Context** — Read `docs/specs/<feature>.md` and identify the target task.
+   - Treat the spec as read-only. Do not edit or update `spec.md`.
 2. **Pre-flight** — Review target files before writing any code. Stop and ask if:
    - A dependency is missing or the instruction is unclear.
    - The spec is stale (file paths no longer match reality).
@@ -19,8 +20,7 @@ description: The "Execute" phase. Implement a specific task (e.g., T1) from a sp
    - Follow Thai Comment rules (one comment per new function, in Thai).
    - No unrelated refactors.
 4. **Verify** — Run the task's verification step. If the verify instruction is vague, define the smallest concrete check that proves completion before writing code.
-5. **Track** — Mark the task `- [x]` in the spec file after successful verification.
-6. **Report** — State what was done and the verification result. Suggest `ship` if all tasks are complete.
+5. **Report** — State what was done and the verification result. Suggest `ship` if all tasks are complete.
 
 ## Scope Control
 
