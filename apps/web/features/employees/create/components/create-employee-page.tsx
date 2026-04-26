@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@workspace/ui/components/button'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Save } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { createEmployee } from '@/domains/employees/actions'
@@ -31,6 +31,7 @@ export function CreateEmployeePage() {
     setValue,
   })
 
+  // รีเซ็ตฟอร์มกลับเป็นค่าเริ่มต้นทั้งหมด
   function handleResetForm() {
     reset(defaultCreateEmployeeValues)
     toast.success('ล้างฟอร์มเรียบร้อยแล้ว')
@@ -65,29 +66,37 @@ export function CreateEmployeePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-3 pt-2 pb-4">
-      <header className="flex gap-3">
-        <Button variant="outline" size="icon-sm" asChild>
-          <Link href="/admin/employees">
-            <ChevronLeft data-icon="inline-start" />
-          </Link>
-        </Button>
-        <div className="flex flex-1 items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              เพิ่มข้อมูลพนักงานใหม่
-            </h1>
+    <div className="flex w-full flex-col gap-6 bg-white pt-3 pb-6">
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon-sm" asChild>
+                <Link href="/admin/employees" aria-label="กลับไปหน้าพนักงาน">
+                  <ChevronLeft data-icon="inline-start" />
+                </Link>
+              </Button>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                เพิ่มพนักงาน
+              </h1>
+            </div>
+            <p className="text-sm text-slate-500">
+              กรอกรายละเอียดเพื่อเพิ่มพนักงานใหม่เข้าระบบ
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" type="button" onClick={handleResetForm}>
+              <RotateCcw className="mr-1 size-4" data-icon="inline-start" />
               ล้างฟอร์ม
             </Button>
             <Button
               type="submit"
               form="create-employee-form"
               disabled={formState.isSubmitting}
+              className="min-w-32"
             >
-              สร้างพนักงาน
+              <Save className="mr-1 size-4" data-icon="inline-start" />
+              บันทึกพนักงาน
             </Button>
           </div>
         </div>
@@ -96,7 +105,7 @@ export function CreateEmployeePage() {
       <FormProvider {...form}>
         <form
           id="create-employee-form"
-          className="mt-5 flex flex-col gap-6"
+          className="flex flex-col gap-5"
           onSubmit={handleSubmit(onSubmit)}
         >
           <BasicInfoSection />

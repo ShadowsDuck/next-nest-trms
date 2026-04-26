@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@workspace/ui/components/select'
-import { UserRound } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { prefixOptions } from '@/domains/employees'
 import type { CreateEmployeeForm } from '../schemas/form-schema'
@@ -24,9 +23,9 @@ export function BasicInfoSection() {
 
   return (
     <FormSectionShell
-      icon={<UserRound />}
-      title="ข้อมูลเบื้องต้น"
-      description="ระบุข้อมูลส่วนตัวเบื้องต้นของพนักงานให้ครบถ้วน"
+      step={1}
+      title="ข้อมูลพื้นฐาน"
+      description="กรอกข้อมูลส่วนตัวพื้นฐานของพนักงาน"
     >
       <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Controller
@@ -151,4 +150,3 @@ export function BasicInfoSection() {
     </FormSectionShell>
   )
 }
-

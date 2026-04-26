@@ -5,6 +5,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from '@workspace/ui/components/field'
+import { cn } from '@workspace/ui/lib/utils'
 import {
   Select,
   SelectContent,
@@ -13,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@workspace/ui/components/select'
-import { BriefcaseBusiness } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import {
   jobLevelOptions,
@@ -49,9 +49,9 @@ export function EmploymentInfoSection() {
 
   return (
     <FormSectionShell
-      icon={<BriefcaseBusiness />}
+      step={2}
       title="ข้อมูลการจ้างงาน"
-      description="กำหนดระดับงาน สถานะ และวันที่เริ่มงาน"
+      description="ระบุระดับงาน สถานะ และวันที่เริ่มงาน"
     >
       <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Controller
@@ -98,24 +98,38 @@ export function EmploymentInfoSection() {
                 <p>สถานะ</p>
                 <span className="text-destructive">*</span>
               </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="status"
-                  className="w-full"
-                  aria-invalid={fieldState.invalid}
-                >
-                  <SelectValue placeholder="เลือกสถานะ" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <div
+                id="status"
+                role="radiogroup"
+                aria-invalid={fieldState.invalid}
+                className={cn(
+                  'bg-muted grid h-10 grid-cols-2 rounded-md border p-1',
+                  fieldState.invalid && 'border-destructive'
+                )}
+              >
+                {statusOptions.map((option) => {
+                  const isActive = field.value === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isActive}
+                      className={cn(
+                        'rounded-sm text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-background text-primary shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                      onClick={() => {
+                        field.onChange(option.value)
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
               <FieldError errors={[fieldState.error]} />
             </Field>
           )}
@@ -148,4 +162,3 @@ export function EmploymentInfoSection() {
     </FormSectionShell>
   )
 }
-

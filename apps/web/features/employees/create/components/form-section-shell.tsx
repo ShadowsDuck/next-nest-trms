@@ -1,33 +1,32 @@
 import type { ReactNode } from 'react'
-import { Separator } from '@workspace/ui/components/separator'
 
 type FormSectionShellProps = {
-  icon: ReactNode
+  step: number
   title: string
   description: string
   children: ReactNode
 }
 
 export function FormSectionShell({
-  icon,
+  step,
   title,
   description,
   children,
 }: FormSectionShellProps) {
   return (
-    <section className="bg-background rounded-lg border p-5 md:p-6">
-      <div className="flex items-start gap-3">
-        <div className="bg-muted text-foreground mt-0.5 rounded-md p-2">
-          {icon}
+    <section className="rounded-xl border border-slate-200 bg-white px-5 py-6 shadow-[0_1px_2px_rgba(16,24,40,0.04)] md:px-6">
+      <div className="grid gap-5 md:grid-cols-[260px_minmax(0,1fr)] md:gap-8">
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold">
+            {step}
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            <p className="text-sm leading-6 text-slate-500">{description}</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-muted-foreground text-sm">{description}</p>
-        </div>
+        <div>{children}</div>
       </div>
-      <Separator className="my-5" />
-      {children}
     </section>
   )
 }
-

@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from '@workspace/ui/components/select'
 import { cn } from '@workspace/ui/lib/utils'
-import { Building2 } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 import type { OrganizationOption } from '@/domains/org-units'
 import type { CreateEmployeeForm } from '../schemas/form-schema'
@@ -48,9 +47,9 @@ export function OrganizationUnitSection({
 
   return (
     <FormSectionShell
-      icon={<Building2 />}
-      title="สังกัดหน่วยงาน"
-      description="ระบุสังกัดของพนักงานโดยเลือกตามลำดับหน่วยงาน"
+      step={3}
+      title="หน่วยงานต้นสังกัด"
+      description="เลือกหน่วยงานตามลำดับโครงสร้างองค์กร"
     >
       <div
         className={cn(
@@ -69,7 +68,7 @@ export function OrganizationUnitSection({
                   htmlFor="plantId"
                   className="flex items-center gap-1"
                 >
-                  <p>Plant</p>
+                  <p>โรงงาน (Plant)</p>
                   <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
@@ -87,7 +86,7 @@ export function OrganizationUnitSection({
                     className="w-full"
                     aria-invalid={fieldState.invalid}
                   >
-                    <SelectValue placeholder="เลือก Plant" />
+                    <SelectValue placeholder="เลือกโรงงาน" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
@@ -110,7 +109,7 @@ export function OrganizationUnitSection({
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel htmlFor="buId" className="flex items-center gap-1">
-                  <p>Business Unit</p>
+                  <p>หน่วยธุรกิจ (BU)</p>
                   <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
@@ -128,7 +127,7 @@ export function OrganizationUnitSection({
                     className="w-full"
                     aria-invalid={fieldState.invalid}
                   >
-                    <SelectValue placeholder="เลือก BU" />
+                    <SelectValue placeholder="เลือกหน่วยธุรกิจ" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
@@ -154,7 +153,7 @@ export function OrganizationUnitSection({
                   htmlFor="functionId"
                   className="flex items-center gap-1"
                 >
-                  <p>Function</p>
+                  <p>สายงาน</p>
                   <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
@@ -197,7 +196,7 @@ export function OrganizationUnitSection({
                   htmlFor="divisionId"
                   className="flex items-center gap-1"
                 >
-                  <p>Division</p>
+                  <p>ฝ่าย</p>
                   <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
@@ -239,7 +238,7 @@ export function OrganizationUnitSection({
                   htmlFor="departmentId"
                   className="flex items-center gap-1"
                 >
-                  <p>Department</p>
+                  <p>แผนก</p>
                   <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
@@ -252,7 +251,7 @@ export function OrganizationUnitSection({
                     className="w-full"
                     aria-invalid={fieldState.invalid}
                   >
-                    <SelectValue placeholder="เลือกส่วนงาน/แผนก" />
+                    <SelectValue placeholder="เลือกแผนก" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
@@ -273,4 +272,3 @@ export function OrganizationUnitSection({
     </FormSectionShell>
   )
 }
-
