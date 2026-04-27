@@ -1,6 +1,16 @@
 import { accreditationStatus, courseType } from '@workspace/schemas'
 import * as z from 'zod'
 
+const COURSE_ATTACHMENT_MAX_SIZE_BYTES = 10 * 1024 * 1024
+const COURSE_ATTACHMENT_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+] as const
+
 // เปรียบเทียบเวลาแบบ HH:mm หรือ HH:mm:ss เพื่อใช้ตรวจลำดับเวลา
 function toSecond(value: string) {
   const [hourText = '0', minuteText = '0', secondText = '0'] = value.split(':')
@@ -9,6 +19,24 @@ function toSecond(value: string) {
   const second = Number(secondText)
 
   return hour * 3600 + minute * 60 + second
+}
+
+// ตรวจไฟล์แนบแบบ optional ให้ผ่านชนิดไฟล์และขนาดตามข้อกำหนด
+function optionalCourseAttachmentFileSchema(label: string) {
+  return z
+    .custom<File | null | undefined>(
+      (value) => value == null || value instanceof File,
+      `${label}ไม่ถูกต้อง`
+    )
+    .refine(
+      (file) =>
+        !file || COURSE_ATTACHMENT_MIME_TYPES.includes(file.type as never),
+      `${label}รองรับเฉพาะ PDF, JPG, PNG, XLS, XLSX และ CSV`
+    )
+    .refine(
+      (file) => !file || file.size <= COURSE_ATTACHMENT_MAX_SIZE_BYTES,
+      `${label}ต้องมีขนาดไม่เกิน 10 MB`
+    )
 }
 
 export const createCourseFormSchema = z
@@ -39,8 +67,10 @@ export const createCourseFormSchema = z
     accreditationStatus: z.enum(accreditationStatus, {
       message: 'กรุณาเลือกสถานะการรับรอง',
     }),
-    accreditationFilePath: z.string().optional(),
-    attendanceFilePath: z.string().optional(),
+    accreditationFile: optionalCourseAttachmentFileSchema('ไฟล์รับรอง'),
+    attendanceFile: optionalCourseAttachmentFileSchema(
+      'ไฟล์รายชื่อผู้เข้าอบรม'
+    ),
   })
   .superRefine((value, context) => {
     if (value.startDate && value.endDate && value.startDate > value.endDate) {
@@ -82,6 +112,6 @@ export const defaultCreateCourseValues: CreateCourseForm = {
   institute: '',
   expense: '0',
   accreditationStatus: 'Pending',
-  accreditationFilePath: '',
-  attendanceFilePath: '',
+  accreditationFile: null,
+  attendanceFile: null,
 }

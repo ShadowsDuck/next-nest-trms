@@ -20,11 +20,11 @@ import { FormSectionShell } from './form-section-shell'
 type FileDropZoneProps = {
   id: string
   label: string
-  value?: string
-  onChange: (value: string) => void
+  value?: File | null
+  onChange: (value: File | null) => void
 }
 
-// แสดงกล่องเลือกไฟล์และบันทึกค่าเป็น path/filename string ในฟอร์ม
+// แสดงกล่องเลือกไฟล์และบันทึกไฟล์จริงลงในฟอร์ม
 function FileDropZone({ id, label, value, onChange }: FileDropZoneProps) {
   return (
     <div className="space-y-2">
@@ -38,7 +38,7 @@ function FileDropZone({ id, label, value, onChange }: FileDropZoneProps) {
           {value ? 'เปลี่ยนไฟล์ที่เลือก' : 'คลิกเพื่อเลือกไฟล์แนบ'}
         </p>
         <p className="text-muted-foreground text-xs">
-          {value || 'ยังไม่ได้เลือกไฟล์'}
+          {value?.name || 'ยังไม่ได้เลือกไฟล์'}
         </p>
       </label>
       <input
@@ -48,10 +48,11 @@ function FileDropZone({ id, label, value, onChange }: FileDropZoneProps) {
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (!file) {
+            onChange(null)
             return
           }
 
-          onChange(`uploads/courses/${file.name}`)
+          onChange(file)
         }}
       />
     </div>
@@ -102,12 +103,12 @@ export function AccreditationAttachmentsSection() {
         />
 
         <Controller
-          name="accreditationFilePath"
+          name="accreditationFile"
           control={control}
           render={({ field, fieldState }) => (
             <Field>
               <FileDropZone
-                id="accreditationFilePath"
+                id="accreditationFile"
                 label="ไฟล์รับรอง"
                 value={field.value}
                 onChange={field.onChange}
@@ -118,12 +119,12 @@ export function AccreditationAttachmentsSection() {
         />
 
         <Controller
-          name="attendanceFilePath"
+          name="attendanceFile"
           control={control}
           render={({ field, fieldState }) => (
             <Field>
               <FileDropZone
-                id="attendanceFilePath"
+                id="attendanceFile"
                 label="ไฟล์รายชื่อผู้เข้าอบรม"
                 value={field.value}
                 onChange={field.onChange}
