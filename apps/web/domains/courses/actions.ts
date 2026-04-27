@@ -9,7 +9,7 @@ import { api } from '@/shared/lib/fetcher'
 
 // สร้างหลักสูตรใหม่ผ่าน API และตรวจรูปแบบข้อมูลผลลัพธ์ให้ตรง schema
 export async function createCourse(
-  payload: CourseType
+  payload: CourseType | FormData
 ): Promise<CourseResponse> {
   const data = await api.post<CourseResponse>('/api/courses', payload)
 
