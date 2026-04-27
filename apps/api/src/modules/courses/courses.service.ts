@@ -1,18 +1,51 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 import { CourseResponseDto } from './dto/course-response.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { buildCourseWhereInput } from './lib/course-where.builder';
 import { formatCourse } from './lib/courses.mapper';
+import { COURSE_ATTACHMENT_STORAGE } from './storage/course-attachment-storage.contract';
+import type {
+  CourseAttachmentStorage,
+  CourseAttachmentUploadResult,
+} from './storage/course-attachment-storage.contract';
+
+type UploadableAttachment = {
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+};
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  private readonly logger = new Logger(CoursesService.name);
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    @Inject(COURSE_ATTACHMENT_STORAGE)
+    private readonly attachmentStorage: CourseAttachmentStorage,
+  ) {}
 
   // สร้างหลักสูตรใหม่ พร้อมตรวจความถูกต้องของวันที่ เวลา และหมวดหมู่
   async create(createCourseDto: CreateCourseDto): Promise<CourseResponseDto> {
+    const attachmentPayload = createCourseDto as CreateCourseDto &
+      Record<string, unknown>;
+    const accreditationFile = this.toUploadableAttachment(
+      attachmentPayload.accreditationFile,
+    );
+    const attendanceFile = this.toUploadableAttachment(
+      attachmentPayload.attendanceFile,
+    );
+    const uploadedFiles: CourseAttachmentUploadResult[] = [];
+
     const tag = await this.prismaService.tag.findUnique({
       where: { id: createCourseDto.tagId },
     });
@@ -40,27 +73,60 @@ export class CoursesService {
       }
     }
 
-    const created = await this.prismaService.course.create({
-      data: {
-        title: createCourseDto.title,
-        type: createCourseDto.type,
-        startDate,
-        endDate,
-        startTime,
-        endTime,
-        duration: createCourseDto.duration,
-        lecturer: createCourseDto.lecturer ?? null,
-        institute: createCourseDto.institute ?? null,
-        expense: createCourseDto.expense,
-        accreditationStatus: createCourseDto.accreditationStatus,
-        accreditationFilePath: createCourseDto.accreditationFilePath ?? null,
-        attendanceFilePath: createCourseDto.attendanceFilePath ?? null,
-        tagId: createCourseDto.tagId,
-      },
-      include: {
-        tag: true,
-      },
-    });
+    let accreditationUpload: CourseAttachmentUploadResult | null = null;
+    let attendanceUpload: CourseAttachmentUploadResult | null = null;
+
+    try {
+      accreditationUpload = await this.uploadOptionalAttachment(
+        'accreditation',
+        accreditationFile,
+        uploadedFiles,
+      );
+      attendanceUpload = await this.uploadOptionalAttachment(
+        'attendance',
+        attendanceFile,
+        uploadedFiles,
+      );
+    } catch (error) {
+      await this.rollbackUploadedFiles(uploadedFiles);
+      throw error;
+    }
+
+    let created;
+    try {
+      created = await this.prismaService.course.create({
+        data: {
+          title: createCourseDto.title,
+          type: createCourseDto.type,
+          startDate,
+          endDate,
+          startTime,
+          endTime,
+          duration: createCourseDto.duration,
+          lecturer: createCourseDto.lecturer ?? null,
+          institute: createCourseDto.institute ?? null,
+          expense: createCourseDto.expense,
+          accreditationStatus: createCourseDto.accreditationStatus,
+          accreditationFilePath:
+            accreditationUpload?.filePath ??
+            accreditationUpload?.webViewLink ??
+            createCourseDto.accreditationFilePath ??
+            this.toFallbackFilePath(accreditationFile),
+          attendanceFilePath:
+            attendanceUpload?.filePath ??
+            attendanceUpload?.webViewLink ??
+            createCourseDto.attendanceFilePath ??
+            this.toFallbackFilePath(attendanceFile),
+          tagId: createCourseDto.tagId,
+        },
+        include: {
+          tag: true,
+        },
+      });
+    } catch (error) {
+      await this.rollbackUploadedFiles(uploadedFiles);
+      throw error;
+    }
 
     return formatCourse(created);
   }
@@ -171,5 +237,73 @@ export class CoursesService {
     }
 
     return parsed;
+  }
+
+  // แปลงข้อมูลไฟล์ที่อาจถูกส่งมาจาก multipart ให้เป็นรูปแบบที่พร้อมอัปโหลด
+  private toUploadableAttachment(value: unknown): UploadableAttachment | null {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+
+    const maybeFile = value as Partial<UploadableAttachment>;
+    if (
+      typeof maybeFile.originalname !== 'string' ||
+      typeof maybeFile.mimetype !== 'string' ||
+      typeof maybeFile.size !== 'number' ||
+      !Buffer.isBuffer(maybeFile.buffer)
+    ) {
+      return null;
+    }
+
+    return {
+      originalname: maybeFile.originalname,
+      mimetype: maybeFile.mimetype,
+      size: maybeFile.size,
+      buffer: maybeFile.buffer,
+    };
+  }
+
+  // อัปโหลดไฟล์แนบตามประเภทที่ระบุ และบันทึกไฟล์ที่อัปโหลดสำเร็จไว้สำหรับ rollback
+  private async uploadOptionalAttachment(
+    kind: 'accreditation' | 'attendance',
+    file: UploadableAttachment | null,
+    uploadedFiles: CourseAttachmentUploadResult[],
+  ): Promise<CourseAttachmentUploadResult | null> {
+    if (!file) {
+      return null;
+    }
+
+    const uploaded = await this.attachmentStorage.uploadAttachment({
+      kind,
+      fileName: file.originalname,
+      mimeType: file.mimetype,
+      fileSize: file.size,
+      buffer: file.buffer,
+    });
+    uploadedFiles.push(uploaded);
+
+    return uploaded;
+  }
+
+  // ลบไฟล์ที่อัปโหลดแล้วทั้งหมดเมื่อเกิดข้อผิดพลาดภายหลัง เพื่อคงพฤติกรรมแบบ atomic
+  private async rollbackUploadedFiles(
+    uploadedFiles: CourseAttachmentUploadResult[],
+  ): Promise<void> {
+    for (const file of uploadedFiles) {
+      try {
+        await this.attachmentStorage.deleteAttachment({ fileId: file.fileId });
+      } catch {
+        this.logger.warn(`Rollback attachment failed: ${file.fileId}`);
+      }
+    }
+  }
+
+  // สร้างค่า path สำรองจากชื่อไฟล์ เมื่อยังไม่มี path ที่คืนกลับจาก provider
+  private toFallbackFilePath(file: UploadableAttachment | null): string | null {
+    if (!file) {
+      return null;
+    }
+
+    return `uploads/courses/${file.originalname}`;
   }
 }
