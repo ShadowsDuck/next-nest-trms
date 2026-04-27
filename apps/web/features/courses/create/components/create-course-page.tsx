@@ -32,6 +32,42 @@ function normalizeTime(value?: string) {
   return value
 }
 
+// แปลงข้อมูลฟอร์มสร้างหลักสูตรให้เป็น FormData สำหรับส่งแบบ multipart
+function toCreateCourseFormData(data: CreateCourseForm): FormData {
+  const formData = new FormData()
+  formData.append('title', data.title)
+  formData.append('type', data.type)
+  formData.append('startDate', data.startDate)
+  formData.append('endDate', data.endDate)
+  formData.append('duration', String(Number(data.duration)))
+  formData.append('expense', String(Number(data.expense)))
+  formData.append('accreditationStatus', data.accreditationStatus)
+  formData.append('tagId', data.tagId)
+
+  const startTime = normalizeTime(data.startTime)
+  const endTime = normalizeTime(data.endTime)
+  if (startTime) {
+    formData.append('startTime', startTime)
+  }
+  if (endTime) {
+    formData.append('endTime', endTime)
+  }
+  if (data.lecturer) {
+    formData.append('lecturer', data.lecturer)
+  }
+  if (data.institute) {
+    formData.append('institute', data.institute)
+  }
+  if (data.accreditationFile) {
+    formData.append('accreditationFile', data.accreditationFile)
+  }
+  if (data.attendanceFile) {
+    formData.append('attendanceFile', data.attendanceFile)
+  }
+
+  return formData
+}
+
 // แสดงหน้าเพิ่มหลักสูตรใหม่และจัดการการบันทึกข้อมูลหลักสูตร
 export function CreateCoursePage() {
   const router = useRouter()
@@ -51,22 +87,7 @@ export function CreateCoursePage() {
 
   // ส่งข้อมูลฟอร์มไปสร้างหลักสูตรใหม่ที่ฝั่ง API
   async function onSubmit(data: CreateCourseForm) {
-    const payload = {
-      title: data.title,
-      type: data.type,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      startTime: normalizeTime(data.startTime),
-      endTime: normalizeTime(data.endTime),
-      duration: Number(data.duration),
-      lecturer: data.lecturer || undefined,
-      institute: data.institute || undefined,
-      expense: Number(data.expense),
-      accreditationStatus: data.accreditationStatus,
-      accreditationFilePath: data.accreditationFilePath || undefined,
-      attendanceFilePath: data.attendanceFilePath || undefined,
-      tagId: data.tagId,
-    } as const
+    const payload = toCreateCourseFormData(data)
 
     try {
       await createCourse(payload)
