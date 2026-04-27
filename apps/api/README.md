@@ -31,6 +31,38 @@
 $ pnpm install
 ```
 
+## OneDrive Attachment Storage Config
+
+This API uploads course attachments to OneDrive using a central account via refresh-token flow.
+
+Required environment variables (`apps/api/.env`):
+
+```bash
+ONEDRIVE_CLIENT_ID=
+ONEDRIVE_CLIENT_SECRET=
+ONEDRIVE_REFRESH_TOKEN=
+ONEDRIVE_FOLDER_ID=
+ONEDRIVE_SCOPE=offline_access Files.ReadWrite
+ONEDRIVE_TOKEN_ENDPOINT=https://login.microsoftonline.com/consumers/oauth2/v2.0/token
+```
+
+Notes:
+
+- `ONEDRIVE_FOLDER_ID` is the destination folder id where uploaded files are stored.
+- `ONEDRIVE_REFRESH_TOKEN` must belong to the central uploader account.
+- `ONEDRIVE_SCOPE` and `ONEDRIVE_TOKEN_ENDPOINT` are optional in code but should stay explicit in env for clarity.
+
+## Migration To Microsoft 365 Organization
+
+The upload business flow does not need to change (`create` uploads first, then persists, then rollback on failure).  
+Use the same env keys and update only auth/config values:
+
+1. Change `ONEDRIVE_TOKEN_ENDPOINT` to your tenant endpoint:
+   `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`
+2. Re-consent with an org account and replace `ONEDRIVE_REFRESH_TOKEN`.
+3. Point `ONEDRIVE_FOLDER_ID` to the org target folder (OneDrive for Business / SharePoint drive).
+4. Keep `ONEDRIVE_CLIENT_ID` / `ONEDRIVE_CLIENT_SECRET` aligned with the app registration used in that tenant.
+
 ## Compile and run the project
 
 ```bash
