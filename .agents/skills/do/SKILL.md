@@ -16,6 +16,9 @@ description: The "Execute" phase. Implement a specific task (e.g., T1) from a sp
    - The spec is stale (file paths no longer match reality).
    - The task conflicts with existing code.
    - Do not guess. Do not proceed with a stale spec without confirming.
+   - Before implementation, list required prerequisites as:
+     - `Agent-doable now`
+     - `User-required manual`
 4. **Implement**:
    - Touch only files listed in the task.
    - If the worktree has unrelated user changes, work around them. Stop if they cause a direct conflict.
@@ -28,6 +31,12 @@ description: The "Execute" phase. Implement a specific task (e.g., T1) from a sp
    - Do not include unrelated files or changes from future tasks.
    - If verify fails, do not commit.
 7. **Report** — State what was done, verification result, and task commit result. Suggest `ship` only when all tasks are complete and committed.
+   - Mandatory report sections:
+     - `Done by agent`
+     - `Not done / blocked`
+     - `User manual actions required`
+   - Never omit a required manual action (env setup, cloud config, DB push/migrate, secrets, external permissions).
+   - If any command was not run, state explicitly that it was not run and why.
 
 ## Scope Control
 

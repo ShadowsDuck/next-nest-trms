@@ -47,6 +47,11 @@ Report:
   - Ready to merge
   - Ready for PR review only
   - Not ready
+- Operational handoff (mandatory):
+  - `Done by agent`
+  - `Not done / blocked`
+  - `User manual actions required`
+  - `Commands intentionally not run` (with reason)
 
 ### 5. Dashboard Finalization
 

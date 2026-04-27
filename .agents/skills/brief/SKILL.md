@@ -14,6 +14,8 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
    - Recommend one feature branch: `codex/<feature-slug>`.
    - Require commit granularity: `1 task = 1 commit` after task verification passes.
    - Ensure every task has a concrete verify command/check.
+   - Add explicit prerequisites per task (env vars, credentials, external resources).
+   - Mark each prerequisite as either `Agent-doable` or `User-required`.
 5. **Spec** — Create `docs/specs/<slug>.md` (English only) only after **✅ แผนโอเคแล้ว**.
 6. **Dashboard** — Add a `Draft` entry to `docs/README.md`.
    - Format: `[Feature Name]` (`Status`) — [View Spec](./specs/<slug>.md) — `[Date]`
@@ -34,6 +36,8 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 - **No Placeholders**: No "TBD", "TODO", or vague logic — use explicit file paths and behavior descriptions.
 - **Decompose**: Target 5 tasks per Spec. If larger, split into separate Spec files.
 - **Execution-Ready Tasks**: Each task must include a verification step concrete enough to gate a task-level commit.
+- **No Silent Assumptions**: Spec must explicitly list external dependencies (DB state, cloud credentials, API keys, folders/buckets, etc.).
+- **Manual Step Clarity**: Any step requiring user action must be written as a concrete checklist item, never implied.
 - **Self-Review**: Silently check for contradictions, missing paths, or ambiguous logic before finalizing.
 - **Targeted Refactor Only**: Add a refactor task only if needed. No unrelated changes.
 - Next step after `brief` is `do` using the generated spec.
@@ -60,6 +64,11 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 - Branch: `codex/<feature-slug>`
 - Commit Policy: `1 task = 1 commit` after verify passes
 - Merge Policy: run `ship` only when all tasks are done and committed
+
+## Prerequisites
+
+- Agent-doable: <list>
+- User-required: <list>
 
 ## Tasks
 
