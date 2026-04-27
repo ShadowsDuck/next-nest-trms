@@ -1,6 +1,6 @@
 ---
 name: ship
-description: The "Review & Commit" phase. Verify quality, check Thai comments, and commit with a structured message.
+description: The "Final Integration" phase. Verify branch readiness, review task commits, and prepare merge.
 ---
 
 # Ship
@@ -15,26 +15,22 @@ description: The "Review & Commit" phase. Verify quality, check Thai comments, a
   2. Typecheck for each affected target.
   3. Lint for each affected target.
 - If a bug fix lacks test coverage and the surrounding code already has tests, add a focused test first.
-- **If any check fails, STOP. Report the error. Do not draft a commit.**
+- **If any check fails, STOP. Report the error. Mark as `Needs-fix`.**
 
-### 2. Code Review
+### 2. Commit Sequence Review
+
+- Confirm work happened on one feature branch for this spec.
+- Confirm tasks are committed as logical units (`1 task = 1 commit` unless explicitly grouped by user request).
+- Confirm no unrelated files are mixed into task commits.
+- If there are uncommitted required changes, list them and stop before merge readiness.
+
+### 3. Code Review
 
 - Surgical changes only — no scope creep.
 - Every new function has a Thai comment.
 - Implementation matches Spec constraints.
 
-### 3. Draft Commit
-
-Analyze `git diff --staged` (or `git diff`) and write:
-
-```
-<type>(<scope>): <description under 72 chars, present tense, imperative>
-
-- <why / what bullet 1>
-- <why / what bullet 2>
-```
-
-### 4. Present & Execute
+### 4. Finalize Status
 
 Report:
 
@@ -43,12 +39,15 @@ Report:
   - `Review-ready` — all runnable checks in scope passed; no known gaps.
   - `Commit-ready` — required local checks passed; non-local checks remain and must be listed.
   - `Needs-fix` — failed check or unacceptable gap remains.
-- The drafted commit message.
+- Branch summary:
+  - Feature branch name
+  - Task-to-commit mapping
+  - Any remaining uncommitted changes
+- Merge recommendation:
+  - Ready to merge
+  - Ready for PR review only
+  - Not ready
 
-Then ask the user to choose **one**:
+### 5. Dashboard Finalization
 
-1. Run the commit for me.
-2. I will copy the message and commit myself.
-3. Discard / Hold off.
-
-After a successful commit, update `docs/README.md` status to `Completed` if all spec tasks are done.
+- Update `docs/README.md` status to `Completed` only when all spec tasks are done and committed.
