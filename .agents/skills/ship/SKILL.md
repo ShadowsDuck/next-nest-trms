@@ -46,8 +46,9 @@ Update `docs/README.md` status to `Completed` only when all spec tasks are done 
 
 ### 6. PR Description
 
-Generate a ready-to-paste PR description:
+Generate a ready-to-paste PR description inside a markdown code block (for easy copy-pasting):
 
+```markdown
 ## What
 
 <one-line summary of the feature>
@@ -59,3 +60,4 @@ Generate a ready-to-paste PR description:
 ## Manual steps required
 
 <from User manual actions — omit section if none>
+```
