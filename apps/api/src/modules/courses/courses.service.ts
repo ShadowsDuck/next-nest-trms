@@ -77,24 +77,30 @@ export class CoursesService {
     let attendanceUpload: CourseAttachmentUploadResult | null = null;
 
     try {
-      accreditationUpload = await this.uploadOptionalAttachment(
-        'accreditation',
-        accreditationFile,
-        uploadedFiles,
-      );
-      attendanceUpload = await this.uploadOptionalAttachment(
-        'attendance',
-        attendanceFile,
-        uploadedFiles,
-      );
+      // อัปโหลดทั้ง 2 ไฟล์พร้อมกันเพื่อลดเวลารวม
+      [accreditationUpload, attendanceUpload] = await Promise.all([
+        this.uploadOptionalAttachment(
+          'accreditation',
+          accreditationFile,
+          uploadedFiles,
+          createCourseDto.title,
+          startDate,
+        ),
+        this.uploadOptionalAttachment(
+          'attendance',
+          attendanceFile,
+          uploadedFiles,
+          createCourseDto.title,
+          startDate,
+        ),
+      ]);
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
       throw error;
     }
 
-    let created;
     try {
-      created = await this.prismaService.course.create({
+      const created = await this.prismaService.course.create({
         data: {
           title: createCourseDto.title,
           type: createCourseDto.type,
@@ -123,12 +129,12 @@ export class CoursesService {
           tag: true,
         },
       });
+
+      return formatCourse(created);
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
       throw error;
     }
-
-    return formatCourse(created);
   }
 
   async findAll(
@@ -256,7 +262,10 @@ export class CoursesService {
     }
 
     return {
-      originalname: maybeFile.originalname,
+      // แก้ปัญหา multer decode ชื่อไฟล์ด้วย latin1 ทำให้ภาษาไทยแสดงผลผิด
+      originalname: Buffer.from(maybeFile.originalname, 'latin1').toString(
+        'utf8',
+      ),
       mimetype: maybeFile.mimetype,
       size: maybeFile.size,
       buffer: maybeFile.buffer,
@@ -268,6 +277,8 @@ export class CoursesService {
     kind: 'accreditation' | 'attendance',
     file: UploadableAttachment | null,
     uploadedFiles: CourseAttachmentUploadResult[],
+    courseName: string,
+    startDate: Date | string,
   ): Promise<CourseAttachmentUploadResult | null> {
     if (!file) {
       return null;
@@ -279,6 +290,8 @@ export class CoursesService {
       mimeType: file.mimetype,
       fileSize: file.size,
       buffer: file.buffer,
+      courseName,
+      startDate,
     });
     uploadedFiles.push(uploaded);
 

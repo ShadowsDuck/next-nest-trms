@@ -6,6 +6,10 @@ export interface CourseAttachmentUploadInput {
   mimeType: string;
   fileSize: number;
   buffer: Buffer;
+  // ชื่อหลักสูตรสำหรับใช้สร้าง Dynamic Folder ใน OneDrive
+  courseName: string;
+  // วันที่เริ่มหลักสูตรสำหรับใช้คำนวณปี พ.ศ. และสร้าง Dynamic Folder
+  startDate: Date | string;
 }
 
 export interface CourseAttachmentUploadResult {

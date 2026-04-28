@@ -29,6 +29,7 @@ interface OneDriveCreateChildResponse {
 
 interface OneDriveTokenResponse {
   access_token?: string;
+  expires_in?: number;
   error?: string;
   error_description?: string;
 }
@@ -42,6 +43,11 @@ interface OneDriveApiErrorResponse {
 
 @Injectable()
 export class OneDriveCourseAttachmentStorageService implements CourseAttachmentStorage {
+  // แคช access token เพื่อลดจำนวน OAuth request ซ้ำซ้อน
+  private cachedToken: { token: string; expiresAt: number } | null = null;
+  // แคช folder ID ด้วย Promise dedup เพื่อป้องกัน request ซ้ำจาก parallel upload
+  private folderCache = new Map<string, Promise<string>>();
+
   constructor(private readonly configService: ConfigService) {}
 
   // อัปโหลดไฟล์แนบหลักสูตรขึ้น OneDrive แล้วคืนค่า metadata กลางของระบบ
@@ -57,44 +63,35 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     );
     const contentType = request.mimeType.trim() || 'application/octet-stream';
 
-    const encodedUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${encodeURIComponent(storedFileName)}:/content`;
-    let response = await this.uploadBinary(
-      encodedUploadUrl,
+    const folderNames = this.buildCourseFolderNames(
+      input.courseName,
+      input.startDate,
+    );
+
+    // สร้าง/ค้นหาโฟลเดอร์ปี พ.ศ. และโฟลเดอร์หลักสูตรตามลำดับ
+    const yearFolderId = await this.ensureFolderExists(
+      folderId,
+      folderNames.yearFolder,
+      accessToken,
+    );
+    const courseFolderId = await this.ensureFolderExists(
+      yearFolderId,
+      folderNames.courseFolder,
+      accessToken,
+    );
+
+    // สร้างไฟล์เปล่าแล้วอัปโหลดเนื้อหาเข้าไป (ใช้ item ID ตรง ๆ เร็วกว่า path-based URL)
+    const childFileId = await this.createChildFile(
+      courseFolderId,
+      storedFileName,
+      accessToken,
+    );
+    const response = await this.uploadBinaryToItem(
+      childFileId,
       accessToken,
       contentType,
       request.buffer,
     );
-
-    if (!response.ok) {
-      const parsedError = await this.readErrorPayload(response);
-      if (parsedError.error?.code === 'invalidRequest') {
-        const plainUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${storedFileName}:/content`;
-        response = await this.uploadBinary(
-          plainUploadUrl,
-          accessToken,
-          contentType,
-          request.buffer,
-        );
-
-        if (!response.ok) {
-          const childFileId = await this.createChildFile(
-            folderId,
-            storedFileName,
-            accessToken,
-          );
-          response = await this.uploadBinaryToItem(
-            childFileId,
-            accessToken,
-            contentType,
-            request.buffer,
-          );
-        }
-      } else {
-        throw new InternalServerErrorException(
-          `OneDrive upload failed: ${this.toErrorMessage(parsedError, response)}`,
-        );
-      }
-    }
 
     if (!response.ok) {
       const parsedError = await this.readErrorPayload(response);
@@ -153,8 +150,12 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     }
   }
 
-  // ขอ access token จาก Microsoft OAuth ด้วย refresh token ของบัญชีกลาง
+  // ขอ access token จาก Microsoft OAuth ด้วย refresh token ของบัญชีกลาง (แคชไว้จนกว่าจะหมดอายุ)
   private async getAccessToken(): Promise<string> {
+    if (this.cachedToken && Date.now() < this.cachedToken.expiresAt) {
+      return this.cachedToken.token;
+    }
+
     const clientId = this.getRequiredEnv('ONEDRIVE_CLIENT_ID');
     const clientSecret = this.getRequiredEnv('ONEDRIVE_CLIENT_SECRET');
     const refreshToken = this.getRequiredEnv('ONEDRIVE_REFRESH_TOKEN');
@@ -192,6 +193,12 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
       );
     }
 
+    const expiresInMs = ((payload.expires_in ?? 3600) - 300) * 1000;
+    this.cachedToken = {
+      token: payload.access_token,
+      expiresAt: Date.now() + expiresInMs,
+    };
+
     return payload.access_token;
   }
 
@@ -206,9 +213,101 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     return value;
   }
 
+  // สร้าง Path ของโฟลเดอร์สำหรับเก็บไฟล์คอร์สโดยเฉพาะ (รูปแบบ: ปีพ.ศ./วัน-เดือน-ปี-ชื่อคอร์ส)
+  private buildCourseFolderNames(
+    courseName: string,
+    startDate: Date | string,
+  ): { yearFolder: string; courseFolder: string } {
+    const dateObj =
+      typeof startDate === 'string' ? new Date(startDate) : startDate;
+    const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+
+    const beYear = validDate.getFullYear() + 543;
+    const day = String(validDate.getDate()).padStart(2, '0');
+    const month = String(validDate.getMonth() + 1).padStart(2, '0');
+    const formattedDate = `${day}-${month}-${beYear}`;
+
+    const sanitizedName = courseName.replace(/[\\/:*?"<>|]/g, '_').trim();
+    const safeName = sanitizedName.length > 0 ? sanitizedName : 'Course';
+
+    return {
+      yearFolder: `${beYear}`,
+      courseFolder: `${formattedDate}-${safeName}`,
+    };
+  }
+
+  // ตรวจสอบและสร้างโฟลเดอร์หากยังไม่มีอยู่ (ใช้ Promise cache เพื่อ dedup request ที่ยิงพร้อมกัน)
+  private ensureFolderExists(
+    parentFolderId: string,
+    folderName: string,
+    accessToken: string,
+  ): Promise<string> {
+    const cacheKey = `${parentFolderId}:${folderName}`;
+    const cached = this.folderCache.get(cacheKey);
+    if (cached !== undefined) return cached;
+
+    const promise = this.resolveFolder(parentFolderId, folderName, accessToken);
+    this.folderCache.set(cacheKey, promise);
+
+    promise.catch(() => this.folderCache.delete(cacheKey));
+
+    return promise;
+  }
+
+  // ค้นหาหรือสร้างโฟลเดอร์ใน OneDrive จริง ๆ (POST-first เพื่อลด call สำหรับ folder ใหม่)
+  private async resolveFolder(
+    parentFolderId: string,
+    folderName: string,
+    accessToken: string,
+  ): Promise<string> {
+    // พยายามสร้างก่อน — ถ้า folder ใหม่จะสำเร็จทันทีใน 1 call
+    const createUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${parentFolderId}/children`;
+    const createRes = await fetch(createUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: folderName,
+        folder: {},
+        '@microsoft.graph.conflictBehavior': 'fail',
+      }),
+    });
+
+    if (createRes.ok || createRes.status === 201) {
+      const data = await this.parseJson<OneDriveUploadApiResponse>(createRes);
+      if (data.id) return data.id;
+    }
+
+    // 409 = folder มีอยู่แล้ว → ดึง ID กลับมา
+    if (createRes.status === 409) {
+      const getUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${parentFolderId}:/${encodeURIComponent(folderName)}:`;
+      const getRes = await fetch(getUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (getRes.ok) {
+        const data = await this.parseJson<OneDriveUploadApiResponse>(getRes);
+        if (data.id) return data.id;
+      }
+    }
+
+    throw new InternalServerErrorException(
+      `Failed to ensure folder exists: ${folderName}`,
+    );
+  }
+
   // แปลงชื่อไฟล์ให้ปลอดภัยและเติม prefix เพื่อเลี่ยงชื่อชนกันในโฟลเดอร์เดียวกัน
   private buildStoredFileName(kind: string, originalName: string): string {
-    const sanitizedName = originalName.replace(/[\\/:*?"<>|]/g, '_').trim();
+    const sanitizedName = originalName
+      // ลบ control characters และ invisible Unicode ที่ OneDrive ไม่ยอมรับ
+      .replace(
+        // eslint-disable-next-line no-control-regex
+        /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202F\uFEFF]/g,
+        '',
+      )
+      .replace(/[\\/:*?"<>|]/g, '_')
+      .trim();
     const safeName =
       sanitizedName.length > 0 ? sanitizedName : 'attachment.bin';
     const timestamp = Date.now();
