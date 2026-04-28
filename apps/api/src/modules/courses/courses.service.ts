@@ -259,7 +259,10 @@ export class CoursesService {
     }
 
     return {
-      originalname: maybeFile.originalname,
+      // แก้ปัญหา multer decode ชื่อไฟล์ด้วย latin1 ทำให้ภาษาไทยแสดงผลผิด
+      originalname: Buffer.from(maybeFile.originalname, 'latin1').toString(
+        'utf8',
+      ),
       mimetype: maybeFile.mimetype,
       size: maybeFile.size,
       buffer: maybeFile.buffer,

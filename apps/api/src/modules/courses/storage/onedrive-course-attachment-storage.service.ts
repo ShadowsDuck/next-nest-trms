@@ -274,7 +274,15 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
 
   // แปลงชื่อไฟล์ให้ปลอดภัยและเติม prefix เพื่อเลี่ยงชื่อชนกันในโฟลเดอร์เดียวกัน
   private buildStoredFileName(kind: string, originalName: string): string {
-    const sanitizedName = originalName.replace(/[\\/:*?"<>|]/g, '_').trim();
+    const sanitizedName = originalName
+      // ลบ control characters และ invisible Unicode ที่ OneDrive ไม่ยอมรับ
+      .replace(
+        // eslint-disable-next-line no-control-regex
+        /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202F\uFEFF]/g,
+        '',
+      )
+      .replace(/[\\/:*?"<>|]/g, '_')
+      .trim();
     const safeName =
       sanitizedName.length > 0 ? sanitizedName : 'attachment.bin';
     const timestamp = Date.now();
