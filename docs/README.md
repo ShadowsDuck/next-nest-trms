@@ -10,4 +10,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Breadcrumb Header** (`Completed`) — [View Spec](./specs/breadcrumb-header.md) — 2026-04-24
 - [x] **Course Table Redesign** (`Completed`) — [View Spec](./specs/course-table-redesign.md) — 2026-04-25
 - [x] **Create Course Page (Full Stack)** (`Completed`) — [View Spec](./specs/create-course-page-full-stack.md) — 2026-04-26
-- [ ] **Create Course OneDrive Personal (Migration-Ready)** (`Draft`) — [View Spec](./specs/create-course-onedrive-personal.md) — 2026-04-27
+- [x] **Create Course OneDrive Personal (Migration-Ready)** (`Completed`) — [View Spec](./specs/create-course-onedrive-personal.md) — 2026-04-27
