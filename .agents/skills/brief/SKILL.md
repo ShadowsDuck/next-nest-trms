@@ -26,6 +26,7 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 
 - **Hard Gate**: No Spec until user sends **✅ แผนโอเคแล้ว**.
 - **Branch First**: Never write spec or dashboard on `main`.
+- **English Only Specs**: The `spec.md` file MUST be written in English entirely.
 - **No Placeholders**: No "TBD", "TODO", or vague logic — explicit file paths and behavior only.
 - **Decompose**: Use 7 tasks as a soft upper bound. If >7 tasks, split into separate Spec files.
 - **Execution-Ready Tasks**: Each task must have a verify step concrete enough to gate a commit.
