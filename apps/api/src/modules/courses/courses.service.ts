@@ -81,20 +81,23 @@ export class CoursesService {
         'accreditation',
         accreditationFile,
         uploadedFiles,
+        createCourseDto.title,
+        startDate,
       );
       attendanceUpload = await this.uploadOptionalAttachment(
         'attendance',
         attendanceFile,
         uploadedFiles,
+        createCourseDto.title,
+        startDate,
       );
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
       throw error;
     }
 
-    let created;
     try {
-      created = await this.prismaService.course.create({
+      const created = await this.prismaService.course.create({
         data: {
           title: createCourseDto.title,
           type: createCourseDto.type,
@@ -123,12 +126,12 @@ export class CoursesService {
           tag: true,
         },
       });
+
+      return formatCourse(created);
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
       throw error;
     }
-
-    return formatCourse(created);
   }
 
   async findAll(
@@ -268,6 +271,8 @@ export class CoursesService {
     kind: 'accreditation' | 'attendance',
     file: UploadableAttachment | null,
     uploadedFiles: CourseAttachmentUploadResult[],
+    courseName: string,
+    startDate: Date | string,
   ): Promise<CourseAttachmentUploadResult | null> {
     if (!file) {
       return null;
@@ -279,6 +284,8 @@ export class CoursesService {
       mimeType: file.mimetype,
       fileSize: file.size,
       buffer: file.buffer,
+      courseName,
+      startDate,
     });
     uploadedFiles.push(uploaded);
 
