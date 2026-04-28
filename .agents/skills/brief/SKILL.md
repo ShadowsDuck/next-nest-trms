@@ -8,47 +8,34 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
 ## Workflow
 
 1. **Understand** — Explore the codebase before asking anything.
-2. **Grill** — Use grill-me behavior strictly: one question at a time, recommended answer, and relentless edge-case probing.
+2. **Grill** — One question at a time, recommended answer, relentless edge-case probing.
 3. **Synthesize** — Summarize Why / What / Constraints when plan is solid.
-4. **Branch Setup** — Create and switch to the feature branch before writing spec files.
+4. **Branch Setup** — Create and switch to the feature branch before writing any files.
    - Branch format: `codex/<feature-slug>`.
-   - If branch creation/switch fails, stop and report the blocker.
-5. **Execution Strategy** — Define branch and commit policy in the spec before handoff.
-   - Recommend one feature branch: `codex/<feature-slug>`.
-   - Require commit granularity: `1 task = 1 commit` after task verification passes.
-   - Ensure every task has a concrete verify command/check.
-   - Add explicit prerequisites per task (env vars, credentials, external resources).
-   - Mark each prerequisite as either `Agent-doable` or `User-required`.
-6. **Spec** — Create `docs/specs/<slug>.md` (English only) only after **✅ แผนโอเคแล้ว**.
+   - If branch creation or switch fails, stop and report the blocker.
+5. **Execution Strategy** — Define in spec before handoff.
+6. **Spec** — Create `docs/specs/<slug>.md` only after **✅ แผนโอเคแล้ว**.
 7. **Dashboard** — Add a `Draft` entry to `docs/README.md`.
-   - Format: `[Feature Name]` (`Status`) — [View Spec](./specs/<slug>.md) — `[Date]`
-8. **Commit Brief Output** — Commit spec + dashboard as the first feature-branch commit before handoff.
-   - Stage only brief artifacts (`docs/specs/<slug>.md`, `docs/README.md`).
-   - Commit message should clearly mark spec draft creation.
-9. **Stop** — Do not implement code. Hand off to `do` after the spec and dashboard commit is complete.
+   - Format: `[Feature Name]` (`Draft`) — [View Spec](./specs/<slug>.md) — `[Date]`
+8. **Commit** — Commit spec + dashboard as the first feature-branch commit.
+   - Stage only `docs/specs/<slug>.md` and `docs/README.md`.
+   - Commit message: `docs: draft spec for <feature-slug>`
+9. **Stop** — No code implementation. Hand off to `do`.
 
 ## Rules
 
 - **Hard Gate**: No Spec until user sends **✅ แผนโอเคแล้ว**.
-- **Branch First**: Never write spec/dashboard on `main`; create/switch feature branch first.
-- Ask questions and get user input before writing the spec.
-- After **✅ แผนโอเคแล้ว**, create the spec and update the dashboard only.
-- No code implementation in this skill.
+- **Branch First**: Never write spec or dashboard on `main`.
+- **No Placeholders**: No "TBD", "TODO", or vague logic — explicit file paths and behavior only.
+- **Decompose**: Use 7 tasks as a soft upper bound. If >7 tasks, split into separate Spec files.
+- **Execution-Ready Tasks**: Each task must have a verify step concrete enough to gate a commit.
+- **Manual Step Clarity**: Any step requiring user action must be a concrete checklist item, never implied.
+- **No Silent Assumptions**: List all external dependencies explicitly (DB state, credentials, API keys, buckets).
+- **Targeted Refactor Only**: Add a refactor task only if needed. No unrelated changes.
 - Grill rules:
   - One question at a time.
   - Include a recommended answer.
   - Probe edge cases until decisions are concrete.
-  - Check the codebase first when possible.
-- **Context First**: Find answers in the codebase before asking the user.
-- **No Placeholders**: No "TBD", "TODO", or vague logic — use explicit file paths and behavior descriptions.
-- **Decompose**: Target 5 tasks per Spec. If larger, split into separate Spec files.
-- **Execution-Ready Tasks**: Each task must include a verification step concrete enough to gate a task-level commit.
-- **No Silent Assumptions**: Spec must explicitly list external dependencies (DB state, cloud credentials, API keys, folders/buckets, etc.).
-- **Manual Step Clarity**: Any step requiring user action must be written as a concrete checklist item, never implied.
-- **Brief Commit Required**: Do not hand off to `do` until brief outputs are committed on the feature branch.
-- **Self-Review**: Silently check for contradictions, missing paths, or ambiguous logic before finalizing.
-- **Targeted Refactor Only**: Add a refactor task only if needed. No unrelated changes.
-- Next step after `brief` is `do` using the generated spec.
 
 ## Spec Template
 
