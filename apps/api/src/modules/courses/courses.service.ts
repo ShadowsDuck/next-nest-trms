@@ -77,20 +77,23 @@ export class CoursesService {
     let attendanceUpload: CourseAttachmentUploadResult | null = null;
 
     try {
-      accreditationUpload = await this.uploadOptionalAttachment(
-        'accreditation',
-        accreditationFile,
-        uploadedFiles,
-        createCourseDto.title,
-        startDate,
-      );
-      attendanceUpload = await this.uploadOptionalAttachment(
-        'attendance',
-        attendanceFile,
-        uploadedFiles,
-        createCourseDto.title,
-        startDate,
-      );
+      // อัปโหลดทั้ง 2 ไฟล์พร้อมกันเพื่อลดเวลารวม
+      [accreditationUpload, attendanceUpload] = await Promise.all([
+        this.uploadOptionalAttachment(
+          'accreditation',
+          accreditationFile,
+          uploadedFiles,
+          createCourseDto.title,
+          startDate,
+        ),
+        this.uploadOptionalAttachment(
+          'attendance',
+          attendanceFile,
+          uploadedFiles,
+          createCourseDto.title,
+          startDate,
+        ),
+      ]);
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
       throw error;

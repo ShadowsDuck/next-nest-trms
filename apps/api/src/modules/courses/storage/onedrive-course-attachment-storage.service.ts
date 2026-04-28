@@ -29,6 +29,7 @@ interface OneDriveCreateChildResponse {
 
 interface OneDriveTokenResponse {
   access_token?: string;
+  expires_in?: number;
   error?: string;
   error_description?: string;
 }
@@ -42,6 +43,11 @@ interface OneDriveApiErrorResponse {
 
 @Injectable()
 export class OneDriveCourseAttachmentStorageService implements CourseAttachmentStorage {
+  // แคช access token เพื่อลดจำนวน OAuth request ซ้ำซ้อน
+  private cachedToken: { token: string; expiresAt: number } | null = null;
+  // แคช folder ID ด้วย Promise dedup เพื่อป้องกัน request ซ้ำจาก parallel upload
+  private folderCache = new Map<string, Promise<string>>();
+
   constructor(private readonly configService: ConfigService) {}
 
   // อัปโหลดไฟล์แนบหลักสูตรขึ้น OneDrive แล้วคืนค่า metadata กลางของระบบ
@@ -74,7 +80,7 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
       accessToken,
     );
 
-    // สร้างไฟล์เปล่าในโฟลเดอร์หลักสูตรแล้วอัปโหลดเนื้อหาเข้าไปทีหลัง (หลีกเลี่ยง path-based URL ที่มักเกิดปัญหา 400)
+    // สร้างไฟล์เปล่าแล้วอัปโหลดเนื้อหาเข้าไป (ใช้ item ID ตรง ๆ เร็วกว่า path-based URL)
     const childFileId = await this.createChildFile(
       courseFolderId,
       storedFileName,
@@ -144,8 +150,12 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     }
   }
 
-  // ขอ access token จาก Microsoft OAuth ด้วย refresh token ของบัญชีกลาง
+  // ขอ access token จาก Microsoft OAuth ด้วย refresh token ของบัญชีกลาง (แคชไว้จนกว่าจะหมดอายุ)
   private async getAccessToken(): Promise<string> {
+    if (this.cachedToken && Date.now() < this.cachedToken.expiresAt) {
+      return this.cachedToken.token;
+    }
+
     const clientId = this.getRequiredEnv('ONEDRIVE_CLIENT_ID');
     const clientSecret = this.getRequiredEnv('ONEDRIVE_CLIENT_SECRET');
     const refreshToken = this.getRequiredEnv('ONEDRIVE_REFRESH_TOKEN');
@@ -182,6 +192,12 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
         `OneDrive auth failed: ${details}`,
       );
     }
+
+    const expiresInMs = ((payload.expires_in ?? 3600) - 300) * 1000;
+    this.cachedToken = {
+      token: payload.access_token,
+      expiresAt: Date.now() + expiresInMs,
+    };
 
     return payload.access_token;
   }
@@ -220,22 +236,31 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     };
   }
 
-  // ตรวจสอบและสร้างโฟลเดอร์หากยังไม่มีอยู่
-  private async ensureFolderExists(
+  // ตรวจสอบและสร้างโฟลเดอร์หากยังไม่มีอยู่ (ใช้ Promise cache เพื่อ dedup request ที่ยิงพร้อมกัน)
+  private ensureFolderExists(
     parentFolderId: string,
     folderName: string,
     accessToken: string,
   ): Promise<string> {
-    const getUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${parentFolderId}:/${encodeURIComponent(folderName)}:`;
-    const getRes = await fetch(getUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const cacheKey = `${parentFolderId}:${folderName}`;
+    const cached = this.folderCache.get(cacheKey);
+    if (cached !== undefined) return cached;
 
-    if (getRes.ok) {
-      const data = await this.parseJson<OneDriveUploadApiResponse>(getRes);
-      if (data.id) return data.id;
-    }
+    const promise = this.resolveFolder(parentFolderId, folderName, accessToken);
+    this.folderCache.set(cacheKey, promise);
 
+    promise.catch(() => this.folderCache.delete(cacheKey));
+
+    return promise;
+  }
+
+  // ค้นหาหรือสร้างโฟลเดอร์ใน OneDrive จริง ๆ (POST-first เพื่อลด call สำหรับ folder ใหม่)
+  private async resolveFolder(
+    parentFolderId: string,
+    folderName: string,
+    accessToken: string,
+  ): Promise<string> {
+    // พยายามสร้างก่อน — ถ้า folder ใหม่จะสำเร็จทันทีใน 1 call
     const createUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${parentFolderId}/children`;
     const createRes = await fetch(createUrl, {
       method: 'POST',
@@ -255,14 +280,14 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
       if (data.id) return data.id;
     }
 
-    // กรณีมีโฟลเดอร์อยู่แล้วแต่ดึงข้อมูลครั้งแรกไม่เจอ (อาจจะถูกสร้างขึ้นมาพร้อมกันพอดี)
+    // 409 = folder มีอยู่แล้ว → ดึง ID กลับมา
     if (createRes.status === 409) {
-      const retryGetRes = await fetch(getUrl, {
+      const getUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${parentFolderId}:/${encodeURIComponent(folderName)}:`;
+      const getRes = await fetch(getUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      if (retryGetRes.ok) {
-        const data =
-          await this.parseJson<OneDriveUploadApiResponse>(retryGetRes);
+      if (getRes.ok) {
+        const data = await this.parseJson<OneDriveUploadApiResponse>(getRes);
         if (data.id) return data.id;
       }
     }
