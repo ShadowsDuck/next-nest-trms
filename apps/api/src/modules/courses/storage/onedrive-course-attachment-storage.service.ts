@@ -57,7 +57,16 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     );
     const contentType = request.mimeType.trim() || 'application/octet-stream';
 
-    const encodedUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${encodeURIComponent(storedFileName)}:/content`;
+    const folderPath = this.buildCourseFolderPath(
+      input.courseName,
+      input.startDate,
+    );
+    const encodedFolderPath = folderPath
+      .split('/')
+      .map(encodeURIComponent)
+      .join('/');
+
+    const encodedUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${encodedFolderPath}/${encodeURIComponent(storedFileName)}:/content`;
     let response = await this.uploadBinary(
       encodedUploadUrl,
       accessToken,
@@ -68,7 +77,7 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     if (!response.ok) {
       const parsedError = await this.readErrorPayload(response);
       if (parsedError.error?.code === 'invalidRequest') {
-        const plainUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${storedFileName}:/content`;
+        const plainUploadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}:/${folderPath}/${storedFileName}:/content`;
         response = await this.uploadBinary(
           plainUploadUrl,
           accessToken,
@@ -204,6 +213,26 @@ export class OneDriveCourseAttachmentStorageService implements CourseAttachmentS
     }
 
     return value;
+  }
+
+  // สร้าง Path ของโฟลเดอร์สำหรับเก็บไฟล์คอร์สโดยเฉพาะ (รูปแบบ: ปีพ.ศ./วัน-เดือน-ปี-ชื่อคอร์ส)
+  private buildCourseFolderPath(
+    courseName: string,
+    startDate: Date | string,
+  ): string {
+    const dateObj =
+      typeof startDate === 'string' ? new Date(startDate) : startDate;
+    const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+
+    const beYear = validDate.getFullYear() + 543;
+    const day = String(validDate.getDate()).padStart(2, '0');
+    const month = String(validDate.getMonth() + 1).padStart(2, '0');
+    const formattedDate = `${day}-${month}-${beYear}`;
+
+    const sanitizedName = courseName.replace(/[\\/:*?"<>|]/g, '_').trim();
+    const safeName = sanitizedName.length > 0 ? sanitizedName : 'Course';
+
+    return `${beYear}/${formattedDate}-${safeName}`;
   }
 
   // แปลงชื่อไฟล์ให้ปลอดภัยและเติม prefix เพื่อเลี่ยงชื่อชนกันในโฟลเดอร์เดียวกัน
