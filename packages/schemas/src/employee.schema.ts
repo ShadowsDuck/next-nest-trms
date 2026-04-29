@@ -16,8 +16,9 @@ export const employeeSchema = z.object({
     .string()
     .length(13, { message: "เลขบัตรประชาชนต้องมี 13 หลัก" })
     .regex(/^\d{13}$/, { message: "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น" })
+    .nullable()
     .optional(),
-  hireDate: z.iso.date().optional(),
+  hireDate: z.iso.date().nullable().optional(),
   jobLevel: z.enum(jobLevel, { message: "ระดับตำแหน่งไม่ถูกต้อง" }),
   status: z.enum(employeeStatus, { message: "สถานะไม่ถูกต้อง" }),
   plantId: z.string().min(1, { message: "Plant ห้ามว่าง" }),
