@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@workspace/ui/components/button'
 import { ChevronLeft, RotateCcw, Save } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { createCourse } from '@/domains/courses'
+import { COURSES_QUERY_KEY } from '../../options/query-options'
 import { useTagOptions } from '../hooks/use-tag-options'
 import {
   type CreateCourseForm,
@@ -71,6 +73,7 @@ function toCreateCourseFormData(data: CreateCourseForm): FormData {
 // แสดงหน้าเพิ่มหลักสูตรใหม่และจัดการการบันทึกข้อมูลหลักสูตร
 export function CreateCoursePage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: tagOptions = [] } = useTagOptions()
   const form = useForm<CreateCourseForm>({
     resolver: zodResolver(createCourseFormSchema),
@@ -91,6 +94,8 @@ export function CreateCoursePage() {
 
     try {
       await createCourse(payload)
+      // ล้าง cache ของรายการหลักสูตรเพื่อให้ตารางดึงข้อมูลใหม่ทันที
+      await queryClient.invalidateQueries({ queryKey: [COURSES_QUERY_KEY] })
       toast.success('สร้างหลักสูตรสำเร็จ')
       router.push('/admin/courses')
     } catch (error) {

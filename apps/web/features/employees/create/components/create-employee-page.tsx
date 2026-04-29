@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@workspace/ui/components/button'
 import { ChevronLeft, RotateCcw, Save } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { createEmployee } from '@/domains/employees/actions'
+import { EMPLOYEES_QUERY_KEY } from '../../options/query-options'
 import { useOrganizationUnitOptions } from '../hooks/use-organization-unit-options'
 import {
   type CreateEmployeeForm,
@@ -20,6 +22,7 @@ import { OrganizationUnitSection } from './organization-unit-section'
 
 export function CreateEmployeePage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const form = useForm<CreateEmployeeForm>({
     resolver: zodResolver(createEmployeeSchema),
     defaultValues: defaultCreateEmployeeValues,
@@ -56,6 +59,8 @@ export function CreateEmployeePage() {
 
     try {
       await createEmployee(payload)
+      // ล้าง cache ของรายการพนักงานเพื่อให้ตารางดึงข้อมูลใหม่ทันที
+      await queryClient.invalidateQueries({ queryKey: [EMPLOYEES_QUERY_KEY] })
       toast.success('สร้างพนักงานสำเร็จ')
       router.push('/admin/employees')
     } catch (error) {
