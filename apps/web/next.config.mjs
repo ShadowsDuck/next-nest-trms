@@ -6,6 +6,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '25mb',
     },
+    // เพิ่ม limit สำหรับ request ที่ผ่าน middleware (proxy.ts) เพื่อรองรับอัปโหลดไฟล์ขนาดใหญ่
+    proxyClientMaxBodySize: 30 * 1024 * 1024,
   },
 }
 
