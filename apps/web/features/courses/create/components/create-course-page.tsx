@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@workspace/ui/components/button'
-import { ChevronLeft, RotateCcw, Save } from 'lucide-react'
+import { ChevronLeft, Loader2, RotateCcw, Save } from 'lucide-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { createCourse } from '@/domains/courses'
@@ -93,15 +93,22 @@ export function CreateCoursePage() {
     const payload = toCreateCourseFormData(data)
 
     try {
-      await createCourse(payload)
+      await toast.promise(createCourse(payload), {
+        pending: 'กำลังบันทึกข้อมูล...',
+        success: 'บันทึกข้อมูลสำเร็จ',
+        error: {
+          render({ data }) {
+            return data instanceof Error
+              ? data.message
+              : 'สร้างหลักสูตรไม่สำเร็จ'
+          },
+        },
+      })
       // ล้าง cache ของรายการหลักสูตรเพื่อให้ตารางดึงข้อมูลใหม่ทันที
       await queryClient.invalidateQueries({ queryKey: [COURSES_QUERY_KEY] })
-      toast.success('สร้างหลักสูตรสำเร็จ')
       router.push('/admin/courses')
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'สร้างหลักสูตรไม่สำเร็จ'
-      )
+    } catch {
+      // Error is handled by toast.promise
     }
   }
 
@@ -111,7 +118,12 @@ export function CreateCoursePage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="icon-sm" asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                asChild
+                disabled={formState.isSubmitting}
+              >
                 <Link href="/admin/courses" aria-label="กลับไปหน้าหลักสูตร">
                   <ChevronLeft data-icon="inline-start" />
                 </Link>
@@ -125,7 +137,12 @@ export function CreateCoursePage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" type="button" onClick={handleResetForm}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleResetForm}
+              disabled={formState.isSubmitting}
+            >
               <RotateCcw className="mr-1 size-4" data-icon="inline-start" />
               ล้างฟอร์ม
             </Button>
@@ -135,8 +152,20 @@ export function CreateCoursePage() {
               disabled={formState.isSubmitting}
               className="min-w-32"
             >
-              <Save className="mr-1 size-4" data-icon="inline-start" />
-              บันทึกหลักสูตร
+              {formState.isSubmitting ? (
+                <>
+                  <Loader2
+                    className="mr-1 size-4 animate-spin"
+                    data-icon="inline-start"
+                  />
+                  กำลังบันทึก...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-1 size-4" data-icon="inline-start" />
+                  บันทึกหลักสูตร
+                </>
+              )}
             </Button>
           </div>
         </div>
