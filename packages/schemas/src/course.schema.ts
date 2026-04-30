@@ -64,8 +64,8 @@ export const coursePaginationResponseSchema = z.object({
 })
 
 export const courseQuerySchema = z.object({
-  page: z.coerce.number().int().positive().catch(1),
-  limit: z.coerce.number().int().positive().max(100).catch(25),
+  page: z.coerce.number().int().positive().catch(1).default(1),
+  limit: z.coerce.number().int().positive().max(100).catch(25).default(25),
   search: z.string().optional(),
   type: z.pipe(toArray, z.array(z.enum(courseType))).optional(),
   tagName: z.pipe(toArray, z.array(z.string().min(1))).optional(),

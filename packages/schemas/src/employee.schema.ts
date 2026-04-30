@@ -54,8 +54,8 @@ export const employeePaginationResponseSchema = z.object({
 
 // Query Schema
 export const employeeQuerySchema = z.object({
-  page: z.coerce.number().int().positive().catch(1),
-  limit: z.coerce.number().int().positive().max(100).catch(25),
+  page: z.coerce.number().int().positive().catch(1).default(1),
+  limit: z.coerce.number().int().positive().max(100).catch(25).default(25),
   search: z.string().optional(),
   prefix: z.pipe(toArray, z.array(z.enum(prefix))).optional(),
   jobLevel: z.pipe(toArray, z.array(z.enum(jobLevel))).optional(),
