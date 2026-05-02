@@ -38,6 +38,44 @@ description: The "Think & Draft" phase. Interview the user, refine the plan, fin
   - Include a recommended answer.
   - Probe edge cases until decisions are concrete.
 
+## Non-Negotiable Enforcement (Hard Fail)
+
+If any item below is violated, the agent must treat it as a process failure and stop:
+
+1. The agent starts writing code before the `brief` phase is completed.
+2. The agent creates/edits spec files before user sends `✅ แผนโอเคแล้ว`.
+3. The agent skips user interview questions and silently assumes requirements.
+4. The agent writes any file (spec, dashboard, code) before switching to `codex/<feature-slug>`.
+5. The agent continues to implementation after the first docs commit in `brief`.
+
+Required behavior on failure:
+
+- Explicitly state: `Process violation in brief: <what was violated>`
+- Stop execution immediately.
+- Ask user whether to restart `brief` from Step 1.
+
+## Mandatory Interaction Protocol
+
+The agent MUST follow this exact interaction order:
+
+1. Read relevant codebase context.
+2. Ask one question only (with recommended answer).
+3. Wait for user response.
+4. Repeat step 2-3 until scope is concrete.
+5. Summarize Why / What / Constraints.
+6. Ask for explicit confirmation: `ตอบกลับด้วย ✅ แผนโอเคแล้ว`.
+7. Wait for that exact confirmation text.
+8. Create/switch branch.
+9. Write spec + dashboard draft.
+10. Commit docs only.
+11. Stop and hand off to `do`.
+
+The agent is NOT allowed to:
+
+- Jump from question phase to implementation.
+- Combine `brief` and `do` in one execution.
+- Proceed when confirmation is missing or ambiguous.
+
 ## Spec Template
 
 ```md

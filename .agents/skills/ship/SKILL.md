@@ -46,18 +46,20 @@ Update `docs/README.md` status to `Completed` only when all spec tasks are done 
 
 ### 6. PR Description
 
-Generate a ready-to-paste PR description inside a markdown code block (for easy copy-pasting):
+Generate a ready-to-paste PR description inside a markdown code block (for easy copy-pasting).
+
+Rules:
+
+- Section headers must remain in English: `What`, `Changes`.
+- Content under those sections must be written in Thai.
+- Do not include `Manual steps required` section.
 
 ```markdown
 ## What
 
-<one-line summary of the feature>
+<สรุปฟีเจอร์ 1-2 บรรทัดเป็นภาษาไทย>
 
 ## Changes
 
-<bullet list derived from task commits>
-
-## Manual steps required
-
-<from User manual actions — omit section if none>
+<รายการ bullet สรุปการเปลี่ยนแปลงเป็นภาษาไทยจาก task commits>
 ```
