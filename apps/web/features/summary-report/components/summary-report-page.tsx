@@ -1,10 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import type { SummaryReportResponse } from '@workspace/schemas'
-import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import {
   Card,
@@ -34,14 +32,13 @@ import {
   TabsTrigger,
 } from '@workspace/ui/components/tabs'
 import {
-  ArrowLeft,
   BarChart3,
   BriefcaseBusiness,
   CircleDollarSign,
   PieChart as PieChartIcon,
   RefreshCcw,
-  Sparkles,
   Users,
+  Upload,
 } from 'lucide-react'
 import {
   Bar,
@@ -222,50 +219,23 @@ export function SummaryReportPage({
     return <SummaryEmptyState />
   }
 
-  const originHref =
-    context.source === 'employees' ? '/admin/employees' : '/admin/courses'
-  const originLabel =
-    context.source === 'employees' ? 'กลับไปหน้าพนักงาน' : 'กลับไปหน้าหลักสูตร'
-
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <header className="border-border/70 from-primary/8 via-chart-2/6 to-chart-3/10 relative overflow-hidden rounded-4xl border bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-from),transparent_34%),linear-gradient(135deg,var(--tw-gradient-via),var(--tw-gradient-to))] px-6 py-7 shadow-sm">
-        <div className="absolute inset-y-0 right-0 hidden w-80 bg-[radial-gradient(circle_at_center,rgba(148,163,184,0.12),transparent_60%)] lg:block" />
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <header className="bg-background px-1 py-2.5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                {analytics.sourceLabel}
-              </Badge>
-              <Badge variant="outline" className="bg-background/70">
-                สร้างเมื่อ {analytics.generatedAtLabel}
-              </Badge>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="bg-background/85 text-primary ring-border/60 hidden rounded-2xl p-3 shadow-xs ring-1 md:flex">
-                <Sparkles className="size-5" />
-              </div>
-              <div>
-                <h1 className="text-foreground text-3xl font-semibold tracking-tight">
-                  {analytics.title}
-                </h1>
-                <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-                  {analytics.subtitle}
-                </p>
-              </div>
+            <div>
+              <h1 className="text-foreground text-3xl font-semibold tracking-tight">
+                {analytics.title}
+              </h1>
+              <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
+                {analytics.subtitle}
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button asChild>
-              <Link href={originHref}>
-                <ArrowLeft data-icon="inline-start" />
-                {originLabel}
-              </Link>
-            </Button>
+          <div className="flex-wra flex gap-2 lg:mt-2.5">
             <Button
-              variant="outline"
               onClick={async () => {
                 if (!report) return
 
@@ -280,9 +250,14 @@ export function SummaryReportPage({
                 }
               }}
               disabled={isDeleting}
+              variant="outline"
             >
-              <RefreshCcw data-icon="inline-start" />
+              <RefreshCcw data-icon="inline-start" className="mr-1 size-4" />
               {isDeleting ? 'กำลังล้างข้อมูลรายงาน...' : 'ล้างข้อมูลรายงาน'}
+            </Button>
+            <Button>
+              <Upload data-icon="inline-start" className="mr-1 size-4" />
+              ส่งออกรายงาน
             </Button>
           </div>
         </div>
