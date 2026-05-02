@@ -14,6 +14,7 @@ import {
 import {
   type ChartConfig,
   ChartContainer,
+  RechartsPrimitive,
   ChartTooltip,
   ChartTooltipContent,
 } from '@workspace/ui/components/chart'
@@ -40,16 +41,6 @@ import {
   Users,
   Upload,
 } from 'lucide-react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-} from 'recharts'
 import { deleteSummaryReport } from '@/domains/summary-reports/actions'
 import {
   buildPeopleProfileRows,
@@ -195,6 +186,8 @@ function BreakdownTable({
 }
 
 const kpiIconMap = [Users, BriefcaseBusiness, PieChartIcon, CircleDollarSign]
+const { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } =
+  RechartsPrimitive
 
 export function SummaryReportPage({
   initialReport,
@@ -234,7 +227,7 @@ export function SummaryReportPage({
             </div>
           </div>
 
-          <div className="flex-wra flex gap-2 lg:mt-2.5">
+          <div className="flex flex-wrap gap-2 lg:mt-2.5">
             <Button
               onClick={async () => {
                 if (!report) return

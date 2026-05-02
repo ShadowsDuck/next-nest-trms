@@ -10,10 +10,10 @@ import {
 import {
   type ChartConfig,
   ChartContainer,
+  RechartsPrimitive,
   ChartTooltip,
   ChartTooltipContent,
 } from '@workspace/ui/components/chart'
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 
 export const description = 'An interactive area chart'
 
@@ -31,6 +31,8 @@ const chartConfig = {
     color: 'var(--primary)',
   },
 } satisfies ChartConfig
+
+const { Bar, BarChart, CartesianGrid, XAxis } = RechartsPrimitive
 
 const data = [
   { date: '2026-03-20', enrollments: 18 },
