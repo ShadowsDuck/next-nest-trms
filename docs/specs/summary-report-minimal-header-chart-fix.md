@@ -82,6 +82,29 @@ Verify:
 - The page still shows all existing sections.
 - The visual density is lower than the current version.
 
+### T4: Reduce to 6 Insight Cards
+
+Refactor the summary layout so it follows a strict 6-card information model aligned with the provided dashboard reference.
+
+- Keep these 6 cards only:
+  - Top divisions by attendance
+  - Gender distribution
+  - Job level breakdown
+  - Course type distribution
+  - Employee tenure distribution
+  - Most popular courses
+- Remove sections that are redundant for the 6-card layout:
+  - Organization structure tabs
+  - Training expense detail card
+  - Report source metadata card
+- Keep KPI cards at the top and keep all analytics logic unchanged.
+
+Verify:
+
+- Exactly 6 main content cards remain below the KPI row.
+- Removed sections are no longer rendered.
+- Existing chart and table components still compile and render.
+
 ## Validation
 
 - The summary report header matches the intended flat reference style.

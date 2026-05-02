@@ -5,6 +5,8 @@ type BreakdownItem = {
   count: number
   share: number
   expense?: number
+  participants?: number
+  expensePerPerson?: number
   category?: string
 }
 
@@ -20,6 +22,7 @@ type ReportAnalytics = {
   generatedAtLabel: string
   sourceLabel: string
   totalExpense: number
+  totalExpensePerParticipant: number
   kpis: KpiItem[]
   topDivisionBreakdown: BreakdownItem[]
   genderBreakdown: BreakdownItem[]
@@ -154,9 +157,16 @@ function buildBreakdown(
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'th'))
 }
 
-function buildExpenseBreakdown(courses: CourseRecord[]): BreakdownItem[] {
+function buildExpenseBreakdown({
+  courses,
+  enrollments,
+}: {
+  courses: CourseRecord[]
+  enrollments: Array<CourseRecord & { participantKey: string }>
+}): BreakdownItem[] {
   const expenseByType = new Map<string, number>()
   const countByType = new Map<string, number>()
+  const participantCountByType = new Map<string, number>()
   const totalCourses = courses.length
 
   for (const course of courses) {
@@ -168,41 +178,44 @@ function buildExpenseBreakdown(courses: CourseRecord[]): BreakdownItem[] {
     countByType.set(typeLabel, (countByType.get(typeLabel) ?? 0) + 1)
   }
 
+  for (const enrollment of enrollments) {
+    const typeLabel = normalizeCourseTypeLabel(enrollment.type)
+    participantCountByType.set(
+      typeLabel,
+      (participantCountByType.get(typeLabel) ?? 0) + 1
+    )
+  }
+
   return [...expenseByType.entries()]
     .map(([label, expense]) => ({
       label,
       count: countByType.get(label) ?? 0,
       share: toPercentage(countByType.get(label) ?? 0, totalCourses),
       expense,
+      participants: participantCountByType.get(label) ?? 0,
+      expensePerPerson:
+        (participantCountByType.get(label) ?? 0) > 0
+          ? expense / (participantCountByType.get(label) ?? 0)
+          : 0,
     }))
     .sort((a, b) => (b.expense ?? 0) - (a.expense ?? 0))
 }
 
-function buildTopCourseBreakdown(
-  enrollments: Array<{ title: string; category?: string }>
+function buildTopCourseCategoryBreakdown(
+  enrollments: Array<{ category?: string }>
 ): BreakdownItem[] {
-  const countByCourse = new Map<
-    string,
-    { label: string; count: number; category: string }
-  >()
+  const countByCategory = new Map<string, number>()
 
   for (const enrollment of enrollments) {
-    const label = enrollment.title || 'ไม่ระบุ'
-    const current = countByCourse.get(label)
-
-    countByCourse.set(label, {
-      label,
-      count: (current?.count ?? 0) + 1,
-      category: enrollment.category || current?.category || 'ไม่ระบุ',
-    })
+    const label = enrollment.category || 'ไม่ระบุ'
+    countByCategory.set(label, (countByCategory.get(label) ?? 0) + 1)
   }
 
-  return [...countByCourse.values()]
-    .map((item) => ({
-      label: item.label,
-      category: item.category,
-      count: item.count,
-      share: toPercentage(item.count, enrollments.length),
+  return [...countByCategory.entries()]
+    .map(([label, count]) => ({
+      label,
+      count,
+      share: toPercentage(count, enrollments.length),
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'th'))
     .slice(0, 5)
@@ -316,6 +329,8 @@ export function buildSummaryReportAnalytics(
   )
   const averageExpensePerCourse =
     totalCourses > 0 ? totalExpense / totalCourses : 0
+  const totalExpensePerParticipant =
+    totalEnrollments > 0 ? totalExpense / totalEnrollments : 0
 
   return {
     title:
@@ -330,6 +345,7 @@ export function buildSummaryReportAnalytics(
     sourceLabel:
       context.source === 'employees' ? 'ชุดข้อมูลพนักงาน' : 'ชุดข้อมูลหลักสูตร',
     totalExpense,
+    totalExpensePerParticipant,
     kpis: [
       {
         label: 'ผู้เข้าฝึกอบรม',
@@ -398,10 +414,12 @@ export function buildSummaryReportAnalytics(
         totalParticipants
       ),
     },
-    expenseBreakdown: buildExpenseBreakdown(uniqueCourses),
-    topCourseBreakdown: buildTopCourseBreakdown(
+    expenseBreakdown: buildExpenseBreakdown({
+      courses: uniqueCourses,
+      enrollments: enrollmentCourses,
+    }),
+    topCourseBreakdown: buildTopCourseCategoryBreakdown(
       enrollmentCourses.map((item) => ({
-        title: item.title,
         category: item.category,
       }))
     ),

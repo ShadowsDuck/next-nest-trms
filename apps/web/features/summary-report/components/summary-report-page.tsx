@@ -27,12 +27,6 @@ import {
   TableRow,
 } from '@workspace/ui/components/table'
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@workspace/ui/components/tabs'
-import {
   BarChart3,
   BriefcaseBusiness,
   CircleDollarSign,
@@ -72,14 +66,14 @@ const pieColors = [
 ]
 
 const genderColorMap: Record<string, string> = {
-  ชาย: 'var(--chart-1)',
-  หญิง: 'var(--chart-2)',
+  ชาย: 'oklch(0.62 0.16 255)',
+  หญิง: 'oklch(0.86 0.07 250)',
   ไม่ระบุ: 'var(--chart-4)',
 }
 
 const courseTypeColorMap: Record<string, string> = {
-  ภายใน: 'var(--chart-1)',
-  ภายนอก: 'var(--chart-2)',
+  ภายใน: 'oklch(0.62 0.16 255)',
+  ภายนอก: 'oklch(0.86 0.07 250)',
   ไม่ระบุ: 'var(--chart-4)',
 }
 
@@ -100,16 +94,20 @@ function formatCurrency(value: number) {
 function MiniLegend({
   items,
   getColor,
+  className,
 }: {
   items: Array<{ label: string; count: number }>
   getColor?: (label: string, index: number) => string
+  className?: string
 }) {
+  const total = items.reduce((sum, item) => sum + item.count, 0)
+
   return (
-    <div className="mt-5 flex flex-wrap gap-2">
+    <div className={`mt-5 flex flex-wrap gap-2 ${className ?? ''}`}>
       {items.map((item, index) => (
         <div
           key={item.label}
-          className="border-border/60 bg-background/80 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-xs"
+          className="inline-flex items-center gap-2 px-1 py-1 text-[13px]"
         >
           <span
             className="size-2.5 rounded-full"
@@ -118,9 +116,21 @@ function MiniLegend({
                 getColor?.(item.label, index) ?? getFallbackPieColor(index),
             }}
           />
-          <span className="text-foreground font-medium">{item.label}</span>
-          <span className="text-muted-foreground">
+          <span className="text-foreground min-w-14 font-medium">
+            {item.label}
+          </span>
+          <span className="text-foreground min-w-9 text-right">
             {formatNumber(item.count)}
+          </span>
+          <span className="text-muted-foreground min-w-12 text-right">
+            (
+            {total > 0
+              ? ((item.count / total) * 100).toLocaleString('th-TH', {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })
+              : '0.0'}
+            %)
           </span>
         </div>
       ))}
@@ -132,6 +142,7 @@ function BreakdownTable({
   rows,
   countLabel = 'จำนวน',
   showExpense = false,
+  showPerPerson = false,
   categoryLabel,
 }: {
   rows: Array<{
@@ -139,10 +150,13 @@ function BreakdownTable({
     count: number
     share: number
     expense?: number
+    participants?: number
+    expensePerPerson?: number
     category?: string
   }>
   countLabel?: string
   showExpense?: boolean
+  showPerPerson?: boolean
   categoryLabel?: string
 }) {
   return (
@@ -155,6 +169,12 @@ function BreakdownTable({
           <TableHead className="text-right">สัดส่วน</TableHead>
           {showExpense ? (
             <TableHead className="text-right">ค่าใช้จ่าย</TableHead>
+          ) : null}
+          {showPerPerson ? (
+            <TableHead className="text-right">ผู้เข้าอบรม</TableHead>
+          ) : null}
+          {showPerPerson ? (
+            <TableHead className="text-right">เฉลี่ย/คน</TableHead>
           ) : null}
         </TableRow>
       </TableHeader>
@@ -175,6 +195,20 @@ function BreakdownTable({
               <TableCell className="text-right">
                 {typeof row.expense === 'number'
                   ? formatCurrency(row.expense)
+                  : '-'}
+              </TableCell>
+            ) : null}
+            {showPerPerson ? (
+              <TableCell className="text-right">
+                {typeof row.participants === 'number'
+                  ? formatNumber(row.participants)
+                  : '-'}
+              </TableCell>
+            ) : null}
+            {showPerPerson ? (
+              <TableCell className="text-right">
+                {typeof row.expensePerPerson === 'number'
+                  ? formatCurrency(row.expensePerPerson)
                   : '-'}
               </TableCell>
             ) : null}
@@ -211,9 +245,17 @@ export function SummaryReportPage({
   if (!context || !analytics) {
     return <SummaryEmptyState />
   }
+  const genderTotal = analytics.genderBreakdown.reduce(
+    (sum, item) => sum + item.count,
+    0
+  )
+  const courseTypeTotal = analytics.courseTypeBreakdown.reduce(
+    (sum, item) => sum + item.count,
+    0
+  )
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-3">
       <header className="bg-background px-1 py-2.5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
@@ -256,29 +298,31 @@ export function SummaryReportPage({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-4">
         {analytics.kpis.map((item, index) => {
           const Icon = kpiIconMap[index] ?? BarChart3
 
           return (
             <Card
               key={item.label}
-              className="from-background to-muted/30 border-border/70 gap-4 bg-linear-to-br"
+              className="bg-background gap-2 rounded-2xl shadow-none"
             >
-              <CardHeader className="grid grid-cols-[1fr_auto] items-start gap-3">
+              <CardHeader className="grid grid-cols-[1fr_auto] items-start gap-2 pb-1">
                 <div>
-                  <CardDescription>{item.label}</CardDescription>
-                  <CardTitle className="mt-2 text-3xl font-semibold">
+                  <CardDescription className="text-xs">
+                    {item.label}
+                  </CardDescription>
+                  <CardTitle className="mt-1 text-2xl font-semibold">
                     {item.label === 'ค่าใช้จ่ายรวม'
                       ? formatCurrency(item.value)
                       : formatNumber(item.value)}
                   </CardTitle>
                 </div>
-                <div className="bg-primary/10 text-primary rounded-2xl p-2.5">
+                <div className="bg-muted text-muted-foreground rounded-xl p-2">
                   <Icon className="size-4" />
                 </div>
               </CardHeader>
-              <CardContent className="text-muted-foreground text-xs leading-5">
+              <CardContent className="text-muted-foreground pt-0 text-xs leading-4">
                 {item.helperText}
               </CardContent>
             </Card>
@@ -286,8 +330,8 @@ export function SummaryReportPage({
         })}
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card className="border-border/70 gap-4">
+      <section className="grid grid-cols-1 gap-2.5 xl:grid-cols-2">
+        <Card className="bg-background gap-4 rounded-2xl shadow-none">
           <CardHeader>
             <CardTitle>หน่วยงานที่ได้รับการฝึกอบรม</CardTitle>
             <CardDescription>
@@ -326,7 +370,7 @@ export function SummaryReportPage({
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 gap-4">
+        <Card className="bg-background gap-10 rounded-2xl shadow-none">
           <CardHeader>
             <CardTitle>สัดส่วนผู้เข้าอบรมตามเพศ</CardTitle>
             <CardDescription>
@@ -334,45 +378,66 @@ export function SummaryReportPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <PieChart>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => formatNumber(Number(value))}
-                    />
+            <div className="mx-auto flex w-full max-w-[520px] items-center justify-center gap-8">
+              <ChartContainer
+                config={chartConfig}
+                className="relative h-[210px] w-[230px] shrink-0 sm:h-[230px] sm:w-[250px]"
+              >
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    wrapperStyle={{ zIndex: 40 }}
+                    content={
+                      <ChartTooltipContent
+                        nameKey="label"
+                        formatter={(value) => formatNumber(Number(value))}
+                      />
+                    }
+                  />
+                  <Pie
+                    data={analytics.genderBreakdown}
+                    dataKey="count"
+                    nameKey="label"
+                    innerRadius={70}
+                    outerRadius={104}
+                    paddingAngle={4}
+                  >
+                    {analytics.genderBreakdown.map((entry, index) => (
+                      <Cell
+                        key={entry.label}
+                        fill={
+                          genderColorMap[entry.label] ??
+                          getFallbackPieColor(index)
+                        }
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-foreground text-3xl leading-none font-semibold">
+                      {formatNumber(genderTotal)}
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">
+                      ผู้เข้าอบรม
+                    </div>
+                  </div>
+                </div>
+              </ChartContainer>
+              <div className="min-w-fit">
+                <MiniLegend
+                  items={analytics.genderBreakdown}
+                  className="mt-0 flex-col gap-1"
+                  getColor={(label, index) =>
+                    genderColorMap[label] ?? getFallbackPieColor(index)
                   }
                 />
-                <Pie
-                  data={analytics.genderBreakdown}
-                  dataKey="count"
-                  nameKey="label"
-                  innerRadius={70}
-                  outerRadius={104}
-                  paddingAngle={4}
-                >
-                  {analytics.genderBreakdown.map((entry, index) => (
-                    <Cell
-                      key={entry.label}
-                      fill={
-                        genderColorMap[entry.label] ??
-                        getFallbackPieColor(index)
-                      }
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-            <MiniLegend
-              items={analytics.genderBreakdown}
-              getColor={(label, index) =>
-                genderColorMap[label] ?? getFallbackPieColor(index)
-              }
-            />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 gap-4">
+        <Card className="bg-background gap-4 rounded-2xl shadow-none">
           <CardHeader>
             <CardTitle>ระดับงานของผู้เข้าอบรม</CardTitle>
             <CardDescription>
@@ -403,7 +468,7 @@ export function SummaryReportPage({
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 gap-4">
+        <Card className="bg-background gap-10 rounded-2xl shadow-none">
           <CardHeader>
             <CardTitle>ประเภทหลักสูตร</CardTitle>
             <CardDescription>
@@ -411,188 +476,91 @@ export function SummaryReportPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <PieChart>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => formatNumber(Number(value))}
-                    />
+            <div className="mx-auto flex w-full max-w-[520px] items-center justify-center gap-8">
+              <ChartContainer
+                config={chartConfig}
+                className="relative h-[210px] w-[230px] shrink-0 sm:h-[230px] sm:w-[250px]"
+              >
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    wrapperStyle={{ zIndex: 40 }}
+                    content={
+                      <ChartTooltipContent
+                        nameKey="label"
+                        formatter={(value) => formatNumber(Number(value))}
+                      />
+                    }
+                  />
+                  <Pie
+                    data={analytics.courseTypeBreakdown}
+                    dataKey="count"
+                    nameKey="label"
+                    innerRadius={64}
+                    outerRadius={98}
+                    paddingAngle={4}
+                  >
+                    {analytics.courseTypeBreakdown.map((entry, index) => (
+                      <Cell
+                        key={entry.label}
+                        fill={
+                          courseTypeColorMap[entry.label] ??
+                          getFallbackPieColor(index)
+                        }
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-foreground text-3xl leading-none font-semibold">
+                      {formatNumber(courseTypeTotal)}
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">
+                      หลักสูตร
+                    </div>
+                  </div>
+                </div>
+              </ChartContainer>
+              <div className="min-w-fit">
+                <MiniLegend
+                  items={analytics.courseTypeBreakdown}
+                  className="mt-0 flex-col gap-1"
+                  getColor={(label, index) =>
+                    courseTypeColorMap[label] ?? getFallbackPieColor(index)
                   }
                 />
-                <Pie
-                  data={analytics.courseTypeBreakdown}
-                  dataKey="count"
-                  nameKey="label"
-                  innerRadius={64}
-                  outerRadius={98}
-                  paddingAngle={4}
-                >
-                  {analytics.courseTypeBreakdown.map((entry, index) => (
-                    <Cell
-                      key={entry.label}
-                      fill={
-                        courseTypeColorMap[entry.label] ??
-                        getFallbackPieColor(index)
-                      }
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-            <MiniLegend
-              items={analytics.courseTypeBreakdown}
-              getColor={(label, index) =>
-                courseTypeColorMap[label] ?? getFallbackPieColor(index)
-              }
-            />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 2xl:grid-cols-[1.35fr_1fr]">
-        <Card className="border-border/70 gap-4">
+      <section className="grid grid-cols-1 gap-2.5 xl:grid-cols-2">
+        <Card className="bg-background gap-4 rounded-2xl shadow-none">
           <CardHeader>
-            <CardTitle>โครงสร้างองค์กร</CardTitle>
+            <CardTitle>อายุงานของผู้เข้าอบรม</CardTitle>
             <CardDescription>
-              สรุปจำนวนผู้เข้าอบรมแยกตามแต่ละระดับของหน่วยงาน
+              แบ่งกลุ่มตามระยะเวลาการทำงานจากวันที่เริ่มงาน
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="division" className="gap-4">
-              <TabsList
-                variant="line"
-                className="w-full justify-start overflow-x-auto"
-              >
-                <TabsTrigger value="plant">Plant</TabsTrigger>
-                <TabsTrigger value="businessUnit">BU</TabsTrigger>
-                <TabsTrigger value="function">สายงาน</TabsTrigger>
-                <TabsTrigger value="division">ฝ่าย</TabsTrigger>
-                <TabsTrigger value="department">ส่วนงาน</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="plant">
-                <BreakdownTable
-                  rows={analytics.orgBreakdowns.plant}
-                  countLabel="จำนวนคน"
-                />
-              </TabsContent>
-              <TabsContent value="businessUnit">
-                <BreakdownTable
-                  rows={analytics.orgBreakdowns.businessUnit}
-                  countLabel="จำนวนคน"
-                />
-              </TabsContent>
-              <TabsContent value="function">
-                <BreakdownTable
-                  rows={analytics.orgBreakdowns.function}
-                  countLabel="จำนวนคน"
-                />
-              </TabsContent>
-              <TabsContent value="division">
-                <BreakdownTable
-                  rows={analytics.orgBreakdowns.division}
-                  countLabel="จำนวนคน"
-                />
-              </TabsContent>
-              <TabsContent value="department">
-                <BreakdownTable
-                  rows={analytics.orgBreakdowns.department}
-                  countLabel="จำนวนคน"
-                />
-              </TabsContent>
-            </Tabs>
+            <BreakdownTable rows={peopleProfileRows} countLabel="จำนวนคน" />
           </CardContent>
         </Card>
 
-        <div className="grid gap-4">
-          <Card className="border-border/70 gap-4">
-            <CardHeader>
-              <CardTitle>อายุงานของผู้เข้าอบรม</CardTitle>
-              <CardDescription>
-                แบ่งกลุ่มตามระยะเวลาการทำงานจากวันที่เริ่มงาน
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BreakdownTable rows={peopleProfileRows} countLabel="จำนวนคน" />
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70 gap-4">
-            <CardHeader>
-              <CardTitle>หลักสูตรที่ถูกเลือกมากที่สุด</CardTitle>
-              <CardDescription>
-                เรียงจากจำนวนการเข้าอบรมสูงสุดในรายงานชุดนี้
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BreakdownTable
-                rows={analytics.topCourseBreakdown}
-                countLabel="ครั้ง"
-                categoryLabel="หมวดหมู่"
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card className="border-border/70 gap-4">
+        <Card className="bg-background gap-4 rounded-2xl shadow-none">
           <CardHeader>
-            <CardTitle>ค่าใช้จ่ายฝึกอบรม</CardTitle>
+            <CardTitle>หมวดหมู่หลักสูตรที่ถูกเลือกมากที่สุด</CardTitle>
             <CardDescription>
-              รวมค่าใช้จ่ายแบบหลักสูตรไม่ซ้ำภายในชุดข้อมูลรายงาน
+              เรียงจากจำนวนการเข้าอบรมสูงสุดแยกตามหมวดหมู่
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="from-background to-muted/30 border-border/60 rounded-2xl border bg-linear-to-br p-4">
-              <div className="text-muted-foreground text-xs tracking-wide uppercase">
-                ค่าใช้จ่ายรวม
-              </div>
-              <div className="text-foreground mt-2 text-2xl font-semibold">
-                {formatCurrency(analytics.totalExpense)}
-              </div>
-            </div>
+          <CardContent>
             <BreakdownTable
-              rows={analytics.expenseBreakdown}
-              countLabel="จำนวนหลักสูตร"
-              showExpense
+              rows={analytics.topCourseBreakdown}
+              countLabel="ครั้ง"
             />
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70 gap-4">
-          <CardHeader>
-            <CardTitle>ที่มาของรายงาน</CardTitle>
-            <CardDescription>
-              ใช้สำหรับตรวจสอบว่ารายงานนี้สร้างจากข้อมูลชุดใด
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm">
-            <div className="border-border/60 from-background to-muted/25 rounded-2xl border bg-linear-to-br p-4">
-              <div className="text-muted-foreground text-xs tracking-wide uppercase">
-                แหล่งข้อมูล
-              </div>
-              <div className="text-foreground mt-1 font-medium">
-                {analytics.sourceLabel}
-              </div>
-            </div>
-            <div className="border-border/60 from-background to-muted/25 rounded-2xl border bg-linear-to-br p-4">
-              <div className="text-muted-foreground text-xs tracking-wide uppercase">
-                รายการที่เลือก
-              </div>
-              <div className="text-foreground mt-1 font-medium">
-                {formatNumber(context.selectedIds.length)} รายการ
-              </div>
-            </div>
-            <div className="border-border/60 from-background to-muted/25 rounded-2xl border bg-linear-to-br p-4">
-              <div className="text-muted-foreground text-xs tracking-wide uppercase">
-                เวลาที่สร้างรายงาน
-              </div>
-              <div className="text-foreground mt-1 font-medium">
-                {analytics.generatedAtLabel}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </section>
