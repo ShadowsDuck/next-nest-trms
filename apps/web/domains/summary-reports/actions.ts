@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import {
   type CourseQuery,
   type CreateSummaryReportResponse,
@@ -50,6 +50,19 @@ export async function createCourseSummaryReport({
 }
 
 export async function deleteSummaryReport(reportId: string) {
-  await api.delete(`/api/summary-reports/${reportId}`)
+  try {
+    await api.delete(`/api/summary-reports/${reportId}`)
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes('ไม่พบรายงานที่ต้องการ')
+    ) {
+      // รายงานถูกลบไปแล้วจากคำขอก่อนหน้า ให้ถือว่าสำเร็จแบบ idempotent
+    } else {
+      throw error
+    }
+  }
+
   revalidateTag('summary-reports', 'max')
+  revalidatePath('/admin/reports/summary')
 }
