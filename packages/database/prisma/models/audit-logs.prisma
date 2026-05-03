@@ -4,21 +4,27 @@ enum AuditAction {
   Delete
   Import
   Export
+  Failed
 }
 
 model AuditLog {
-  id        Int             @id @default(autoincrement())
-  action    AuditAction     @map("action")
-  table     String
-  recordId  String?         @map("record_id")
-  changes   Json?
-  createdAt DateTime        @default(now()) @map("created_at")
+  id        String      @id @default(cuid())
+  action    AuditAction
+  model     String
+  recordId  String?     @map("record_id")
+  oldValues Json?       @map("old_values")
+  newValues Json?       @map("new_values")
+  ipAddress String?     @map("ip_address")
+  userAgent String?     @map("user_agent")
+  timestamp DateTime    @default(now()) @map("timestamp")
 
   // Relations
-  userId    String          @map("user_id")
-  user      User            @relation(fields: [userId], references: [id])
+  userId    String      @map("user_id")
+  user      User        @relation(fields: [userId], references: [id])
 
   @@index([userId])
-  @@index([createdAt])
+  @@index([timestamp])
+  @@index([model])
+  @@index([action])
   @@map("audit_logs")
 }
