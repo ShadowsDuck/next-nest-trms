@@ -33,5 +33,5 @@ T1 — Define Permissions in `auth.ts` · File: `apps/api/src/auth/auth.ts` · V
 T2 — Define Roles (Admin, Manager, Employee) in `auth.ts` · File: `apps/api/src/auth/auth.ts` · Verify: Roles assigned correct permissions according to the plan.
 T3 — Secure Courses Controller · File: `apps/api/src/modules/courses/courses.controller.ts` · Verify: `@UserHasPermission` added to `create`, `findAll`, etc.
 T4 — Secure Employees Controller · File: `apps/api/src/modules/employees/employees.controller.ts` · Verify: `@UserHasPermission` added to `create`, `findAll`, `import`, etc.
-T5 — Secure Tags and OrgUnits Controllers · File: `apps/api/src/modules/tags/tags.controller.ts` · Verify: `@UserHasPermission` added to endpoints.
+T5 — Secure Tags and OrgUnits Controllers · Files: `apps/api/src/modules/tags/tags.controller.ts`, `apps/api/src/modules/organization-units/organization-units.controller.ts` · Verify: `@UserHasPermission` added to endpoints.
 T6 — Secure Summary Reports Controller · File: `apps/api/src/modules/summary-reports/summary-reports.controller.ts` · Verify: `@UserHasPermission` added to `create`, `findLatest`, etc.
