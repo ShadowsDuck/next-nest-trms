@@ -73,31 +73,14 @@ export class CoursesService {
       }
     }
 
-    let accreditationUpload: CourseAttachmentUploadResult | null = null;
-    let attendanceUpload: CourseAttachmentUploadResult | null = null;
-
-    try {
-      // อัปโหลดทั้ง 2 ไฟล์พร้อมกันเพื่อลดเวลารวม
-      [accreditationUpload, attendanceUpload] = await Promise.all([
-        this.uploadOptionalAttachment(
-          'accreditation',
-          accreditationFile,
-          uploadedFiles,
-          createCourseDto.title,
-          startDate,
-        ),
-        this.uploadOptionalAttachment(
-          'attendance',
-          attendanceFile,
-          uploadedFiles,
-          createCourseDto.title,
-          startDate,
-        ),
-      ]);
-    } catch (error) {
-      await this.rollbackUploadedFiles(uploadedFiles);
-      throw error;
-    }
+    const [accreditationUpload, attendanceUpload] =
+      await this.uploadCourseAttachments(
+        accreditationFile,
+        attendanceFile,
+        uploadedFiles,
+        createCourseDto.title,
+        startDate,
+      );
 
     try {
       const created = await this.prismaService.course.create({
@@ -296,6 +279,40 @@ export class CoursesService {
     uploadedFiles.push(uploaded);
 
     return uploaded;
+  }
+
+  // อัปโหลดไฟล์หลักสูตรทั้งหมดพร้อมจัดการ rollback เมื่ออัปโหลดไม่สำเร็จ
+  private async uploadCourseAttachments(
+    accreditationFile: UploadableAttachment | null,
+    attendanceFile: UploadableAttachment | null,
+    uploadedFiles: CourseAttachmentUploadResult[],
+    courseName: string,
+    startDate: Date,
+  ): Promise<
+    [CourseAttachmentUploadResult | null, CourseAttachmentUploadResult | null]
+  > {
+    try {
+      // อัปโหลดทั้ง 2 ไฟล์พร้อมกันเพื่อลดเวลารวม
+      return await Promise.all([
+        this.uploadOptionalAttachment(
+          'accreditation',
+          accreditationFile,
+          uploadedFiles,
+          courseName,
+          startDate,
+        ),
+        this.uploadOptionalAttachment(
+          'attendance',
+          attendanceFile,
+          uploadedFiles,
+          courseName,
+          startDate,
+        ),
+      ]);
+    } catch (error) {
+      await this.rollbackUploadedFiles(uploadedFiles);
+      throw error;
+    }
   }
 
   // ลบไฟล์ที่อัปโหลดแล้วทั้งหมดเมื่อเกิดข้อผิดพลาดภายหลัง เพื่อคงพฤติกรรมแบบ atomic
