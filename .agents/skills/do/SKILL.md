@@ -17,11 +17,12 @@ description: The "Execute" phase. Implement a specific task (e.g., T1) from a sp
    - List required prerequisites as `Agent-doable now` or `User-required manual`.
 4. **Implement** — Touch only files listed in the task. Follow Thai Comment rules. No unrelated refactors.
 5. **Verify** — Run the task's verification step. If the verify instruction is vague, define the smallest concrete check that proves completion before writing code.
-6. **Commit** — If verify passes:
-   - Stage only files that belong to this task.
-   - One commit per task. Do not bundle future task files.
-   - If verify fails, do not commit.
-7. **Report** — Use the Operational Handoff format below.
+6. **Commit Message Draft** — If verify passes:
+   - Do not stage or commit.
+   - Propose one short conventional commit message for this task (e.g., `feat(auth): secure tags and org-units controllers`).
+   - Keep message specific to only this task. Do not bundle future task scope.
+   - If verify fails, report the failure and do not propose a success commit message.
+7. **Report** — Use the Operational Handoff format below and include a `Suggested commit message` line.
 
 ## Spec Mutability
 
@@ -46,6 +47,7 @@ If implementation reveals the task is larger than described, stop at the nearest
 ## Operational Handoff (Required)
 
 Format your final report using these sections:
+
 - `Done by agent`
 - `Not done / blocked`
 - `User manual actions required`

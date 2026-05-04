@@ -96,7 +96,7 @@ The agent is NOT allowed to:
 ## Execution Strategy
 
 - Branch: `codex/<feature-slug>`
-- Commit Policy: `1 task = 1 commit` after verify passes
+- Commit Policy: `do` proposes one short commit message per task; actual commits happen in final integration
 - Merge Policy: run `ship` only when all tasks are done and committed
 
 ## Prerequisites

@@ -43,6 +43,11 @@ Provide the standard Operational Handoff report (Done, Not done, User actions, C
 ### 5. Dashboard Finalization
 
 Update `docs/README.md` status to `Completed` only when all spec tasks are done and committed.
+After updating `docs/README.md`, commit it immediately so it does not remain as uncommitted drift:
+
+- Stage only `docs/README.md`.
+- Commit message: `docs: complete <feature-slug>`.
+- Re-check `git status` before final readiness decision.
 
 ### 6. PR Description
 
