@@ -1,3 +1,4 @@
+import { UserHasPermission } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import {
   BadRequestException,
@@ -53,6 +54,7 @@ type UploadedAttachmentFile = {
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
+  @UserHasPermission({ permission: { course: ['create'] } })
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -106,6 +108,7 @@ export class CoursesController {
     } as CreateCourseDto);
   }
 
+  @UserHasPermission({ permission: { course: ['read'] } })
   @Get()
   @ApiOperation({ summary: 'ดึงข้อมูลหลักสูตรทั้งหมด' })
   @ZodResponse({
