@@ -1,3 +1,4 @@
+import { UserHasPermission } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -9,6 +10,7 @@ import { TagsService } from './tags.service';
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
+  @UserHasPermission({ permission: { tag: ['read'] } })
   @Get()
   @ApiOperation({ summary: 'ดึงรายการหมวดหมู่ทั้งหมด' })
   @ZodResponse({
