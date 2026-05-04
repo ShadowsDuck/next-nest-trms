@@ -12,7 +12,11 @@ const ac = createAccessControl({
   //   session: ['list', 'revoke', 'delete'],
   // }
   ...defaultStatements,
+  course: ['create', 'read', 'update', 'delete', 'import'],
   employee: ['create', 'read', 'update'],
+  tag: ['create', 'read', 'update', 'delete'],
+  report: ['create', 'read', 'update', 'delete'],
+  orgUnit: ['create', 'read', 'update', 'delete'],
 });
 
 const adminRole = ac.newRole({
