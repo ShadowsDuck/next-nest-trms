@@ -1,3 +1,4 @@
+import { UserHasPermission } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import {
@@ -28,6 +29,7 @@ export class EmployeesController {
     private readonly employeeImportService: EmployeeImportService,
   ) {}
 
+  @UserHasPermission({ permission: { employee: ['create'] } })
   @Post()
   @ApiOperation({ summary: 'สร้างพนักงานใหม่ (เฉพาะ Admin)' })
   @ZodResponse({
@@ -56,6 +58,7 @@ export class EmployeesController {
     return await this.employeesService.create(createEmployeeDto);
   }
 
+  @UserHasPermission({ permission: { employee: ['import'] } })
   @Post('import/dry-run')
   @ApiOperation({ summary: 'ตรวจสอบข้อมูลนำเข้าพนักงานจาก CSV (ยังไม่บันทึก)' })
   @ZodResponse({
@@ -69,6 +72,7 @@ export class EmployeesController {
     return await this.employeeImportService.importDryRun(body);
   }
 
+  @UserHasPermission({ permission: { employee: ['import'] } })
   @Post('import')
   @ApiOperation({ summary: 'นำเข้าพนักงานจาก CSV แบบ partial success' })
   @ZodResponse({
@@ -82,6 +86,7 @@ export class EmployeesController {
     return await this.employeeImportService.importEmployees(body);
   }
 
+  @UserHasPermission({ permission: { employee: ['read'] } })
   @Get()
   @ApiOperation({ summary: 'ดึงข้อมูลพนักงานทั้งหมด (เฉพาะ Admin)' })
   @ZodResponse({

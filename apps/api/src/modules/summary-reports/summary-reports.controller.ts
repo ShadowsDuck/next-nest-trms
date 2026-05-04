@@ -1,4 +1,8 @@
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import {
+  Session,
+  UserHasPermission,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
 import { createSummaryReportSchema } from '@workspace/schemas';
 import { ZodResponse } from 'nestjs-zod';
 import {
@@ -29,6 +33,7 @@ import { SummaryReportsService } from './summary-reports.service';
 export class SummaryReportsController {
   constructor(private readonly summaryReportsService: SummaryReportsService) {}
 
+  @UserHasPermission({ permission: { report: ['create'] } })
   @Post()
   @ApiOperation({ summary: 'สร้างรายงานสรุปใหม่' })
   @ZodResponse({
@@ -51,6 +56,7 @@ export class SummaryReportsController {
     );
   }
 
+  @UserHasPermission({ permission: { report: ['read'] } })
   @Get('latest')
   @ApiOperation({ summary: 'ดึงรายงานล่าสุดของผู้ใช้ปัจจุบัน' })
   @ZodResponse({
@@ -69,6 +75,7 @@ export class SummaryReportsController {
     return this.summaryReportsService.findLatestForUser(session.user.id);
   }
 
+  @UserHasPermission({ permission: { report: ['read'] } })
   @Get(':id')
   @ApiOperation({ summary: 'ดึงรายงานตาม reportId' })
   @ZodResponse({
@@ -91,6 +98,7 @@ export class SummaryReportsController {
     );
   }
 
+  @UserHasPermission({ permission: { report: ['delete'] } })
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({ summary: 'ลบรายงานตาม reportId' })

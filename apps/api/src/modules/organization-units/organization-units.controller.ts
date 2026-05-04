@@ -1,3 +1,4 @@
+import { UserHasPermission } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
 import {
   Body,
@@ -44,6 +45,7 @@ export class OrganizationUnitsController {
     private readonly organizationUnitsService: OrganizationUnitsService,
   ) {}
 
+  @UserHasPermission({ permission: { orgUnit: ['read'] } })
   @Get('plants')
   @ApiOperation({ summary: 'ดึงรายการ Plant ทั้งหมด' })
   @ZodResponse({ status: 200, type: [PlantResponseDto] })
@@ -51,6 +53,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.findPlants();
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['create'] } })
   @Post('plants')
   @ApiOperation({ summary: 'สร้าง Plant' })
   @ZodResponse({ status: 201, type: PlantResponseDto })
@@ -60,6 +63,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.createPlant(createPlantDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['update'] } })
   @Patch('plants/:id')
   @ApiOperation({ summary: 'แก้ไข Plant' })
   @ZodResponse({ status: 200, type: PlantResponseDto })
@@ -71,6 +75,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.updatePlant(id, updatePlantDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['read'] } })
   @Get('business-units')
   @ApiOperation({ summary: 'ดึงรายการ Business Unit โดยรองรับ plantId filter' })
   @ZodResponse({ status: 200, type: [BusinessUnitResponseDto] })
@@ -81,6 +86,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.findBusinessUnits(queryDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['create'] } })
   @Post('business-units')
   @ApiOperation({ summary: 'สร้าง Business Unit' })
   @ZodResponse({ status: 201, type: BusinessUnitResponseDto })
@@ -94,6 +100,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['update'] } })
   @Patch('business-units/:id')
   @ApiOperation({ summary: 'แก้ไข Business Unit' })
   @ZodResponse({ status: 200, type: BusinessUnitResponseDto })
@@ -111,6 +118,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['read'] } })
   @Get('functions')
   @ApiOperation({
     summary: 'ดึงรายการ Function โดยรองรับ businessUnitId filter',
@@ -123,6 +131,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.findFunctions(queryDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['create'] } })
   @Post('functions')
   @ApiOperation({ summary: 'สร้าง Function' })
   @ZodResponse({ status: 201, type: OrgFunctionResponseDto })
@@ -138,6 +147,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['update'] } })
   @Patch('functions/:id')
   @ApiOperation({ summary: 'แก้ไข Function' })
   @ZodResponse({ status: 200, type: OrgFunctionResponseDto })
@@ -157,6 +167,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['read'] } })
   @Get('divisions')
   @ApiOperation({ summary: 'ดึงรายการ Division โดยรองรับ functionId filter' })
   @ZodResponse({ status: 200, type: [DivisionResponseDto] })
@@ -167,6 +178,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.findDivisions(queryDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['create'] } })
   @Post('divisions')
   @ApiOperation({ summary: 'สร้าง Division' })
   @ZodResponse({ status: 201, type: DivisionResponseDto })
@@ -182,6 +194,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['update'] } })
   @Patch('divisions/:id')
   @ApiOperation({ summary: 'แก้ไข Division' })
   @ZodResponse({ status: 200, type: DivisionResponseDto })
@@ -199,6 +212,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['read'] } })
   @Get('departments')
   @ApiOperation({ summary: 'ดึงรายการ Department โดยรองรับ divisionId filter' })
   @ZodResponse({ status: 200, type: [DepartmentResponseDto] })
@@ -209,6 +223,7 @@ export class OrganizationUnitsController {
     return await this.organizationUnitsService.findDepartments(queryDto);
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['create'] } })
   @Post('departments')
   @ApiOperation({ summary: 'สร้าง Department' })
   @ZodResponse({ status: 201, type: DepartmentResponseDto })
@@ -224,6 +239,7 @@ export class OrganizationUnitsController {
     );
   }
 
+  @UserHasPermission({ permission: { orgUnit: ['update'] } })
   @Patch('departments/:id')
   @ApiOperation({ summary: 'แก้ไข Department' })
   @ZodResponse({ status: 200, type: DepartmentResponseDto })

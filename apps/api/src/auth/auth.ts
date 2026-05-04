@@ -12,22 +12,38 @@ const ac = createAccessControl({
   //   session: ['list', 'revoke', 'delete'],
   // }
   ...defaultStatements,
-  employee: ['create', 'read', 'update'],
+  course: ['create', 'read', 'update', 'delete', 'import'],
+  employee: ['create', 'read', 'update', 'import'],
+  tag: ['create', 'read', 'update', 'delete'],
+  report: ['create', 'read', 'update', 'delete'],
+  orgUnit: ['create', 'read', 'update', 'delete'],
 });
 
 const adminRole = ac.newRole({
   // adminAc.statements — ใช้ใน ac.newRole()
   // คือ "permission ที่ admin role ได้รับ" (full access ทุก action ใน defaultStatements)
   ...adminAc.statements,
-  employee: ['create', 'read', 'update'],
+  course: ['create', 'read', 'update', 'delete', 'import'],
+  employee: ['create', 'read', 'update', 'import'],
+  tag: ['create', 'read', 'update', 'delete'],
+  report: ['create', 'read', 'update', 'delete'],
+  orgUnit: ['create', 'read', 'update', 'delete'],
 });
 
 const managerRole = ac.newRole({
-  employee: ['read'],
+  course: ['create', 'read', 'update', 'import'],
+  employee: ['create', 'read', 'update', 'import'],
+  tag: ['create', 'read', 'update'],
+  report: ['create', 'read', 'update'],
+  orgUnit: ['create', 'read', 'update'],
 });
 
 const employeeRole = ac.newRole({
-  user: ['list'],
+  course: ['read'],
+  employee: ['read'],
+  tag: ['read'],
+  report: ['read'],
+  orgUnit: ['read'],
 });
 
 export const auth = betterAuth({
