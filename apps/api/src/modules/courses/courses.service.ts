@@ -1,3 +1,4 @@
+import { AuditAction } from '@workspace/database';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BadRequestException,
@@ -5,6 +6,8 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 import { CourseResponseDto } from './dto/course-response.dto';
@@ -30,12 +33,16 @@ export class CoursesService {
 
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly auditLogsService: AuditLogsService,
     @Inject(COURSE_ATTACHMENT_STORAGE)
     private readonly attachmentStorage: CourseAttachmentStorage,
   ) {}
 
   // สร้างหลักสูตรใหม่ พร้อมตรวจความถูกต้องของวันที่ เวลา และหมวดหมู่
-  async create(createCourseDto: CreateCourseDto): Promise<CourseResponseDto> {
+  async create(
+    createCourseDto: CreateCourseDto,
+    auditLogContext: AuditLogContext,
+  ): Promise<CourseResponseDto> {
     const attachmentPayload = createCourseDto as CreateCourseDto &
       Record<string, unknown>;
     const accreditationFile = this.toUploadableAttachment(
@@ -46,125 +53,180 @@ export class CoursesService {
     );
     const uploadedFiles: CourseAttachmentUploadResult[] = [];
 
-    const tag = await this.prismaService.tag.findUnique({
-      where: { id: createCourseDto.tagId },
-    });
-    if (!tag) {
-      throw new BadRequestException('ไม่พบหมวดหมู่หลักสูตรที่ระบุ');
-    }
-
-    const startDate = new Date(createCourseDto.startDate);
-    const endDate = new Date(createCourseDto.endDate);
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      throw new BadRequestException('รูปแบบวันที่ไม่ถูกต้อง');
-    }
-    if (startDate.getTime() > endDate.getTime()) {
-      throw new BadRequestException('วันที่เริ่มต้องไม่มากกว่าวันที่สิ้นสุด');
-    }
-
-    const startTime = this.parseTime(createCourseDto.startTime ?? null);
-    const endTime = this.parseTime(createCourseDto.endTime ?? null);
-    if (startDate.getTime() === endDate.getTime() && startTime && endTime) {
-      if (startTime.getTime() > endTime.getTime()) {
-        throw new BadRequestException(
-          'เวลาเริ่มต้องไม่มากกว่าเวลาสิ้นสุดเมื่อจัดอบรมวันเดียวกัน',
-        );
-      }
-    }
-
-    const [accreditationUpload, attendanceUpload] =
-      await this.uploadCourseAttachments(
-        accreditationFile,
-        attendanceFile,
-        uploadedFiles,
-        createCourseDto.title,
-        startDate,
-      );
-
     try {
-      const created = await this.prismaService.course.create({
-        data: {
-          title: createCourseDto.title,
-          type: createCourseDto.type,
+      const tag = await this.prismaService.tag.findUnique({
+        where: { id: createCourseDto.tagId },
+      });
+      if (!tag) {
+        throw new BadRequestException('ไม่พบหมวดหมู่หลักสูตรที่ระบุ');
+      }
+
+      const startDate = new Date(createCourseDto.startDate);
+      const endDate = new Date(createCourseDto.endDate);
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new BadRequestException('รูปแบบวันที่ไม่ถูกต้อง');
+      }
+      if (startDate.getTime() > endDate.getTime()) {
+        throw new BadRequestException('วันที่เริ่มต้องไม่มากกว่าวันที่สิ้นสุด');
+      }
+
+      const startTime = this.parseTime(createCourseDto.startTime ?? null);
+      const endTime = this.parseTime(createCourseDto.endTime ?? null);
+      if (startDate.getTime() === endDate.getTime() && startTime && endTime) {
+        if (startTime.getTime() > endTime.getTime()) {
+          throw new BadRequestException(
+            'เวลาเริ่มต้องไม่มากกว่าเวลาสิ้นสุดเมื่อจัดอบรมวันเดียวกัน',
+          );
+        }
+      }
+
+      const [accreditationUpload, attendanceUpload] =
+        await this.uploadCourseAttachments(
+          accreditationFile,
+          attendanceFile,
+          uploadedFiles,
+          createCourseDto.title,
           startDate,
-          endDate,
-          startTime,
-          endTime,
-          duration: createCourseDto.duration,
-          lecturer: createCourseDto.lecturer ?? null,
-          institute: createCourseDto.institute ?? null,
-          expense: createCourseDto.expense,
-          accreditationStatus: createCourseDto.accreditationStatus,
-          accreditationFilePath:
-            accreditationUpload?.filePath ??
-            accreditationUpload?.webViewLink ??
-            createCourseDto.accreditationFilePath ??
-            this.toFallbackFilePath(accreditationFile),
-          attendanceFilePath:
-            attendanceUpload?.filePath ??
-            attendanceUpload?.webViewLink ??
-            createCourseDto.attendanceFilePath ??
-            this.toFallbackFilePath(attendanceFile),
-          tagId: createCourseDto.tagId,
-        },
-        include: {
-          tag: true,
-        },
+        );
+
+      const created = await this.prismaService.$transaction(async (tx) => {
+        const createdCourse = await tx.course.create({
+          data: {
+            title: createCourseDto.title,
+            type: createCourseDto.type,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            duration: createCourseDto.duration,
+            lecturer: createCourseDto.lecturer ?? null,
+            institute: createCourseDto.institute ?? null,
+            expense: createCourseDto.expense,
+            accreditationStatus: createCourseDto.accreditationStatus,
+            accreditationFilePath:
+              accreditationUpload?.filePath ??
+              accreditationUpload?.webViewLink ??
+              createCourseDto.accreditationFilePath ??
+              this.toFallbackFilePath(accreditationFile),
+            attendanceFilePath:
+              attendanceUpload?.filePath ??
+              attendanceUpload?.webViewLink ??
+              createCourseDto.attendanceFilePath ??
+              this.toFallbackFilePath(attendanceFile),
+            tagId: createCourseDto.tagId,
+          },
+          include: {
+            tag: true,
+          },
+        });
+
+        await this.auditLogsService.create(
+          {
+            action: AuditAction.Create,
+            model: 'Course',
+            recordId: createdCourse.id,
+            newValues: createdCourse,
+            context: auditLogContext,
+          },
+          tx,
+        );
+
+        return createdCourse;
       });
 
       return formatCourse(created);
     } catch (error) {
       await this.rollbackUploadedFiles(uploadedFiles);
+      await this.auditLogsService.createFailureLog({
+        model: 'Course',
+        newValues: {
+          payload: this.toCourseAuditPayload(createCourseDto),
+          error: this.toAuditErrorPayload(error),
+        },
+        context: auditLogContext,
+      });
       throw error;
     }
   }
 
   async findAll(
     queryDto: CourseQueryDto,
+    auditLogContext?: AuditLogContext,
   ): Promise<CoursePaginationResponseDto> {
     const { page, limit, includeEmployees } = queryDto;
     const where = buildCourseWhereInput(queryDto);
 
-    const [courses, total] = await Promise.all([
-      this.prismaService.course.findMany({
-        where,
-        include: {
-          tag: true,
-          ...(includeEmployees
-            ? {
-                trainingRecords: {
-                  include: {
-                    employee: {
-                      include: {
-                        plant: true,
-                        businessUnit: true,
-                        orgFunction: true,
-                        division: true,
-                        department: true,
+    try {
+      const [courses, total] = await Promise.all([
+        this.prismaService.course.findMany({
+          where,
+          include: {
+            tag: true,
+            ...(includeEmployees
+              ? {
+                  trainingRecords: {
+                    include: {
+                      employee: {
+                        include: {
+                          plant: true,
+                          businessUnit: true,
+                          orgFunction: true,
+                          division: true,
+                          department: true,
+                        },
                       },
                     },
                   },
-                },
-              }
-            : {}),
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { startDate: 'desc' },
-      }),
-      this.prismaService.course.count({ where }),
-    ]);
+                }
+              : {}),
+          },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { startDate: 'desc' },
+        }),
+        this.prismaService.course.count({ where }),
+      ]);
 
-    return {
-      data: courses.map((course) => formatCourse(course)),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      const response = {
+        data: courses.map((course) => formatCourse(course)),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+
+      if (auditLogContext) {
+        await this.auditLogsService.create({
+          action: AuditAction.Export,
+          model: 'Course',
+          newValues: {
+            filters: queryDto,
+            exportedCount: response.data.length,
+            includeEmployees,
+          },
+          context: auditLogContext,
+        });
+      }
+
+      return response;
+    } catch (error) {
+      if (auditLogContext) {
+        await this.auditLogsService.createFailureLog({
+          model: 'Course',
+          newValues: {
+            filters: queryDto,
+            includeEmployees,
+            error: this.toAuditErrorPayload(error),
+          },
+          context: auditLogContext,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async findByCourseIdsForReport(
@@ -326,6 +388,8 @@ export class CoursesService {
         this.logger.warn(`Rollback attachment failed: ${file.fileId}`);
       }
     }
+
+    uploadedFiles.length = 0;
   }
 
   // สร้างค่า path สำรองจากชื่อไฟล์ เมื่อยังไม่มี path ที่คืนกลับจาก provider
@@ -335,5 +399,68 @@ export class CoursesService {
     }
 
     return `uploads/courses/${file.originalname}`;
+  }
+
+  // สร้าง payload สำหรับ audit log โดยตัดข้อมูลไฟล์ binary ออกและเก็บเฉพาะ metadata ที่จำเป็น
+  private toCourseAuditPayload(
+    createCourseDto: CreateCourseDto,
+  ): Record<string, unknown> {
+    const attachmentPayload = createCourseDto as CreateCourseDto &
+      Record<string, unknown>;
+    const accreditationFile = this.toUploadableAttachment(
+      attachmentPayload.accreditationFile,
+    );
+    const attendanceFile = this.toUploadableAttachment(
+      attachmentPayload.attendanceFile,
+    );
+
+    return {
+      title: createCourseDto.title,
+      type: createCourseDto.type,
+      startDate: createCourseDto.startDate,
+      endDate: createCourseDto.endDate,
+      startTime: createCourseDto.startTime ?? null,
+      endTime: createCourseDto.endTime ?? null,
+      duration: createCourseDto.duration,
+      lecturer: createCourseDto.lecturer ?? null,
+      institute: createCourseDto.institute ?? null,
+      expense: createCourseDto.expense,
+      accreditationStatus: createCourseDto.accreditationStatus,
+      accreditationFilePath: createCourseDto.accreditationFilePath ?? null,
+      attendanceFilePath: createCourseDto.attendanceFilePath ?? null,
+      tagId: createCourseDto.tagId,
+      accreditationFile: this.toAttachmentAuditPayload(accreditationFile),
+      attendanceFile: this.toAttachmentAuditPayload(attendanceFile),
+    };
+  }
+
+  // แปลง metadata ของไฟล์แนบให้พร้อมบันทึกใน audit log โดยไม่เก็บ binary จริง
+  private toAttachmentAuditPayload(
+    file: UploadableAttachment | null,
+  ): Record<string, unknown> | null {
+    if (!file) {
+      return null;
+    }
+
+    return {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+    };
+  }
+
+  // สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+  private toAuditErrorPayload(error: unknown): Record<string, string> {
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+      };
+    }
+
+    return {
+      name: 'UnknownError',
+      message: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ',
+    };
   }
 }

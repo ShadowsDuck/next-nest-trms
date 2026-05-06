@@ -4,6 +4,7 @@ import {
   type UserSession,
 } from '@thallesp/nestjs-better-auth';
 import { createSummaryReportSchema } from '@workspace/schemas';
+import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
 import {
   Body,
@@ -13,6 +14,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -23,6 +25,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { createAuditLogContext } from '../audit-logs/audit-log-context';
 import { CreateSummaryReportResponseDto } from './dto/create-summary-report-response.dto';
 import { CreateSummaryReportDto } from './dto/create-summary-report.dto';
 import { SummaryReportResponseDto } from './dto/summary-report-response.dto';
@@ -48,11 +51,13 @@ export class SummaryReportsController {
   })
   async create(
     @Session() session: UserSession,
+    @Req() request: Request,
     @Body() createSummaryReportDto: CreateSummaryReportDto,
   ): Promise<CreateSummaryReportResponseDto> {
     return this.summaryReportsService.createForUser(
       session.user.id,
       createSummaryReportSchema.parse(createSummaryReportDto),
+      createAuditLogContext(session, request),
     );
   }
 
@@ -110,11 +115,13 @@ export class SummaryReportsController {
   })
   async deleteById(
     @Session() session: UserSession,
+    @Req() request: Request,
     @Param('id') reportId: string,
   ): Promise<void> {
     await this.summaryReportsService.deleteByIdForUser(
       session.user.id,
       reportId,
+      createAuditLogContext(session, request),
     );
   }
 }

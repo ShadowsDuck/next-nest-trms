@@ -1,3 +1,4 @@
+import { AuditAction } from '@workspace/database';
 import {
   type EmployeeImportRawRow,
   type EmployeeImportResponse,
@@ -7,6 +8,8 @@ import {
 } from '@workspace/schemas';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeeImportDryRunRequestDto } from './dto/employee-import-dry-run-request.dto';
 import { EmployeeImportDryRunResponseDto } from './dto/employee-import-dry-run-response.dto';
@@ -19,6 +22,7 @@ export class EmployeeImportService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly employeesService: EmployeesService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   private static readonly importFieldLabelMap: Record<string, string> = {
@@ -62,52 +66,90 @@ export class EmployeeImportService {
   // นำเข้าข้อมูลจริงจาก CSV แบบ partial success (แถวที่ผิดจะถูกข้าม)
   async importEmployees(
     body: EmployeeImportRequestDto,
+    auditLogContext: AuditLogContext,
   ): Promise<EmployeeImportResponseDto> {
-    const validationResults = await this.validateImportRows(body.rows);
-    const rowResults: EmployeeImportResponse['rows'] = [];
-    let imported = 0;
+    try {
+      const validationResults = await this.validateImportRows(body.rows);
+      const rowResults: EmployeeImportResponse['rows'] = [];
+      let imported = 0;
 
-    for (const row of validationResults) {
-      if (row.errors.length > 0 || !row.parsedRow) {
-        rowResults.push({
-          sourceRow: row.sourceRow,
-          employeeNo: row.employeeNo,
-          ok: false,
-          error: row.errors.join(', '),
-        });
-        continue;
+      for (const row of validationResults) {
+        if (row.errors.length > 0 || !row.parsedRow) {
+          rowResults.push({
+            sourceRow: row.sourceRow,
+            employeeNo: row.employeeNo,
+            ok: false,
+            error: row.errors.join(', '),
+          });
+          continue;
+        }
+
+        try {
+          const payload = await this.toCreateEmployeePayload(row.parsedRow);
+          await this.employeesService.create(payload, auditLogContext);
+          imported += 1;
+          rowResults.push({
+            sourceRow: row.sourceRow,
+            employeeNo: row.employeeNo,
+            ok: true,
+          });
+        } catch (error) {
+          rowResults.push({
+            sourceRow: row.sourceRow,
+            employeeNo: row.employeeNo,
+            ok: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'นำเข้าข้อมูลพนักงานไม่สำเร็จ',
+          });
+        }
       }
 
-      try {
-        const payload = await this.toCreateEmployeePayload(row.parsedRow);
-        await this.employeesService.create(payload);
-        imported += 1;
-        rowResults.push({
-          sourceRow: row.sourceRow,
-          employeeNo: row.employeeNo,
-          ok: true,
-        });
-      } catch (error) {
-        rowResults.push({
-          sourceRow: row.sourceRow,
-          employeeNo: row.employeeNo,
-          ok: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'นำเข้าข้อมูลพนักงานไม่สำเร็จ',
+      const response = {
+        summary: {
+          total: validationResults.length,
+          imported,
+          failed: validationResults.length - imported,
+        },
+        rows: rowResults,
+      };
+
+      await this.auditLogsService.create({
+        action: AuditAction.Import,
+        model: 'EmployeeImport',
+        newValues: {
+          request: this.toImportAuditPayload(body),
+          result: response,
+        },
+        context: auditLogContext,
+      });
+
+      if (response.summary.failed > 0) {
+        await this.auditLogsService.create({
+          action: AuditAction.Failed,
+          model: 'EmployeeImport',
+          newValues: {
+            request: this.toImportAuditPayload(body),
+            summary: response.summary,
+            failedRows: response.rows.filter((row) => !row.ok),
+          },
+          context: auditLogContext,
         });
       }
+
+      return response;
+    } catch (error) {
+      await this.auditLogsService.createFailureLog({
+        model: 'EmployeeImport',
+        newValues: {
+          request: this.toImportAuditPayload(body),
+          error: this.toAuditErrorPayload(error),
+        },
+        context: auditLogContext,
+      });
+      throw error;
     }
-
-    return {
-      summary: {
-        total: validationResults.length,
-        imported,
-        failed: validationResults.length - imported,
-      },
-      rows: rowResults,
-    };
   }
 
   // ขั้นตอนตรวจนำเข้า: schema -> ซ้ำในไฟล์ -> ซ้ำในฐาน -> ความสัมพันธ์หน่วยงาน
@@ -560,6 +602,31 @@ export class EmployeeImportService {
     return [
       'ไม่พบความสัมพันธ์ของหน่วยงานจากชื่อที่ระบุ (Plant -> BU -> สายงาน -> ฝ่าย -> ส่วนงาน)',
     ];
+  }
+
+  // สร้าง payload สำหรับ audit log ของการนำเข้า โดยเก็บเฉพาะข้อมูลที่อ่านย้อนหลังได้จริง
+  private toImportAuditPayload(
+    body: EmployeeImportRequestDto,
+  ): Record<string, unknown> {
+    return {
+      totalRows: body.rows.length,
+      rows: body.rows,
+    };
+  }
+
+  // สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+  private toAuditErrorPayload(error: unknown): Record<string, string> {
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+      };
+    }
+
+    return {
+      name: 'UnknownError',
+      message: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ',
+    };
   }
 }
 

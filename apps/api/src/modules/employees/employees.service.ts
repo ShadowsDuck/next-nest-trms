@@ -1,9 +1,12 @@
+import { AuditAction } from '@workspace/database';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
 } from '@nestjs/common';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
@@ -13,119 +16,182 @@ import { formatEmployee } from './lib/employees.mapper';
 
 @Injectable()
 export class EmployeesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   // สร้างพนักงานใหม่ 1 รายการ พร้อมตรวจข้อมูลซ้ำและความถูกต้องของ chain หน่วยงาน
   async create(
     createEmployeeDto: CreateEmployeeDto,
+    auditLogContext: AuditLogContext,
   ): Promise<EmployeeResponseDto> {
-    const existingEmployeeNo = await this.prismaService.employee.findUnique({
-      where: {
-        employeeNo: createEmployeeDto.employeeNo,
-      },
-    });
-    if (existingEmployeeNo) {
-      throw new ConflictException('รหัสพนักงานนี้มีอยู่แล้ว');
-    }
-
-    if (createEmployeeDto.idCardNo) {
-      const existingIdCardNo = await this.prismaService.employee.findUnique({
+    try {
+      const existingEmployeeNo = await this.prismaService.employee.findUnique({
         where: {
-          idCardNo: createEmployeeDto.idCardNo,
+          employeeNo: createEmployeeDto.employeeNo,
         },
       });
-      if (existingIdCardNo) {
-        throw new ConflictException('รหัสประจำตัวประชาชนนี้มีอยู่แล้ว');
+      if (existingEmployeeNo) {
+        throw new ConflictException('รหัสพนักงานนี้มีอยู่แล้ว');
       }
-    }
 
-    const hireDate = createEmployeeDto.hireDate
-      ? new Date(createEmployeeDto.hireDate)
-      : null;
+      if (createEmployeeDto.idCardNo) {
+        const existingIdCardNo = await this.prismaService.employee.findUnique({
+          where: {
+            idCardNo: createEmployeeDto.idCardNo,
+          },
+        });
+        if (existingIdCardNo) {
+          throw new ConflictException('รหัสประจำตัวประชาชนนี้มีอยู่แล้ว');
+        }
+      }
 
-    if (hireDate && isNaN(hireDate.getTime())) {
-      throw new BadRequestException('รูปแบบวันที่จ้างงานไม่ถูกต้อง');
-    }
-    if (hireDate && hireDate > new Date()) {
-      throw new BadRequestException('วันที่จ้างงานต้องไม่เกินวันปัจจุบัน');
-    }
+      const hireDate = createEmployeeDto.hireDate
+        ? new Date(createEmployeeDto.hireDate)
+        : null;
 
-    await this.validateOrganizationChain(createEmployeeDto);
+      if (hireDate && isNaN(hireDate.getTime())) {
+        throw new BadRequestException('รูปแบบวันที่จ้างงานไม่ถูกต้อง');
+      }
+      if (hireDate && hireDate > new Date()) {
+        throw new BadRequestException('วันที่จ้างงานต้องไม่เกินวันปัจจุบัน');
+      }
 
-    const employee = await this.prismaService.employee.create({
-      data: {
-        ...createEmployeeDto,
-        hireDate,
-      },
-      include: {
-        plant: true,
-        businessUnit: true,
-        orgFunction: true,
-        division: true,
-        department: true,
-        trainingRecords: {
+      await this.validateOrganizationChain(createEmployeeDto);
+
+      const employee = await this.prismaService.$transaction(async (tx) => {
+        const createdEmployee = await tx.employee.create({
+          data: {
+            ...createEmployeeDto,
+            hireDate,
+          },
           include: {
-            course: {
+            plant: true,
+            businessUnit: true,
+            orgFunction: true,
+            division: true,
+            department: true,
+            trainingRecords: {
               include: {
-                tag: true,
+                course: {
+                  include: {
+                    tag: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-    });
+        });
 
-    return formatEmployee(employee);
+        await this.auditLogsService.create(
+          {
+            action: AuditAction.Create,
+            model: 'Employee',
+            recordId: createdEmployee.id,
+            newValues: createdEmployee,
+            context: auditLogContext,
+          },
+          tx,
+        );
+
+        return createdEmployee;
+      });
+
+      return formatEmployee(employee);
+    } catch (error) {
+      await this.auditLogsService.createFailureLog({
+        model: 'Employee',
+        newValues: {
+          payload: this.toEmployeeAuditPayload(createEmployeeDto),
+          error: this.toAuditErrorPayload(error),
+        },
+        context: auditLogContext,
+      });
+      throw error;
+    }
   }
 
   // ดึงข้อมูลพนักงานแบบแบ่งหน้า รองรับตัวกรอง และเลือกว่าจะ include training records หรือไม่
   async findAll(
     queryDto: EmployeeQueryDto,
+    auditLogContext?: AuditLogContext,
   ): Promise<EmployeePaginationResponseDto> {
     const { page, limit, includeTrainingRecords } = queryDto;
     const where = buildEmployeeWhereInput(queryDto);
 
-    const [employees, total] = await Promise.all([
-      this.prismaService.employee.findMany({
-        include: {
-          plant: true,
-          businessUnit: true,
-          orgFunction: true,
-          division: true,
-          department: true,
-          ...(includeTrainingRecords
-            ? {
-                trainingRecords: {
-                  include: {
-                    course: {
-                      include: {
-                        tag: true,
+    try {
+      const [employees, total] = await Promise.all([
+        this.prismaService.employee.findMany({
+          include: {
+            plant: true,
+            businessUnit: true,
+            orgFunction: true,
+            division: true,
+            department: true,
+            ...(includeTrainingRecords
+              ? {
+                  trainingRecords: {
+                    include: {
+                      course: {
+                        include: {
+                          tag: true,
+                        },
                       },
                     },
                   },
-                },
-              }
-            : {}),
-        },
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: {
-          employeeNo: 'asc',
-        },
-      }),
-      this.prismaService.employee.count({ where }),
-    ]);
+                }
+              : {}),
+          },
+          where,
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: {
+            employeeNo: 'asc',
+          },
+        }),
+        this.prismaService.employee.count({ where }),
+      ]);
 
-    return {
-      data: employees.map((employee) => formatEmployee(employee)),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      const response = {
+        data: employees.map((employee) => formatEmployee(employee)),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+
+      if (auditLogContext) {
+        await this.auditLogsService.create({
+          action: AuditAction.Export,
+          model: 'Employee',
+          newValues: {
+            filters: queryDto,
+            exportedCount: response.data.length,
+            includeTrainingRecords,
+          },
+          context: auditLogContext,
+        });
+      }
+
+      return response;
+    } catch (error) {
+      if (auditLogContext) {
+        await this.auditLogsService.createFailureLog({
+          model: 'Employee',
+          newValues: {
+            filters: queryDto,
+            includeTrainingRecords,
+            error: this.toAuditErrorPayload(error),
+          },
+          context: auditLogContext,
+        });
+      }
+
+      throw error;
+    }
   }
 
   // ดึงพนักงานตาม employeeNo หลายรายการ โดยคงลำดับผลลัพธ์ตาม input เดิม
@@ -245,5 +311,41 @@ export class EmployeesService {
     }
 
     return errors;
+  }
+
+  // สร้าง payload สำหรับ audit log ของการสร้างพนักงานจากข้อมูล request
+  private toEmployeeAuditPayload(
+    createEmployeeDto: CreateEmployeeDto,
+  ): Record<string, unknown> {
+    return {
+      employeeNo: createEmployeeDto.employeeNo,
+      prefix: createEmployeeDto.prefix,
+      firstName: createEmployeeDto.firstName,
+      lastName: createEmployeeDto.lastName,
+      idCardNo: createEmployeeDto.idCardNo ?? null,
+      hireDate: createEmployeeDto.hireDate ?? null,
+      jobLevel: createEmployeeDto.jobLevel,
+      status: createEmployeeDto.status,
+      plantId: createEmployeeDto.plantId,
+      buId: createEmployeeDto.buId,
+      functionId: createEmployeeDto.functionId,
+      divisionId: createEmployeeDto.divisionId,
+      departmentId: createEmployeeDto.departmentId,
+    };
+  }
+
+  // สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+  private toAuditErrorPayload(error: unknown): Record<string, string> {
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+      };
+    }
+
+    return {
+      name: 'UnknownError',
+      message: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ',
+    };
   }
 }

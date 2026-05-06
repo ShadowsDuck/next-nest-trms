@@ -1,4 +1,4 @@
-import { SummaryReportSource } from '@workspace/database';
+import { AuditAction, SummaryReportSource } from '@workspace/database';
 import {
   CreateSummaryReport,
   CreateSummaryReportResponse,
@@ -13,6 +13,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { CoursesService } from '../courses/courses.service';
 import { EmployeesService } from '../employees/employees.service';
 
@@ -20,6 +22,7 @@ import { EmployeesService } from '../employees/employees.service';
 export class SummaryReportsService {
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly auditLogsService: AuditLogsService,
     private readonly employeesService: EmployeesService,
     private readonly coursesService: CoursesService,
   ) {}
@@ -27,35 +30,79 @@ export class SummaryReportsService {
   async createForUser(
     userId: string,
     dto: CreateSummaryReport,
+    auditLogContext: AuditLogContext,
   ): Promise<CreateSummaryReportResponse> {
-    if (dto.selectedIds.length === 0) {
-      throw new BadRequestException('กรุณาเลือกรายการก่อนสร้างรายงาน');
-    }
+    try {
+      if (dto.selectedIds.length === 0) {
+        throw new BadRequestException('กรุณาเลือกรายการก่อนสร้างรายงาน');
+      }
 
-    const reportSnapshot = await this.buildSnapshot(dto);
-
-    const report = await this.prismaService.$transaction(async (tx) => {
-      await tx.summaryReport.deleteMany({
+      const previousReport = await this.prismaService.summaryReport.findUnique({
         where: { userId },
       });
+      const reportSnapshot = await this.buildSnapshot(dto);
 
-      return tx.summaryReport.create({
-        data: {
-          userId,
-          source:
-            dto.source === 'employees'
-              ? SummaryReportSource.employees
-              : SummaryReportSource.courses,
+      const report = await this.prismaService.$transaction(async (tx) => {
+        if (previousReport) {
+          await tx.summaryReport.delete({
+            where: { id: previousReport.id },
+          });
+
+          await this.auditLogsService.create(
+            {
+              action: AuditAction.Delete,
+              model: 'SummaryReport',
+              recordId: previousReport.id,
+              oldValues: previousReport,
+              context: auditLogContext,
+            },
+            tx,
+          );
+        }
+
+        const createdReport = await tx.summaryReport.create({
+          data: {
+            userId,
+            source:
+              dto.source === 'employees'
+                ? SummaryReportSource.employees
+                : SummaryReportSource.courses,
+            selectedIds: dto.selectedIds,
+            filtersSnapshot: dto.filtersSnapshot,
+            reportSnapshot,
+          },
+        });
+
+        await this.auditLogsService.create(
+          {
+            action: AuditAction.Create,
+            model: 'SummaryReport',
+            recordId: createdReport.id,
+            newValues: createdReport,
+            context: auditLogContext,
+          },
+          tx,
+        );
+
+        return createdReport;
+      });
+
+      return {
+        reportId: report.id,
+      };
+    } catch (error) {
+      await this.auditLogsService.createFailureLog({
+        model: 'SummaryReport',
+        newValues: {
+          source: dto.source,
           selectedIds: dto.selectedIds,
           filtersSnapshot: dto.filtersSnapshot,
-          reportSnapshot,
+          error: this.toAuditErrorPayload(error),
         },
+        context: auditLogContext,
       });
-    });
-
-    return {
-      reportId: report.id,
-    };
+      throw error;
+    }
   }
 
   async findLatestForUser(userId: string): Promise<SummaryReportResponse> {
@@ -85,18 +132,47 @@ export class SummaryReportsService {
     return this.toResponse(report);
   }
 
-  async deleteByIdForUser(userId: string, reportId: string): Promise<void> {
-    const report = await this.prismaService.summaryReport.findUnique({
-      where: { id: reportId },
-    });
+  async deleteByIdForUser(
+    userId: string,
+    reportId: string,
+    auditLogContext: AuditLogContext,
+  ): Promise<void> {
+    try {
+      const report = await this.prismaService.summaryReport.findUnique({
+        where: { id: reportId },
+      });
 
-    if (!report || report.userId !== userId) {
-      throw new NotFoundException('ไม่พบรายงานที่ต้องการ');
+      if (!report || report.userId !== userId) {
+        throw new NotFoundException('ไม่พบรายงานที่ต้องการ');
+      }
+
+      await this.prismaService.$transaction(async (tx) => {
+        await tx.summaryReport.delete({
+          where: { id: reportId },
+        });
+
+        await this.auditLogsService.create(
+          {
+            action: AuditAction.Delete,
+            model: 'SummaryReport',
+            recordId: report.id,
+            oldValues: report,
+            context: auditLogContext,
+          },
+          tx,
+        );
+      });
+    } catch (error) {
+      await this.auditLogsService.createFailureLog({
+        model: 'SummaryReport',
+        recordId: reportId,
+        newValues: {
+          error: this.toAuditErrorPayload(error),
+        },
+        context: auditLogContext,
+      });
+      throw error;
     }
-
-    await this.prismaService.summaryReport.delete({
-      where: { id: reportId },
-    });
   }
 
   private async buildSnapshot(
@@ -164,5 +240,20 @@ export class SummaryReportsService {
       createdAt: toIsoDateTime(report.createdAt),
       updatedAt: toIsoDateTime(report.updatedAt),
     });
+  }
+
+  // สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+  private toAuditErrorPayload(error: unknown): Record<string, string> {
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+      };
+    }
+
+    return {
+      name: 'UnknownError',
+      message: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ',
+    };
   }
 }
