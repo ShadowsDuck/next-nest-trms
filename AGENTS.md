@@ -53,24 +53,6 @@ For multi-step tasks, state a brief plan with a verify step for each:
 
 ---
 
-## Skill Routing
-
-Use the minimum set of skills needed. When in doubt, check the skill before starting.
-
-| Workstream         | Skill                                                                            |
-| ------------------ | -------------------------------------------------------------------------------- |
-| Backend / NestJS   | `nestjs-best-practices`                                                          |
-| Validation / Zod   | `zod-validation-expert`                                                          |
-| Frontend structure | `nextjs-16-structure`                                                            |
-| React patterns     | `build-web-apps:react-best-practices`                                            |
-| shadcn/ui          | `build-web-apps:shadcn`                                                          |
-| UI implementation  | `build-web-apps:frontend-skill`                                                  |
-| UX/UI review       | `build-web-apps:web-design-guidelines`                                           |
-| Database / Prisma  | `prisma-expert`                                                                  |
-| GitHub / PR / CI   | `github:github`, `github:gh-address-comments`, `github:gh-fix-ci`, `github:yeet` |
-
----
-
 ## Project Conventions
 
 - Comments in new code: **Thai only**.
