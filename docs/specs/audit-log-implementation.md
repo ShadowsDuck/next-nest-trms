@@ -4,13 +4,12 @@ To provide a robust audit trail for critical system actions, ensuring accountabi
 
 ## What
 
-Implement a manual audit logging system in the NestJS API. This includes a dedicated `AuditLogModule` and integration into `Courses` and `Employees` modules to record Create, Update, Delete, and Import actions.
+Implement a manual audit logging system across the API and CSV export flow. This includes a dedicated `AuditLogModule`, audit logging for `Courses`, `Employees`, `Employee Import`, and `Summary Reports`, plus explicit export intent handling from the web app so CSV exports are logged without affecting normal list views.
 
 ## Constraints
 
 - Must: Use Thai comments in new code.
 - Must: Use manual logging in services (surgical approach).
-- Must: Capture `oldValues` and `newValues` for updates.
 - Must: Capture `userId`, `ipAddress`, and `userAgent`.
 - Must: Handle all `AuditAction` enum values (Create, Update, Delete, Import, Export, Failed).
 - Must Not: Use global Prisma middleware/extensions (to maintain explicit context).
@@ -31,7 +30,8 @@ Implement a manual audit logging system in the NestJS API. This includes a dedic
 
 T1 — Verify DB Schema and Generate Client · File: `packages/database/package.json` · Verify: `pnpm --filter @workspace/database db:generate`
 T2 — Create AuditLog Module and Service · File: `apps/api/src/modules/audit-logs/audit-logs.service.ts` · Verify: Service handles all `AuditAction` types.
-T3 — Integrate AuditLog into Courses Module · File: `apps/api/src/modules/courses/courses.service.ts` · Verify: Logs created for Create, Update, Delete, and Failed (on error).
-T4 — Integrate AuditLog into Employees Module · File: `apps/api/src/modules/employees/employees.service.ts` · Verify: Logs created for Create, Update, Delete, and Failed.
+T3 — Integrate AuditLog into Courses Module · File: `apps/api/src/modules/courses/courses.service.ts` · Verify: Logs created for Create, Export, and Failed (on error).
+T4 — Integrate AuditLog into Employees Module · File: `apps/api/src/modules/employees/employees.service.ts` · Verify: Logs created for Create, Export, and Failed.
 T5 — Integrate AuditLog into Employee Import · File: `apps/api/src/modules/employees/employee-import.service.ts` · Verify: Logs created for Import and Failed actions.
-T6 — Update Controllers to pass Context · Files: `apps/api/src/modules/courses/courses.controller.ts`, `apps/api/src/modules/employees/employees.controller.ts` · Verify: Context (userId, ipAddress, userAgent) is consistently passed to all mutating service methods.
+T6 — Integrate AuditLog into Summary Reports · Files: `apps/api/src/modules/summary-reports/summary-reports.controller.ts`, `apps/api/src/modules/summary-reports/summary-reports.service.ts` · Verify: Logs created for Create and Delete actions.
+T7 — Update Controllers and Export Entrypoints to pass Context · Files: `apps/api/src/modules/courses/courses.controller.ts`, `apps/api/src/modules/employees/employees.controller.ts`, `apps/web/domains/courses/data/get-all-courses-export.ts`, `apps/web/domains/employees/data/get-all-employees-export.ts` · Verify: Context (userId, ipAddress, userAgent) and export intent are consistently passed for CSV export requests.
