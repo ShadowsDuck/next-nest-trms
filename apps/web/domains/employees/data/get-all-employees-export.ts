@@ -18,6 +18,9 @@ export async function getAllEmployeesExport(
 
   const data = await api.get<EmployeePaginationResponse>(endpoint, {
     cache: 'no-store',
+    headers: {
+      'x-audit-intent': 'export',
+    },
   })
 
   return employeePaginationResponseSchema.parse(data)

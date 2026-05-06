@@ -18,6 +18,9 @@ export async function getAllCoursesExport(
 
   const data = await api.get<CoursePaginationResponse>(endpoint, {
     cache: 'no-store',
+    headers: {
+      'x-audit-intent': 'export',
+    },
   })
 
   return coursePaginationResponseSchema.parse(data)

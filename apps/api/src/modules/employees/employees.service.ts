@@ -115,51 +115,83 @@ export class EmployeesService {
   // ดึงข้อมูลพนักงานแบบแบ่งหน้า รองรับตัวกรอง และเลือกว่าจะ include training records หรือไม่
   async findAll(
     queryDto: EmployeeQueryDto,
+    auditLogContext?: AuditLogContext,
   ): Promise<EmployeePaginationResponseDto> {
     const { page, limit, includeTrainingRecords } = queryDto;
     const where = buildEmployeeWhereInput(queryDto);
 
-    const [employees, total] = await Promise.all([
-      this.prismaService.employee.findMany({
-        include: {
-          plant: true,
-          businessUnit: true,
-          orgFunction: true,
-          division: true,
-          department: true,
-          ...(includeTrainingRecords
-            ? {
-                trainingRecords: {
-                  include: {
-                    course: {
-                      include: {
-                        tag: true,
+    try {
+      const [employees, total] = await Promise.all([
+        this.prismaService.employee.findMany({
+          include: {
+            plant: true,
+            businessUnit: true,
+            orgFunction: true,
+            division: true,
+            department: true,
+            ...(includeTrainingRecords
+              ? {
+                  trainingRecords: {
+                    include: {
+                      course: {
+                        include: {
+                          tag: true,
+                        },
                       },
                     },
                   },
-                },
-              }
-            : {}),
-        },
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: {
-          employeeNo: 'asc',
-        },
-      }),
-      this.prismaService.employee.count({ where }),
-    ]);
+                }
+              : {}),
+          },
+          where,
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: {
+            employeeNo: 'asc',
+          },
+        }),
+        this.prismaService.employee.count({ where }),
+      ]);
 
-    return {
-      data: employees.map((employee) => formatEmployee(employee)),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      const response = {
+        data: employees.map((employee) => formatEmployee(employee)),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+
+      if (auditLogContext) {
+        await this.auditLogsService.create({
+          action: AuditAction.Export,
+          model: 'Employee',
+          newValues: {
+            filters: queryDto,
+            exportedCount: response.data.length,
+            includeTrainingRecords,
+          },
+          context: auditLogContext,
+        });
+      }
+
+      return response;
+    } catch (error) {
+      if (auditLogContext) {
+        await this.auditLogsService.createFailureLog({
+          model: 'Employee',
+          newValues: {
+            filters: queryDto,
+            includeTrainingRecords,
+            error: this.toAuditErrorPayload(error),
+          },
+          context: auditLogContext,
+        });
+      }
+
+      throw error;
+    }
   }
 
   // ดึงพนักงานตาม employeeNo หลายรายการ โดยคงลำดับผลลัพธ์ตาม input เดิม

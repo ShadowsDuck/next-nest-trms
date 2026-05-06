@@ -134,9 +134,16 @@ export class CoursesController {
     description: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์',
   })
   async findAll(
+    @Session() session: UserSession,
+    @Req() request: Request,
     @Query() queryDto: CourseQueryDto,
   ): Promise<CoursePaginationResponseDto> {
-    return await this.coursesService.findAll(queryDto);
+    return await this.coursesService.findAll(
+      queryDto,
+      this.isExportRequest(request)
+        ? createAuditLogContext(session, request)
+        : undefined,
+    );
   }
 
   // ดึงไฟล์แนบจากฟิลด์ที่อัปโหลดมาและคืนค่าไฟล์เดียวต่อหนึ่งฟิลด์
@@ -166,5 +173,15 @@ export class CoursesController {
     if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
       throw new BadRequestException(`${fieldLabel}ต้องมีขนาดไม่เกิน 10 MB`);
     }
+  }
+
+  // ตรวจว่า request ปัจจุบันถูกเรียกมาเพื่อส่งออกข้อมูลหรือไม่
+  private isExportRequest(request: Request): boolean {
+    const auditIntent = request.headers['x-audit-intent'];
+    const normalizedAuditIntent = Array.isArray(auditIntent)
+      ? auditIntent[0]
+      : auditIntent;
+
+    return normalizedAuditIntent === 'export';
   }
 }

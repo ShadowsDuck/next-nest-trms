@@ -152,49 +152,81 @@ export class CoursesService {
 
   async findAll(
     queryDto: CourseQueryDto,
+    auditLogContext?: AuditLogContext,
   ): Promise<CoursePaginationResponseDto> {
     const { page, limit, includeEmployees } = queryDto;
     const where = buildCourseWhereInput(queryDto);
 
-    const [courses, total] = await Promise.all([
-      this.prismaService.course.findMany({
-        where,
-        include: {
-          tag: true,
-          ...(includeEmployees
-            ? {
-                trainingRecords: {
-                  include: {
-                    employee: {
-                      include: {
-                        plant: true,
-                        businessUnit: true,
-                        orgFunction: true,
-                        division: true,
-                        department: true,
+    try {
+      const [courses, total] = await Promise.all([
+        this.prismaService.course.findMany({
+          where,
+          include: {
+            tag: true,
+            ...(includeEmployees
+              ? {
+                  trainingRecords: {
+                    include: {
+                      employee: {
+                        include: {
+                          plant: true,
+                          businessUnit: true,
+                          orgFunction: true,
+                          division: true,
+                          department: true,
+                        },
                       },
                     },
                   },
-                },
-              }
-            : {}),
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { startDate: 'desc' },
-      }),
-      this.prismaService.course.count({ where }),
-    ]);
+                }
+              : {}),
+          },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { startDate: 'desc' },
+        }),
+        this.prismaService.course.count({ where }),
+      ]);
 
-    return {
-      data: courses.map((course) => formatCourse(course)),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      const response = {
+        data: courses.map((course) => formatCourse(course)),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+
+      if (auditLogContext) {
+        await this.auditLogsService.create({
+          action: AuditAction.Export,
+          model: 'Course',
+          newValues: {
+            filters: queryDto,
+            exportedCount: response.data.length,
+            includeEmployees,
+          },
+          context: auditLogContext,
+        });
+      }
+
+      return response;
+    } catch (error) {
+      if (auditLogContext) {
+        await this.auditLogsService.createFailureLog({
+          model: 'Course',
+          newValues: {
+            filters: queryDto,
+            includeEmployees,
+            error: this.toAuditErrorPayload(error),
+          },
+          context: auditLogContext,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async findByCourseIdsForReport(
