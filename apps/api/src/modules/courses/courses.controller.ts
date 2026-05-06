@@ -1,4 +1,9 @@
-import { UserHasPermission } from '@thallesp/nestjs-better-auth';
+import {
+  Session,
+  UserHasPermission,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
+import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
 import {
   BadRequestException,
@@ -7,6 +12,7 @@ import {
   Get,
   Post,
   Query,
+  Req,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,6 +27,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { createAuditLogContext } from '../audit-logs/audit-log-context';
 import { CoursesService } from './courses.service';
 import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
@@ -86,6 +93,8 @@ export class CoursesController {
   })
   // รับคำขอสร้างหลักสูตรใหม่จากผู้ใช้และส่งต่อให้ service บันทึกข้อมูล
   async create(
+    @Session() session: UserSession,
+    @Req() request: Request,
     @Body() createCourseDto: CreateCourseDto,
     @UploadedFiles() files: CourseUploadFiles,
   ): Promise<CourseResponseDto> {
@@ -101,11 +110,14 @@ export class CoursesController {
     this.validateAttachmentFile(accreditationFile, 'ไฟล์รับรอง');
     this.validateAttachmentFile(attendanceFile, 'ไฟล์รายชื่อผู้เข้าอบรม');
 
-    return await this.coursesService.create({
-      ...createCourseDto,
-      accreditationFile,
-      attendanceFile,
-    } as CreateCourseDto);
+    return await this.coursesService.create(
+      {
+        ...createCourseDto,
+        accreditationFile,
+        attendanceFile,
+      } as CreateCourseDto,
+      createAuditLogContext(session, request),
+    );
   }
 
   @UserHasPermission({ permission: { course: ['read'] } })

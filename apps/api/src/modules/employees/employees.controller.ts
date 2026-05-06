@@ -1,6 +1,11 @@
-import { UserHasPermission } from '@thallesp/nestjs-better-auth';
+import {
+  Session,
+  UserHasPermission,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
+import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -10,6 +15,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { createAuditLogContext } from '../audit-logs/audit-log-context';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeeImportDryRunRequestDto } from './dto/employee-import-dry-run-request.dto';
 import { EmployeeImportDryRunResponseDto } from './dto/employee-import-dry-run-response.dto';
@@ -53,9 +59,14 @@ export class EmployeesController {
     description: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์',
   })
   async create(
+    @Session() session: UserSession,
+    @Req() request: Request,
     @Body() createEmployeeDto: CreateEmployeeDto,
   ): Promise<EmployeeResponseDto> {
-    return await this.employeesService.create(createEmployeeDto);
+    return await this.employeesService.create(
+      createEmployeeDto,
+      createAuditLogContext(session, request),
+    );
   }
 
   @UserHasPermission({ permission: { employee: ['import'] } })
@@ -81,9 +92,14 @@ export class EmployeesController {
     description: 'นำเข้าข้อมูลพนักงานเสร็จสิ้น',
   })
   async importEmployees(
+    @Session() session: UserSession,
+    @Req() request: Request,
     @Body() body: EmployeeImportRequestDto,
   ): Promise<EmployeeImportResponseDto> {
-    return await this.employeeImportService.importEmployees(body);
+    return await this.employeeImportService.importEmployees(
+      body,
+      createAuditLogContext(session, request),
+    );
   }
 
   @UserHasPermission({ permission: { employee: ['read'] } })
