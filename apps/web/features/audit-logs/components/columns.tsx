@@ -18,6 +18,7 @@ type BadgeVariant =
   | 'success'
   | 'inactive'
   | 'primary'
+  | 'export'
 
 const actionBadgeMap: Record<
   AuditLog['action'],
@@ -30,7 +31,7 @@ const actionBadgeMap: Record<
   Update: { label: 'แก้ไข', variant: 'warning' },
   Delete: { label: 'ลบ', variant: 'destructive' },
   Import: { label: 'นำเข้า', variant: 'primary' },
-  Export: { label: 'ส่งออก', variant: 'secondary' },
+  Export: { label: 'ส่งออก', variant: 'export' },
   Failed: { label: 'ล้มเหลว', variant: 'destructive' },
 }
 
@@ -49,6 +50,29 @@ export function getAuditActionDisplay(action: AuditLog['action']) {
 
 export const auditLogTableColumns: DataTableColumnDef<AuditLog>[] = [
   {
+    id: 'user',
+    accessorFn: (row) => row.user.name,
+    size: 280,
+    minSize: 260,
+    header: () => (
+      <DataTableColumnHeader className="pl-3">
+        <DataTableColumnTitle />
+      </DataTableColumnHeader>
+    ),
+    meta: {
+      label: 'ผู้ใช้งาน',
+    },
+    cell: ({ row }) => (
+      <div className="flex flex-col py-1 pl-3">
+        <span className="font-medium">{row.original.user.name}</span>
+        <span className="text-muted-foreground text-sm">
+          {row.original.user.email}
+        </span>
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
     accessorKey: 'timestamp',
     size: 220,
     minSize: 220,
@@ -58,38 +82,15 @@ export const auditLogTableColumns: DataTableColumnDef<AuditLog>[] = [
       </DataTableColumnHeader>
     ),
     meta: {
-      label: 'วันเวลา',
+      label: 'วันที่และเวลา',
     },
     cell: ({ row }) => (
-      <div className="py-2 text-sm tabular-nums">
+      <div className="py-1 text-sm tabular-nums">
         {formatThaiDateTime(row.original.timestamp)}
       </div>
     ),
     enableSorting: false,
     enableColumnFilter: true,
-  },
-  {
-    id: 'user',
-    accessorFn: (row) => row.user.name,
-    size: 280,
-    minSize: 260,
-    header: () => (
-      <DataTableColumnHeader>
-        <DataTableColumnTitle />
-      </DataTableColumnHeader>
-    ),
-    meta: {
-      label: 'ผู้ใช้งาน',
-    },
-    cell: ({ row }) => (
-      <div className="flex flex-col py-2">
-        <span className="font-medium">{row.original.user.name}</span>
-        <span className="text-muted-foreground text-sm">
-          {row.original.user.email}
-        </span>
-      </div>
-    ),
-    enableSorting: false,
   },
   {
     accessorKey: 'action',
@@ -124,7 +125,7 @@ export const auditLogTableColumns: DataTableColumnDef<AuditLog>[] = [
       label: 'โมเดล',
     },
     cell: ({ row }) => (
-      <div className="py-2 font-medium">
+      <div className="py-1 font-medium">
         {getAuditLogModelTitle(row.original.model)}
       </div>
     ),
@@ -144,7 +145,7 @@ export const auditLogTableColumns: DataTableColumnDef<AuditLog>[] = [
       label: 'รหัสรายการ',
     },
     cell: ({ row }) => (
-      <span className="text-muted-foreground py-2 font-mono text-sm">
+      <span className="text-muted-foreground py-1 font-mono text-sm">
         {row.original.recordId ?? '-'}
       </span>
     ),

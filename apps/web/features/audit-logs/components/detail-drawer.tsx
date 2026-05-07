@@ -95,23 +95,31 @@ function ActivityOverviewSection({ auditLog }: { auditLog: AuditLog }) {
 
   return (
     <section className="rounded-2xl border bg-white p-5">
-      <h2 className="mb-4 text-base font-semibold">Activity Overview</h2>
+      <h2 className="mb-4 text-base font-semibold">ภาพรวมกิจกรรม</h2>
       <div className="grid gap-4 md:grid-cols-2">
         <OverviewItem
           label="ผู้ใช้งาน"
           value={
             <div className="flex flex-col">
-              <span className="font-medium">{auditLog.user.name}</span>
-              <span className="text-muted-foreground text-sm">
-                {auditLog.user.email}
-              </span>
+              {auditLog.user.name && (
+                <span className="font-medium">{auditLog.user.name}</span>
+              )}
+              {auditLog.user.email && (
+                <span className="text-muted-foreground text-sm">
+                  {auditLog.user.email}
+                </span>
+              )}
             </div>
           }
         />
         <OverviewItem
           label="กิจกรรม"
           value={
-            <Badge variant={actionDisplay.variant}>{actionDisplay.label}</Badge>
+            <div className="flex w-full justify-start text-left md:-mt-4">
+              <Badge variant={actionDisplay.variant}>
+                {actionDisplay.label}
+              </Badge>
+            </div>
           }
         />
         <OverviewItem
@@ -150,7 +158,7 @@ function ChangesSection({ auditLog }: { auditLog: AuditLog }) {
 
   return (
     <section className="rounded-2xl border bg-white p-5">
-      <h2 className="mb-4 text-base font-semibold">Changes (JSON Diff)</h2>
+      <h2 className="mb-4 text-base font-semibold">รายละเอียดการเปลี่ยนแปลง</h2>
 
       {hasNoChangeData(auditLog) ? (
         <div className="text-muted-foreground rounded-xl border border-dashed px-4 py-6 text-sm">
@@ -195,13 +203,13 @@ export function AuditLogDetailDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto border-l bg-[#f7f8fa] p-0 sm:max-w-3xl"
+        className="w-full overflow-y-auto border-l bg-[#f7f8fa] p-0 sm:max-w-3xl!"
       >
         {auditLog ? (
           <>
             <SheetHeader className="border-b bg-white px-6 py-5">
               <SheetTitle className="text-xl font-semibold">
-                รายละเอียดประวัติการใช้งาน
+                รายละเอียดประวัติกิจกรรม
               </SheetTitle>
               <SheetDescription>
                 ตรวจสอบกิจกรรมและข้อมูลการเปลี่ยนแปลงของรายการนี้

@@ -17,9 +17,10 @@ import {
 } from '@workspace/ui/components/popover'
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
+import { format } from 'date-fns'
+import { th } from 'date-fns/locale'
 import { ChevronDown, XCircle } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
-import { formatDate } from '../lib/format'
 
 type DateSelection = Date[] | DateRange
 
@@ -97,12 +98,17 @@ export function TableDateFilter<TData>({
         return
       }
 
-      if (multiple && !('getTime' in date)) {
-        const from = date.from?.getTime()
-        const to = date.to?.getTime()
+      if (multiple) {
+        // ในโหมด range, date จะเป็น object { from, to }
+        const range = date as DateRange
+        const from = range.from?.getTime()
+        const to = range.to?.getTime()
         column.setFilterValue(from || to ? [from, to] : undefined)
-      } else if (!multiple && 'getTime' in date) {
-        column.setFilterValue(date.getTime())
+      } else {
+        // ในโหมด single, date จะเป็น Date object
+        if (date instanceof Date) {
+          column.setFilterValue(date.getTime())
+        }
       }
     },
     [column, multiple]
@@ -125,13 +131,24 @@ export function TableDateFilter<TData>({
     return selectedDates.length > 0
   }, [multiple, selectedDates])
 
-  const formatDateRange = React.useCallback((range: DateRange) => {
-    if (!range.from && !range.to) return ''
-    if (range.from && range.to) {
-      return `${formatDate(range.from)} - ${formatDate(range.to)}`
+  const formatThaiDate = (value: DateSelection) => {
+    const start = getIsDateRange(value) ? value.from : value[0]
+    const end = getIsDateRange(value) ? value.to : value[value.length - 1]
+
+    if (!start) return 'เลือกวันที่'
+
+    if (!end || start === end) {
+      return format(start, 'd MMM yyyy', { locale: th }).replace(/\d{4}/, (y) =>
+        (Number.parseInt(y) + 543).toString()
+      )
     }
-    return formatDate(range.from ?? range.to)
-  }, [])
+
+    return `${format(start, 'd MMM yyyy', { locale: th }).replace(/\d{4}/, (y) => (Number.parseInt(y) + 543).toString())} - ${format(
+      end,
+      'd MMM yyyy',
+      { locale: th }
+    ).replace(/\d{4}/, (y) => (Number.parseInt(y) + 543).toString())}`
+  }
 
   const label = React.useMemo(() => {
     if (multiple) {
@@ -139,8 +156,8 @@ export function TableDateFilter<TData>({
 
       const hasSelectedDates = selectedDates.from || selectedDates.to
       const dateText = hasSelectedDates
-        ? formatDateRange(selectedDates)
-        : 'Select date range'
+        ? formatThaiDate(selectedDates)
+        : 'เลือกช่วงวันที่'
 
       return (
         <span className="flex items-center gap-2">
@@ -162,8 +179,8 @@ export function TableDateFilter<TData>({
 
     const hasSelectedDate = selectedDates.length > 0
     const dateText = hasSelectedDate
-      ? formatDate(selectedDates[0])
-      : 'Select date'
+      ? formatThaiDate(selectedDates)
+      : 'เลือกวันที่'
 
     return (
       <span className="flex items-center gap-2">
@@ -179,7 +196,7 @@ export function TableDateFilter<TData>({
         )}
       </span>
     )
-  }, [selectedDates, multiple, formatDateRange, title])
+  }, [selectedDates, multiple, title])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -190,7 +207,7 @@ export function TableDateFilter<TData>({
             {hasValue ? (
               <div
                 role="button"
-                aria-label={`Clear ${title} filter`}
+                aria-label={`ล้างตัวกรอง ${title}`}
                 tabIndex={0}
                 onClick={onReset}
                 className="focus-visible:ring-ring ml-1 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
@@ -219,6 +236,16 @@ export function TableDateFilter<TData>({
                 : { from: undefined, to: undefined }
             }
             onSelect={onSelect}
+            locale={th}
+            formatters={{
+              formatCaption: (date, options) => {
+                const month = format(date, 'LLLL', { locale: options?.locale })
+                const year = date.getFullYear() + 543
+                return `${month} ${year}`
+              },
+              formatYearDropdown: (date) =>
+                (date.getFullYear() + 543).toString(),
+            }}
           />
         ) : (
           <Calendar
@@ -228,6 +255,16 @@ export function TableDateFilter<TData>({
               !getIsDateRange(selectedDates) ? selectedDates[0] : undefined
             }
             onSelect={onSelect}
+            locale={th}
+            formatters={{
+              formatCaption: (date, options) => {
+                const month = format(date, 'LLLL', { locale: options?.locale })
+                const year = date.getFullYear() + 543
+                return `${month} ${year}`
+              },
+              formatYearDropdown: (date) =>
+                (date.getFullYear() + 543).toString(),
+            }}
           />
         )}
       </PopoverContent>

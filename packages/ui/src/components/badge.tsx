@@ -26,6 +26,8 @@ const badgeVariants = cva(
         inactive: "bg-inactive text-gray-500 dark:text-gray-400",
         primary:
           "bg-primary/10 text-primary dark:bg-primary/15 [a]:hover:bg-primary/80",
+        export:
+          "bg-[#EEEDFE] text-[#6E66D4] dark:bg-[#3C3489]/20 dark:text-[#CECBF6]",
       },
     },
     defaultVariants: {
