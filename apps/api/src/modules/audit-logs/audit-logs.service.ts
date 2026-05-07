@@ -53,6 +53,21 @@ export class AuditLogsService {
     };
   }
 
+  // ดึงรายการ model ทั้งหมดที่มีอยู่ใน audit logs แบบไม่ผูกกับ filter ปัจจุบัน
+  async findAllModels(): Promise<string[]> {
+    const models = await this.prismaService.auditLog.findMany({
+      select: {
+        model: true,
+      },
+      distinct: ['model'],
+      orderBy: {
+        model: 'asc',
+      },
+    });
+
+    return models.map((item) => item.model);
+  }
+
   // บันทึก audit log สำหรับทุก action โดยรองรับทั้ง client ปกติและ transaction client
   async create(
     input: CreateAuditLogInput,

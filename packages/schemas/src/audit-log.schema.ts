@@ -51,10 +51,13 @@ export const auditLogQuerySchema = z.object({
     .optional(),
 })
 
+export const auditLogModelOptionsSchema = z.array(z.string().min(1))
+
 export type AuditAction = z.infer<typeof auditLogSchema>["action"]
 export type AuditLogUser = z.infer<typeof auditLogUserSchema>
 export type AuditLog = z.infer<typeof auditLogSchema>
 export type AuditLogQuery = z.infer<typeof auditLogQuerySchema>
+export type AuditLogModelOptions = z.infer<typeof auditLogModelOptionsSchema>
 export type AuditLogPaginationResponse = z.infer<
   typeof auditLogPaginationResponseSchema
 >

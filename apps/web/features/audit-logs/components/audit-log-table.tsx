@@ -86,10 +86,7 @@ export default function AuditLogTable() {
         onRowSelectionChange={setRowSelection}
         isLoading={controller.isInitialLoading}
       >
-        <AuditLogTableFilterToolbar
-          params={controller.params}
-          auditLogs={controller.auditLogs}
-        />
+        <AuditLogTableFilterToolbar params={controller.params} />
 
         <div
           className={cn(

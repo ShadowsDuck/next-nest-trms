@@ -5,6 +5,7 @@ import { Badge } from '@workspace/ui/components/badge'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnTitle } from '@/shared/components/niko-table/components/data-table-column-title'
 import type { DataTableColumnDef } from '@/shared/components/niko-table/types'
+import { getAuditLogModelTitle } from '../lib/model-title'
 
 type BadgeVariant =
   | 'default'
@@ -123,7 +124,9 @@ export const auditLogTableColumns: DataTableColumnDef<AuditLog>[] = [
       label: 'โมเดล',
     },
     cell: ({ row }) => (
-      <div className="py-2 font-medium">{row.original.model}</div>
+      <div className="py-2 font-medium">
+        {getAuditLogModelTitle(row.original.model)}
+      </div>
     ),
     enableSorting: false,
     enableColumnFilter: true,

@@ -1,16 +1,21 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import type { AuditAction, AuditLog, AuditLogQuery } from '@workspace/schemas'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AuditAction, AuditLogQuery } from '@workspace/schemas'
 import { Button } from '@workspace/ui/components/button'
 import { RefreshCw } from 'lucide-react'
+import { getAuditLogModelOptions } from '@/domains/audit-logs'
 import { DataTableClearFilter } from '@/shared/components/niko-table/components/data-table-clear-filter'
 import { DataTableDateFilter } from '@/shared/components/niko-table/components/data-table-date-filter'
 import { DataTableFacetedFilter } from '@/shared/components/niko-table/components/data-table-faceted-filter'
 import { DataTableSearchFilter } from '@/shared/components/niko-table/components/data-table-search-filter'
 import { DataTableToolbarSection } from '@/shared/components/niko-table/components/data-table-toolbar-section'
-import { AUDIT_LOGS_QUERY_KEY } from '../options/query-options'
+import {
+  AUDIT_LOG_MODELS_QUERY_KEY,
+  AUDIT_LOGS_QUERY_KEY,
+} from '../options/query-options'
+import { getAuditLogModelTitle } from '../lib/model-title'
 
 const actionOptions: { label: string; value: AuditAction }[] = [
   { label: 'สร้าง', value: 'Create' },
@@ -23,17 +28,14 @@ const actionOptions: { label: string; value: AuditAction }[] = [
 
 interface AuditLogTableFilterToolbarProps {
   params: AuditLogQuery
-  auditLogs: AuditLog[]
 }
 
-// รวม model options จากข้อมูลปัจจุบันและค่าที่ถูกเลือกใน URL เพื่อไม่ให้ตัวเลือกหายระหว่างกรอง
-function buildModelOptions(params: AuditLogQuery, auditLogs: AuditLog[]) {
+// รวม model options จาก API และค่าที่ถูกเลือกใน URL เพื่อไม่ให้ตัวเลือกหายระหว่างรีโหลด
+function buildModelOptions(params: AuditLogQuery, models: string[]) {
   const values = new Set<string>()
 
-  for (const auditLog of auditLogs) {
-    if (auditLog.model) {
-      values.add(auditLog.model)
-    }
+  for (const model of models) {
+    values.add(model)
   }
 
   for (const selectedModel of params.model ?? []) {
@@ -43,7 +45,7 @@ function buildModelOptions(params: AuditLogQuery, auditLogs: AuditLog[]) {
   return Array.from(values)
     .sort((left, right) => left.localeCompare(right))
     .map((value) => ({
-      label: value,
+      label: getAuditLogModelTitle(value),
       value,
     }))
 }
@@ -51,14 +53,19 @@ function buildModelOptions(params: AuditLogQuery, auditLogs: AuditLog[]) {
 // แสดง toolbar ของตาราง audit logs พร้อมตัวกรองที่ล็อกไว้ตาม spec
 export function AuditLogTableFilterToolbar({
   params,
-  auditLogs,
 }: AuditLogTableFilterToolbarProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const queryClient = useQueryClient()
+  const { data: modelValues = [], isLoading: isModelOptionsLoading } = useQuery(
+    {
+      queryKey: AUDIT_LOG_MODELS_QUERY_KEY,
+      queryFn: getAuditLogModelOptions,
+    }
+  )
 
   const modelOptions = useMemo(
-    () => buildModelOptions(params, auditLogs),
-    [params, auditLogs]
+    () => buildModelOptions(params, modelValues),
+    [params, modelValues]
   )
 
   // รีเฟรช query ของ audit logs จาก react-query cache
@@ -73,7 +80,7 @@ export function AuditLogTableFilterToolbar({
       <DataTableToolbarSection className="mb-2 w-full justify-between px-0">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">
-            ประวัติการใช้งานระบบ
+            บันทึกกิจกรรม
           </h1>
           <p className="text-muted-foreground text-sm">
             ติดตามกิจกรรมและการเปลี่ยนแปลงที่เกิดขึ้นภายในระบบ
@@ -98,6 +105,7 @@ export function AuditLogTableFilterToolbar({
           multiple
           showCounts={false}
           limitToFilteredRows={false}
+          isLoading={isModelOptionsLoading}
         />
         <DataTableFacetedFilter
           accessorKey="action"

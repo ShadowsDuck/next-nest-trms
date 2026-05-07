@@ -11,6 +11,7 @@ import {
 } from '@workspace/ui/components/sheet'
 import { cn } from '@workspace/ui/lib/utils'
 import { getAuditActionDisplay } from './columns'
+import { getAuditLogModelTitle } from '../lib/model-title'
 
 interface AuditLogDetailDrawerProps {
   auditLog: AuditLog | null
@@ -113,7 +114,10 @@ function ActivityOverviewSection({ auditLog }: { auditLog: AuditLog }) {
             <Badge variant={actionDisplay.variant}>{actionDisplay.label}</Badge>
           }
         />
-        <OverviewItem label="โมเดล" value={auditLog.model} />
+        <OverviewItem
+          label="โมเดล"
+          value={getAuditLogModelTitle(auditLog.model)}
+        />
         <OverviewItem label="รหัสรายการ" value={auditLog.recordId ?? '-'} />
         <OverviewItem
           label="วันเวลา"
