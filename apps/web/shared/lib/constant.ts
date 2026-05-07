@@ -26,7 +26,7 @@ export const data = {
     },
     {
       title: 'บันทึกกิจกรรม',
-      url: '/admin/activities',
+      url: '/admin/audit-logs',
       icon: IconHistory,
     },
   ],
@@ -55,7 +55,7 @@ export const data = {
     summary: 'รายงานสรุป',
     employees: 'ข้อมูลพนักงาน',
     courses: 'ข้อมูลหลักสูตร',
-    activities: 'บันทึกกิจกรรม',
+    'audit-logs': 'บันทึกกิจกรรม',
     users: 'ผู้ใช้ในระบบ',
     settings: 'ตั้งค่าระบบ',
   } as Record<string, string>,

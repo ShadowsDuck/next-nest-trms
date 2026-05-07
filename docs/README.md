@@ -15,3 +15,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Summary Report Minimal Header and Chart Restore** (`Completed`) — [View Spec](./specs/summary-report-minimal-header-chart-fix.md) — 2026-05-02
 - [x] **Audit Log Implementation** (`Completed`) — [View Spec](./specs/audit-log-implementation.md) — 2026-05-06
 - [x] **Auth Guard Implementation** (`Completed`) — [View Spec](./specs/auth-guard-implementation.md) — 2026-05-04
+- [x] **Audit Logs Page** (`Completed`) — [View Spec](./specs/audit-logs-page.md) — 2026-05-07

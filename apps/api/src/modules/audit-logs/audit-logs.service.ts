@@ -2,6 +2,10 @@ import { AuditAction, Prisma } from '@workspace/database';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable, Logger } from '@nestjs/common';
 import type { CreateAuditLogInput } from './audit-logs.types';
+import { AuditLogPaginationResponseDto } from './dto/audit-log-pagination-response.dto';
+import { AuditLogQueryDto } from './dto/audit-log-query.dto';
+import { buildAuditLogWhereInput } from './lib/audit-log-where.builder';
+import { formatAuditLog } from './lib/audit-logs.mapper';
 
 type AuditLogDbClient = PrismaService | Prisma.TransactionClient;
 
@@ -10,6 +14,59 @@ export class AuditLogsService {
   private readonly logger = new Logger(AuditLogsService.name);
 
   constructor(private readonly prismaService: PrismaService) {}
+
+  // ดึง audit logs แบบแบ่งหน้าโดยรองรับ filter และ search จากหน้า admin
+  async findAll(
+    queryDto: AuditLogQueryDto,
+  ): Promise<AuditLogPaginationResponseDto> {
+    const { page, limit } = queryDto;
+    const where = buildAuditLogWhereInput(queryDto);
+
+    const [auditLogs, total] = await Promise.all([
+      this.prismaService.auditLog.findMany({
+        where,
+        include: {
+          user: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [
+          {
+            timestamp: 'desc',
+          },
+          {
+            id: 'desc',
+          },
+        ],
+      }),
+      this.prismaService.auditLog.count({ where }),
+    ]);
+
+    return {
+      data: auditLogs.map((auditLog) => formatAuditLog(auditLog)),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // ดึงรายการ model ทั้งหมดที่มีอยู่ใน audit logs แบบไม่ผูกกับ filter ปัจจุบัน
+  async findAllModels(): Promise<string[]> {
+    const models = await this.prismaService.auditLog.findMany({
+      select: {
+        model: true,
+      },
+      distinct: ['model'],
+      orderBy: {
+        model: 'asc',
+      },
+    });
+
+    return models.map((item) => item.model);
+  }
 
   // บันทึก audit log สำหรับทุก action โดยรองรับทั้ง client ปกติและ transaction client
   async create(

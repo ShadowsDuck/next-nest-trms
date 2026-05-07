@@ -1,0 +1,43 @@
+'use client'
+
+import { TableCell, TableRow } from '@workspace/ui/components/table'
+import { FileSearch2, SearchX } from 'lucide-react'
+import {
+  DataTableEmptyDescription,
+  DataTableEmptyIcon,
+  DataTableEmptyTitle,
+} from '@/shared/components/niko-table/components/data-table-empty-state'
+import { useDataTable } from '@/shared/components/niko-table/core/data-table-context'
+
+interface AuditLogTableEmptyStateProps {
+  visible: boolean
+  isFiltered: boolean
+}
+
+// แสดงสถานะว่างของตาราง audit logs ตามว่ามีการค้นหาหรือตัวกรองอยู่หรือไม่
+export function AuditLogTableEmptyState({
+  visible,
+  isFiltered,
+}: AuditLogTableEmptyStateProps) {
+  const { columns } = useDataTable()
+
+  if (!visible) return null
+
+  const Icon = isFiltered ? SearchX : FileSearch2
+
+  return (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="p-0 align-middle">
+        <div className="text-muted-foreground flex min-h-[calc(100dvh-25rem)] flex-col items-center justify-center gap-1 text-center">
+          <DataTableEmptyIcon>
+            <Icon className="size-12" />
+          </DataTableEmptyIcon>
+          <DataTableEmptyTitle>ไม่พบข้อมูลประวัติการใช้งาน</DataTableEmptyTitle>
+          <DataTableEmptyDescription>
+            กรุณาลองค้นหาหรือเปลี่ยนตัวกรอง
+          </DataTableEmptyDescription>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+}

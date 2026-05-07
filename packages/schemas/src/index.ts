@@ -1,5 +1,6 @@
 export * from "./employee.schema"
 export * from "./course.schema"
+export * from "./audit-log.schema"
 export * from "./training-record.schema"
 export * from "./organization-unit.schema"
 export * from "./tag.schema"
