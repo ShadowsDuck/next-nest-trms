@@ -257,7 +257,7 @@ export function useAuditLogTableController() {
 
   useEffect(() => {
     if (currentFiltersKey !== filtersFromParamsKey) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setColumnFilters(filtersFromParams)
     }
   }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
