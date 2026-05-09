@@ -12,6 +12,11 @@ import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
 import { getAllEmployees } from '@/domains/employees'
 import { employeeParsers } from '@/domains/employees'
+import {
+  columnFiltersKey,
+  getFilterValues,
+  pickAllowed,
+} from '@/shared/lib/table-filter-utils'
 import { buildEmployeesQueryKey } from '../options/query-options'
 
 type MultiFilterKey =
@@ -38,46 +43,7 @@ const FILTER_ALLOWED = {
   departmentName: [] as const,
 } as const
 
-/**
- * Read values of one table filter from TanStack `columnFilters` state.
- */
-function getFilterValues(filters: ColumnFiltersState, id: string): string[] {
-  const found = filters.find((item) => item.id === id)
-  if (!found) return []
-  const raw = found.value as unknown
-
-  if (Array.isArray(raw)) {
-    return raw.map(String)
-  }
-
-  if (raw && typeof raw === 'object' && 'value' in raw) {
-    const nested = (raw as { value: unknown }).value
-
-    if (Array.isArray(nested)) {
-      return nested.map(String)
-    }
-
-    return nested == null ? [] : [String(nested)]
-  }
-
-  return raw == null ? [] : [String(raw)]
-}
-
-/**
- * Keep only values that belong to an allowed enum list.
- */
-function pickAllowed<T extends string>(
-  values: string[],
-  allowed: readonly T[]
-): T[] {
-  const set = new Set(allowed)
-
-  return values.filter((value): value is T => set.has(value as T))
-}
-
-/**
- * Convert URL params -> table columnFilters state.
- */
+// แปลง URL params ไปเป็น column filters เพื่อคืน state หลัง refresh หน้า
 function buildColumnFiltersFromParams(
   params: MultiFilterParams
 ): ColumnFiltersState {
@@ -85,32 +51,6 @@ function buildColumnFiltersFromParams(
     const values = params[key] ?? []
     return values.length > 0 ? [{ id: key, value: values }] : []
   })
-}
-
-/**
- * Stable key for shallow equality checks between filter arrays.
- */
-function columnFiltersKey(filters: ColumnFiltersState): string {
-  return filters
-    .map((filter) => {
-      const raw = filter.value as unknown
-
-      if (Array.isArray(raw)) {
-        return `${filter.id}:${raw.map(String).join(',')}`
-      }
-
-      if (raw && typeof raw === 'object' && 'value' in raw) {
-        const nested = (raw as { value: unknown }).value
-        if (Array.isArray(nested)) {
-          return `${filter.id}:${nested.map(String).join(',')}`
-        }
-        return `${filter.id}:${nested == null ? '' : String(nested)}`
-      }
-
-      return `${filter.id}:${raw == null ? '' : String(raw)}`
-    })
-    .sort()
-    .join('|')
 }
 
 /**
@@ -270,7 +210,6 @@ export function useEmployeeTableController() {
 
   useEffect(() => {
     if (currentFiltersKey !== filtersFromParamsKey) {
-       
       setColumnFilters(filtersFromParams)
     }
   }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
@@ -333,4 +272,3 @@ export function useEmployeeTableController() {
     handleColumnFiltersChange,
   }
 }
-
