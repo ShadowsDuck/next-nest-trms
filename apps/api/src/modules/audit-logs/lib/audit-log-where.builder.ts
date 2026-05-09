@@ -1,17 +1,8 @@
 import { AuditAction, Prisma } from '@workspace/database';
+import { parseTimestamp } from '../../../lib/date-utils';
 import { AuditLogQueryDto } from '../dto/audit-log-query.dto';
 
 const AUDIT_ACTIONS = Object.values(AuditAction);
-
-// แปลง timestamp จาก query ให้เป็น Date ที่ Prisma ใช้งานได้อย่างปลอดภัย
-function parseAuditLogDate(value: unknown): Date | undefined {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return undefined;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
 
 // หา action enum ที่มีข้อความตรงกับคำค้นเพื่อใช้แทน contains บน enum field
 function getMatchedAuditActions(search: string): AuditAction[] {
@@ -50,8 +41,8 @@ export function buildAuditLogWhereInput(
   }
 
   if (dateRange && dateRange.length > 0) {
-    const from = parseAuditLogDate(dateRange[0]);
-    const to = parseAuditLogDate(dateRange[1] ?? dateRange[0]);
+    const from = parseTimestamp(dateRange[0]);
+    const to = parseTimestamp(dateRange[1] ?? dateRange[0]);
 
     if (from || to) {
       andConditions.push({
@@ -65,7 +56,6 @@ export function buildAuditLogWhereInput(
 
   if (search?.trim()) {
     const matchedActions = getMatchedAuditActions(search);
-
     andConditions.push({
       OR: [
         {
