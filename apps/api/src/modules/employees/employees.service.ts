@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
+import { OrganizationUnitsService } from '../organization-units/organization-units.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
@@ -19,6 +20,7 @@ export class EmployeesService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly organizationUnitsService: OrganizationUnitsService,
   ) {}
 
   // สร้างพนักงานใหม่ 1 รายการ พร้อมตรวจข้อมูลซ้ำและความถูกต้องของ chain หน่วยงาน
@@ -58,7 +60,13 @@ export class EmployeesService {
         throw new BadRequestException('วันที่จ้างงานต้องไม่เกินวันปัจจุบัน');
       }
 
-      await this.validateOrganizationChain(createEmployeeDto);
+      await this.organizationUnitsService.validateEmployeeHierarchy({
+        plantId: createEmployeeDto.plantId,
+        buId: createEmployeeDto.buId,
+        functionId: createEmployeeDto.functionId,
+        divisionId: createEmployeeDto.divisionId,
+        departmentId: createEmployeeDto.departmentId,
+      });
 
       const employee = await this.prismaService.$transaction(async (tx) => {
         const createdEmployee = await tx.employee.create({
@@ -235,82 +243,6 @@ export class EmployeesService {
           (orderMap.get(a.employeeNo) ?? Number.MAX_SAFE_INTEGER) -
           (orderMap.get(b.employeeNo) ?? Number.MAX_SAFE_INTEGER),
       );
-  }
-
-  // ใช้ตรวจความสัมพันธ์ของหน่วยงานจาก id ก่อนบันทึกพนักงาน
-  private async validateOrganizationChain(
-    createEmployeeDto: CreateEmployeeDto,
-  ) {
-    const errors = await this.getOrganizationChainErrors(createEmployeeDto);
-    if (errors.length > 0) {
-      throw new BadRequestException(errors[0]);
-    }
-  }
-
-  // ตรวจความสัมพันธ์ chain หน่วยงานจาก id แล้วคืน error list (ไม่ throw)
-  private async getOrganizationChainErrors(
-    createEmployeeDto: Pick<
-      CreateEmployeeDto,
-      'plantId' | 'buId' | 'functionId' | 'divisionId' | 'departmentId'
-    >,
-  ): Promise<string[]> {
-    const errors: string[] = [];
-    const [plant, businessUnit, orgFunction, division, department] =
-      await Promise.all([
-        this.prismaService.plant.findUnique({
-          where: { id: createEmployeeDto.plantId },
-        }),
-        this.prismaService.businessUnit.findUnique({
-          where: { id: createEmployeeDto.buId },
-        }),
-        this.prismaService.orgFunction.findUnique({
-          where: { id: createEmployeeDto.functionId },
-        }),
-        this.prismaService.division.findUnique({
-          where: { id: createEmployeeDto.divisionId },
-        }),
-        this.prismaService.department.findUnique({
-          where: { id: createEmployeeDto.departmentId },
-        }),
-      ]);
-
-    if (!plant) {
-      errors.push('ไม่พบ Plant ที่ระบุ');
-    }
-    if (!businessUnit) {
-      errors.push('ไม่พบ Business Unit ที่ระบุ');
-    }
-    if (!orgFunction) {
-      errors.push('ไม่พบ Function ที่ระบุ');
-    }
-    if (!division) {
-      errors.push('ไม่พบ Division ที่ระบุ');
-    }
-    if (!department) {
-      errors.push('ไม่พบ Department ที่ระบุ');
-    }
-
-    if (errors.length > 0) {
-      return errors;
-    }
-
-    if (businessUnit.plantId !== createEmployeeDto.plantId) {
-      errors.push('Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน');
-    }
-
-    if (orgFunction.businessUnitId !== createEmployeeDto.buId) {
-      errors.push('Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน');
-    }
-
-    if (division.functionId !== createEmployeeDto.functionId) {
-      errors.push('Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน');
-    }
-
-    if (department.divisionId !== createEmployeeDto.divisionId) {
-      errors.push('Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน');
-    }
-
-    return errors;
   }
 
   // สร้าง payload สำหรับ audit log ของการสร้างพนักงานจากข้อมูล request

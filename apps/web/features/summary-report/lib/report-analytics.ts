@@ -1,4 +1,10 @@
 import type { SummaryReportSnapshot } from '@workspace/schemas'
+import {
+  buildSummaryReportProjection,
+  type SummaryReportCourse,
+  type SummaryReportEnrollment,
+  type SummaryReportParticipant,
+} from './summary-report-projection'
 
 type BreakdownItem = {
   label: string
@@ -37,27 +43,6 @@ type ReportAnalytics = {
   }
   expenseBreakdown: BreakdownItem[]
   topCourseBreakdown: BreakdownItem[]
-}
-
-type ParticipantRecord = {
-  employeeNo: string
-  prefix: string
-  jobLevel: string
-  status: string
-  plantName: string
-  buName: string
-  functionName: string
-  divisionName: string
-  departmentName: string
-  hireDate?: string | null
-}
-
-type CourseRecord = {
-  id: string
-  title: string
-  type: string
-  expense: number
-  category: string
 }
 
 function normalizeCourseTypeLabel(type: string) {
@@ -99,19 +84,6 @@ function formatGeneratedAt(isoDate: string) {
     dateStyle: 'medium',
     timeStyle: 'short',
   })
-}
-
-function normalizeExpense(value: number | string | null | undefined) {
-  if (typeof value === 'number') {
-    return value
-  }
-
-  if (value == null) {
-    return 0
-  }
-
-  const parsed = Number.parseFloat(String(value))
-  return Number.isNaN(parsed) ? 0 : parsed
 }
 
 function deriveGenderFromPrefix(prefix: string) {
@@ -161,8 +133,8 @@ function buildExpenseBreakdown({
   courses,
   enrollments,
 }: {
-  courses: CourseRecord[]
-  enrollments: Array<CourseRecord & { participantKey: string }>
+  courses: SummaryReportCourse[]
+  enrollments: SummaryReportEnrollment[]
 }): BreakdownItem[] {
   const expenseByType = new Map<string, number>()
   const countByType = new Map<string, number>()
@@ -225,7 +197,7 @@ function buildCourseTypeBreakdown({
   uniqueCourses,
   totalCourses,
 }: {
-  uniqueCourses: CourseRecord[]
+  uniqueCourses: SummaryReportCourse[]
   totalCourses: number
 }) {
   return sortByPreferredLabels(
@@ -240,89 +212,11 @@ function buildCourseTypeBreakdown({
 export function buildSummaryReportAnalytics(
   context: SummaryReportSnapshot
 ): ReportAnalytics {
-  const participantMap = new Map<string, ParticipantRecord>()
-  const enrollmentCourses: Array<CourseRecord & { participantKey: string }> = []
-  const uniqueCourseMap = new Map<string, CourseRecord>()
-
-  if (context.source === 'employees') {
-    for (const employee of context.employees) {
-      participantMap.set(employee.employeeNo, {
-        employeeNo: employee.employeeNo,
-        prefix: employee.prefix,
-        jobLevel: employee.jobLevel,
-        status: employee.status,
-        plantName: employee.plantName,
-        buName: employee.buName,
-        functionName: employee.functionName,
-        divisionName: employee.divisionName,
-        departmentName: employee.departmentName,
-        hireDate: employee.hireDate,
-      })
-
-      for (const trainingRecord of employee.trainingRecords ?? []) {
-        if (!trainingRecord.course) {
-          continue
-        }
-
-        const course = {
-          id: trainingRecord.course.id,
-          title: trainingRecord.course.title,
-          type: trainingRecord.course.type,
-          expense: normalizeExpense(trainingRecord.course.expense),
-          category: trainingRecord.course.tag?.name ?? 'ไม่ระบุ',
-        }
-
-        enrollmentCourses.push({
-          ...course,
-          participantKey: employee.employeeNo,
-        })
-
-        if (!uniqueCourseMap.has(course.id)) {
-          uniqueCourseMap.set(course.id, course)
-        }
-      }
-    }
-  } else {
-    for (const course of context.courses) {
-      const normalizedCourse = {
-        id: course.id,
-        title: course.title,
-        type: course.type,
-        expense: normalizeExpense(course.expense),
-        category: course.tag?.name ?? 'ไม่ระบุ',
-      }
-
-      uniqueCourseMap.set(course.id, normalizedCourse)
-
-      for (const participant of course.participants ?? []) {
-        if (!participantMap.has(participant.employeeNo)) {
-          participantMap.set(participant.employeeNo, {
-            employeeNo: participant.employeeNo,
-            prefix: participant.prefix,
-            jobLevel: participant.jobLevel,
-            status: participant.status,
-            plantName: participant.plantName,
-            buName: participant.buName,
-            functionName: participant.functionName,
-            divisionName: participant.divisionName,
-            departmentName: participant.departmentName,
-            hireDate: participant.hireDate,
-          })
-        }
-
-        enrollmentCourses.push({
-          ...normalizedCourse,
-          participantKey: participant.employeeNo,
-        })
-      }
-    }
-  }
-
-  const participants = [...participantMap.values()]
-  const uniqueCourses = [...uniqueCourseMap.values()]
+  const { participants, uniqueCourses, enrollments } =
+    buildSummaryReportProjection(context)
   const totalParticipants = participants.length
   const totalCourses = uniqueCourses.length
-  const totalEnrollments = enrollmentCourses.length
+  const totalEnrollments = enrollments.length
   const totalExpense = uniqueCourses.reduce(
     (sum, course) => sum + course.expense,
     0
@@ -416,10 +310,10 @@ export function buildSummaryReportAnalytics(
     },
     expenseBreakdown: buildExpenseBreakdown({
       courses: uniqueCourses,
-      enrollments: enrollmentCourses,
+      enrollments,
     }),
     topCourseBreakdown: buildTopCourseCategoryBreakdown(
-      enrollmentCourses.map((item) => ({
+      enrollments.map((item) => ({
         category: item.category,
       }))
     ),
@@ -427,49 +321,12 @@ export function buildSummaryReportAnalytics(
 }
 
 export function buildPeopleProfileRows(context: SummaryReportSnapshot) {
-  const participantMap = new Map<string, ParticipantRecord>()
-
-  if (context.source === 'employees') {
-    for (const employee of context.employees) {
-      participantMap.set(employee.employeeNo, {
-        employeeNo: employee.employeeNo,
-        prefix: employee.prefix,
-        jobLevel: employee.jobLevel,
-        status: employee.status,
-        plantName: employee.plantName,
-        buName: employee.buName,
-        functionName: employee.functionName,
-        divisionName: employee.divisionName,
-        departmentName: employee.departmentName,
-        hireDate: employee.hireDate,
-      })
-    }
-  } else {
-    for (const course of context.courses) {
-      for (const participant of course.participants ?? []) {
-        if (!participantMap.has(participant.employeeNo)) {
-          participantMap.set(participant.employeeNo, {
-            employeeNo: participant.employeeNo,
-            prefix: participant.prefix,
-            jobLevel: participant.jobLevel,
-            status: participant.status,
-            plantName: participant.plantName,
-            buName: participant.buName,
-            functionName: participant.functionName,
-            divisionName: participant.divisionName,
-            departmentName: participant.departmentName,
-            hireDate: participant.hireDate,
-          })
-        }
-      }
-    }
-  }
+  const { participants } = buildSummaryReportProjection(context)
 
   return buildBreakdown(
-    [...participantMap.values()].map((item) =>
+    participants.map((item: SummaryReportParticipant) =>
       deriveTenureBucket(item.hireDate)
     ),
-    participantMap.size
+    participants.length
   )
 }
-
