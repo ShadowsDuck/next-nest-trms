@@ -5,5 +5,6 @@ import { OrganizationUnitsService } from './organization-units.service';
 @Module({
   controllers: [OrganizationUnitsController],
   providers: [OrganizationUnitsService],
+  exports: [OrganizationUnitsService],
 })
 export class OrganizationUnitsModule {}

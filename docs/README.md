@@ -18,4 +18,5 @@ This directory contains the product and technical specifications for the feature
 - [x] **Audit Logs Page** (`Completed`) — [View Spec](./specs/audit-logs-page.md) — 2026-05-07
 - [x] **Refactor Code Duplication Utilities** (`Completed`) — [View Spec](./specs/refactor-dupes-utilities.md) — 2026-05-09
 - [x] **Table State Seam Refactor** (`Completed`) — [View Spec](./specs/table-state-seam-refactor.md) — 2026-05-09
+- [x] **Organization Hierarchy Seam Refactor** (`Completed`) — [View Spec](./specs/organization-hierarchy-seam-refactor.md) — 2026-05-09
 - [x] **Summary Report Seam Refactor** (`Completed`) — [View Spec](./specs/summary-report-seam-refactor.md) — 2026-05-09
