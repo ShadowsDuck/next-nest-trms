@@ -8,6 +8,7 @@ import {
 import { toIsoDateTime } from 'src/lib/date-utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -33,10 +34,22 @@ import {
   UpdateOrgFunctionDto,
   UpdatePlantDto,
 } from './dto/organization-unit-resources.dto';
+import { EmployeeOrganizationHierarchyInput } from './organization-hierarchy.types';
 
 @Injectable()
 export class OrganizationUnitsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  // ตรวจสอบว่า chain หน่วยงานของพนักงานสอดคล้องกันครบทุกระดับก่อนบันทึกข้อมูล
+  async validateEmployeeHierarchy(
+    hierarchy: EmployeeOrganizationHierarchyInput,
+  ): Promise<void> {
+    const errors = await this.getEmployeeHierarchyErrors(hierarchy);
+
+    if (errors.length > 0) {
+      throw new BadRequestException(errors[0]);
+    }
+  }
 
   async findPlants(): Promise<PlantResponseDto[]> {
     const plants = await this.prismaService.plant.findMany({
@@ -304,6 +317,69 @@ export class OrganizationUnitsService {
       this.rethrowDuplicateNameError(error);
       throw error;
     }
+  }
+
+  // ตรวจสอบ chain หน่วยงานของพนักงานและคืนรายการข้อความผิดพลาดโดยไม่ throw
+  private async getEmployeeHierarchyErrors(
+    hierarchy: EmployeeOrganizationHierarchyInput,
+  ): Promise<string[]> {
+    const errors: string[] = [];
+    const [plant, businessUnit, orgFunction, division, department] =
+      await Promise.all([
+        this.prismaService.plant.findUnique({
+          where: { id: hierarchy.plantId },
+        }),
+        this.prismaService.businessUnit.findUnique({
+          where: { id: hierarchy.buId },
+        }),
+        this.prismaService.orgFunction.findUnique({
+          where: { id: hierarchy.functionId },
+        }),
+        this.prismaService.division.findUnique({
+          where: { id: hierarchy.divisionId },
+        }),
+        this.prismaService.department.findUnique({
+          where: { id: hierarchy.departmentId },
+        }),
+      ]);
+
+    if (!plant) {
+      errors.push('ไม่พบ Plant ที่ระบุ');
+    }
+    if (!businessUnit) {
+      errors.push('ไม่พบ Business Unit ที่ระบุ');
+    }
+    if (!orgFunction) {
+      errors.push('ไม่พบ Function ที่ระบุ');
+    }
+    if (!division) {
+      errors.push('ไม่พบ Division ที่ระบุ');
+    }
+    if (!department) {
+      errors.push('ไม่พบ Department ที่ระบุ');
+    }
+
+    if (errors.length > 0) {
+      return errors;
+    }
+
+    if (businessUnit.plantId !== hierarchy.plantId) {
+      errors.push('Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน');
+    }
+
+    if (orgFunction.businessUnitId !== hierarchy.buId) {
+      errors.push('Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน');
+    }
+
+    if (division.functionId !== hierarchy.functionId) {
+      errors.push('Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน');
+    }
+
+    if (department.divisionId !== hierarchy.divisionId) {
+      errors.push('Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน');
+    }
+
+    return errors;
   }
 
   private async ensurePlantExists(id: string) {

@@ -5,13 +5,10 @@ import type { Control, UseFormSetValue } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import {
+  createEmptyOrganizationHierarchyOptions,
+  loadOrganizationHierarchyOptions,
+  OrganizationHierarchyLoadError,
   type OrganizationOption,
-  getBusinessUnits,
-  getDepartments,
-  getDivisions,
-  getFunctions,
-  getPlants,
-  sortOrgUnitsByName,
 } from '@/domains/org-units'
 import type { CreateEmployeeForm } from '../schemas/form-schema'
 
@@ -35,19 +32,11 @@ type OrganizationUnitOptionsResult = {
 
 export function useOrganizationUnitOptions({
   control,
-  setValue,
+  setValue: _setValue,
 }: UseOrganizationUnitOptionsParams): OrganizationUnitOptionsResult {
-  const [plantOptions, setPlantOptions] = useState<OrganizationOption[]>([])
-  const [buOptions, setBuOptions] = useState<OrganizationOption[]>([])
-  const [functionOptions, setFunctionOptions] = useState<OrganizationOption[]>(
-    []
+  const [options, setOptions] = useState(() =>
+    createEmptyOrganizationHierarchyOptions()
   )
-  const [divisionOptions, setDivisionOptions] = useState<OrganizationOption[]>(
-    []
-  )
-  const [departmentOptions, setDepartmentOptions] = useState<
-    OrganizationOption[]
-  >([])
   const [loadingCount, setLoadingCount] = useState(0)
 
   const selectedPlantId = useWatch({ control, name: 'plantId' })
@@ -58,189 +47,61 @@ export function useOrganizationUnitOptions({
   useEffect(() => {
     let isActive = true
 
-    const loadPlants = async () => {
+    // โหลดตัวเลือกหน่วยงานทั้งหมดตาม selection ปัจจุบันผ่าน seam ของ domain
+    const loadOptions = async () => {
       setLoadingCount((current) => current + 1)
 
       try {
-        const plants = await getPlants()
+        const nextOptions = await loadOrganizationHierarchyOptions({
+          plantId: selectedPlantId || undefined,
+          buId: selectedBuId || undefined,
+          functionId: selectedFunctionId || undefined,
+          divisionId: selectedDivisionId || undefined,
+        })
 
         if (isActive) {
-          setPlantOptions(sortOrgUnitsByName(plants))
+          setOptions(nextOptions)
         }
-      } catch {
+      } catch (error) {
         if (isActive) {
-          toast.error('โหลดรายการ Plant ไม่สำเร็จ')
+          setOptions(
+            error instanceof OrganizationHierarchyLoadError
+              ? error.options
+              : createEmptyOrganizationHierarchyOptions()
+          )
+
+          if (error instanceof OrganizationHierarchyLoadError) {
+            const messageByLevel = {
+              plants: 'โหลดรายการ Plant ไม่สำเร็จ',
+              businessUnits: 'โหลดรายการ Business Unit ไม่สำเร็จ',
+              functions: 'โหลดรายการ Function ไม่สำเร็จ',
+              divisions: 'โหลดรายการ Division ไม่สำเร็จ',
+              departments: 'โหลดรายการ Department ไม่สำเร็จ',
+            } as const
+
+            toast.error(messageByLevel[error.level])
+          } else {
+            toast.error('โหลดข้อมูลหน่วยงานไม่สำเร็จ')
+          }
         }
       } finally {
         setLoadingCount((current) => Math.max(0, current - 1))
       }
     }
 
-    void loadPlants()
+    void loadOptions()
 
     return () => {
       isActive = false
     }
-  }, [])
-
-  useEffect(() => {
-    if (!selectedPlantId) {
-      setBuOptions([])
-      setValue('buId', '')
-      setFunctionOptions([])
-      setValue('functionId', '')
-      setDivisionOptions([])
-      setValue('divisionId', '')
-      setDepartmentOptions([])
-      setValue('departmentId', '')
-      return
-    }
-
-    let isActive = true
-
-    const loadBusinessUnits = async () => {
-      setLoadingCount((current) => current + 1)
-
-      try {
-        const businessUnits = await getBusinessUnits(selectedPlantId)
-
-        if (isActive) {
-          setBuOptions(sortOrgUnitsByName(businessUnits))
-        }
-      } catch {
-        if (isActive) {
-          setBuOptions([])
-          toast.error('โหลดรายการ Business Unit ไม่สำเร็จ')
-        }
-      } finally {
-        setLoadingCount((current) => Math.max(0, current - 1))
-      }
-    }
-
-    void loadBusinessUnits()
-
-    return () => {
-      isActive = false
-    }
-  }, [selectedPlantId, setValue])
-
-  useEffect(() => {
-    if (!selectedBuId) {
-      setFunctionOptions([])
-      setValue('functionId', '')
-      setDivisionOptions([])
-      setValue('divisionId', '')
-      setDepartmentOptions([])
-      setValue('departmentId', '')
-      return
-    }
-
-    let isActive = true
-
-    const loadFunctions = async () => {
-      setLoadingCount((current) => current + 1)
-
-      try {
-        const functions = await getFunctions(selectedBuId)
-
-        if (isActive) {
-          setFunctionOptions(sortOrgUnitsByName(functions))
-        }
-      } catch {
-        if (isActive) {
-          setFunctionOptions([])
-          toast.error('โหลดรายการ Function ไม่สำเร็จ')
-        }
-      } finally {
-        setLoadingCount((current) => Math.max(0, current - 1))
-      }
-    }
-
-    void loadFunctions()
-
-    return () => {
-      isActive = false
-    }
-  }, [selectedBuId, setValue])
-
-  useEffect(() => {
-    if (!selectedFunctionId) {
-      setDivisionOptions([])
-      setValue('divisionId', '')
-      setDepartmentOptions([])
-      setValue('departmentId', '')
-      return
-    }
-
-    let isActive = true
-
-    const loadDivisions = async () => {
-      setLoadingCount((current) => current + 1)
-
-      try {
-        const divisions = await getDivisions(selectedFunctionId)
-
-        if (isActive) {
-          setDivisionOptions(sortOrgUnitsByName(divisions))
-        }
-      } catch {
-        if (isActive) {
-          setDivisionOptions([])
-          toast.error('โหลดรายการ Division ไม่สำเร็จ')
-        }
-      } finally {
-        setLoadingCount((current) => Math.max(0, current - 1))
-      }
-    }
-
-    void loadDivisions()
-
-    return () => {
-      isActive = false
-    }
-  }, [selectedFunctionId, setValue])
-
-  useEffect(() => {
-    if (!selectedDivisionId) {
-      setDepartmentOptions([])
-      setValue('departmentId', '')
-      return
-    }
-
-    let isActive = true
-
-    const loadDepartments = async () => {
-      setLoadingCount((current) => current + 1)
-
-      try {
-        const departments = await getDepartments(selectedDivisionId)
-
-        if (isActive) {
-          setDepartmentOptions(sortOrgUnitsByName(departments))
-        }
-      } catch {
-        if (isActive) {
-          setDepartmentOptions([])
-          toast.error('โหลดรายการ Department ไม่สำเร็จ')
-        }
-      } finally {
-        setLoadingCount((current) => Math.max(0, current - 1))
-      }
-    }
-
-    void loadDepartments()
-
-    return () => {
-      isActive = false
-    }
-  }, [selectedDivisionId, setValue])
+  }, [selectedPlantId, selectedBuId, selectedFunctionId, selectedDivisionId])
 
   return {
-    plantOptions,
-    buOptions,
-    functionOptions,
-    divisionOptions,
-    departmentOptions,
+    plantOptions: options.plantOptions,
+    buOptions: options.buOptions,
+    functionOptions: options.functionOptions,
+    divisionOptions: options.divisionOptions,
+    departmentOptions: options.departmentOptions,
     isOrgLoading: loadingCount > 0,
     selectedPlantId,
     selectedBuId,
@@ -248,4 +109,3 @@ export function useOrganizationUnitOptions({
     selectedDivisionId,
   }
 }
-
