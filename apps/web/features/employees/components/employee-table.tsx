@@ -5,22 +5,18 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import type { RowSelectionState, VisibilityState } from '@tanstack/react-table'
 import type { EmployeeQuery, EmployeeResponse } from '@workspace/schemas'
-import { Button } from '@workspace/ui/components/button'
-import { cn } from '@workspace/ui/lib/utils'
-import { BarChart3, Loader2, Upload } from 'lucide-react'
+import { BarChart3, Upload } from 'lucide-react'
 import { employeeParsers } from '@/domains/employees'
 import { createEmployeeSummaryReport } from '@/domains/summary-reports/actions'
-import { DataTablePagination } from '@/shared/components/niko-table/components/data-table-pagination'
-import { DataTableSelectionBar } from '@/shared/components/niko-table/components/data-table-selection-bar'
-import { DataTable } from '@/shared/components/niko-table/core/data-table'
-import { useDataTable } from '@/shared/components/niko-table/core/data-table-context'
-import { DataTableRoot } from '@/shared/components/niko-table/core/data-table-root'
 import {
-  DataTableBody,
-  DataTableHeader,
-  DataTableSkeleton,
-} from '@/shared/components/niko-table/core/data-table-structure'
+  ListPageSelectionActions,
+  ListPageTableShell,
+} from '@/shared/components/list-page-action-shell'
 import { useLockPageScroll } from '@/shared/hooks/use-lock-page-scroll'
+import {
+  buildListPageExportTimestamp,
+  countSelectedRows,
+} from '@/shared/lib/list-page-action-shell'
 import { useEmployeeTableController } from '../hooks/use-employee-table-controller'
 import { exportEmployeesCSV } from '../lib/export-employees-csv'
 import { exportEmployeesWithCoursesCSV } from '../lib/export-employees-with-courses-csv'
@@ -28,6 +24,7 @@ import { employeeTableColumns } from './columns'
 import { EmployeeTableEmptyState } from './empty-state'
 import { EmployeeTableFilterToolbar } from './filter-toolbar'
 
+// จัดการ action ของรายการพนักงานที่ถูกเลือกโดยคง handler เฉพาะของ feature ไว้ที่ฝั่งพนักงาน
 function EmployeeSelectionActions({
   selectedCount,
   onClear,
@@ -40,47 +37,44 @@ function EmployeeSelectionActions({
   params: EmployeeQuery
 }) {
   const router = useRouter()
-  const { table } = useDataTable<EmployeeResponse>()
   const [isExportingEmployees, setIsExportingEmployees] = useState(false)
   const [isExportingCourses, setIsExportingCourses] = useState(false)
   const [isPreparingReport, setIsPreparingReport] = useState(false)
 
-  function getSelectedEmployeeNos() {
-    return Object.entries(table.getState().rowSelection)
-      .filter(([, selected]) => Boolean(selected))
-      .map(([rowId]) => rowId)
-  }
-
-  async function handleExportSelectedEmployees() {
+  // ส่งออกข้อมูลของรายการพนักงานที่ผู้ใช้เลือกจาก selection bar
+  async function handleExportSelectedEmployees(selectedEmployeeNos: string[]) {
     try {
       setIsExportingEmployees(true)
       await exportEmployeesCSV({
         params,
         filename,
-        selectedEmployeeNos: getSelectedEmployeeNos(),
+        selectedEmployeeNos,
       })
     } finally {
       setIsExportingEmployees(false)
     }
   }
 
-  async function handleExportSelectedEmployeesWithCourses() {
+  // ส่งออกข้อมูลพนักงานที่เลือกพร้อมข้อมูลหลักสูตรของแต่ละคน
+  async function handleExportSelectedEmployeesWithCourses(
+    selectedEmployeeNos: string[]
+  ) {
     try {
       setIsExportingCourses(true)
       await exportEmployeesWithCoursesCSV({
         params,
         filename: `${filename}-พร้อมหลักสูตร`,
-        selectedEmployeeNos: getSelectedEmployeeNos(),
+        selectedEmployeeNos,
       })
     } finally {
       setIsExportingCourses(false)
     }
   }
 
-  async function handleGoToSummaryReport() {
+  // สร้างรายงานสรุปจากรายการพนักงานที่เลือกแล้วพาไปยังหน้ารายงาน
+  async function handleGoToSummaryReport(selectedEmployeeNos: string[]) {
     try {
       setIsPreparingReport(true)
-      const selectedEmployeeNos = getSelectedEmployeeNos()
 
       const { reportId } = await createEmployeeSummaryReport({
         params,
@@ -94,49 +88,35 @@ function EmployeeSelectionActions({
   }
 
   return (
-    <DataTableSelectionBar
+    <ListPageSelectionActions<EmployeeResponse>
       selectedCount={selectedCount}
       onClear={onClear}
-      selectedText="รายการที่เลือก"
-      clearText="ล้างรายการ"
-    >
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          void handleExportSelectedEmployees()
-        }}
-        disabled={isExportingEmployees}
-      >
-        <Upload className="mr-1 size-4" />
-        {isExportingEmployees ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกข้อมูลพนักงาน'}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          void handleExportSelectedEmployeesWithCourses()
-        }}
-        disabled={isExportingCourses}
-      >
-        <Upload className="mr-1 size-4" />
-        {isExportingCourses ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกพร้อมหลักสูตร'}
-      </Button>
-      <Button
-        size="sm"
-        onClick={() => {
-          void handleGoToSummaryReport()
-        }}
-        disabled={isPreparingReport}
-      >
-        {isPreparingReport ? (
-          <Loader2 className="mr-1 size-4 animate-spin" />
-        ) : (
-          <BarChart3 className="mr-1 size-4" />
-        )}
-        {isPreparingReport ? 'กำลังเตรียมรายงาน...' : 'ไปที่รายงานสรุป'}
-      </Button>
-    </DataTableSelectionBar>
+      actions={[
+        {
+          label: 'ส่งออกข้อมูลพนักงาน',
+          pendingLabel: 'กำลังส่งออกข้อมูล...',
+          isPending: isExportingEmployees,
+          onSelect: handleExportSelectedEmployees,
+          icon: Upload,
+          variant: 'outline',
+        },
+        {
+          label: 'ส่งออกพร้อมหลักสูตร',
+          pendingLabel: 'กำลังส่งออกข้อมูล...',
+          isPending: isExportingCourses,
+          onSelect: handleExportSelectedEmployeesWithCourses,
+          icon: Upload,
+          variant: 'outline',
+        },
+        {
+          label: 'ไปที่รายงานสรุป',
+          pendingLabel: 'กำลังเตรียมรายงาน...',
+          isPending: isPreparingReport,
+          onSelect: handleGoToSummaryReport,
+          icon: BarChart3,
+        },
+      ]}
+    />
   )
 }
 
@@ -154,17 +134,14 @@ export default function EmployeeTable() {
     prefix: false,
   })
   const exportTimestamp = useMemo(() => {
-    const now = new Date()
-    const date = now.toISOString().split('T')[0] ?? ''
-    const time = (now.toTimeString().split(' ')[0] ?? '').replace(/:/g, '-')
-    return `${date}_${time}`
+    return buildListPageExportTimestamp(new Date())
   }, [])
   const selectedExportFilename = useMemo(
     () => `ข้อมูลพนักงาน-${exportTimestamp}`,
     [exportTimestamp]
   )
   const selectedCount = useMemo(
-    () => Object.values(rowSelection).filter(Boolean).length,
+    () => countSelectedRows(rowSelection),
     [rowSelection]
   )
   const tableState = useMemo(
@@ -194,10 +171,10 @@ export default function EmployeeTable() {
   )
 
   return (
-    <DataTableRoot
+    <ListPageTableShell
       data={controller.employees}
       columns={employeeTableColumns}
-      getRowId={(row) => row.employeeNo}
+      getRowId={(row: EmployeeResponse) => row.employeeNo}
       state={tableState}
       config={tableConfig}
       onPaginationChange={controller.handlePaginationChange}
@@ -206,41 +183,27 @@ export default function EmployeeTable() {
       onRowSelectionChange={setRowSelection}
       onColumnVisibilityChange={setColumnVisibility}
       isLoading={controller.isInitialLoading}
-    >
-      <EmployeeTableFilterToolbar params={controller.params} />
-      <EmployeeSelectionActions
-        selectedCount={selectedCount}
-        onClear={() => setRowSelection({})}
-        filename={selectedExportFilename}
-        params={controller.params}
-      />
-
-      <div
-        className={cn(
-          'transition-opacity duration-200',
-          controller.isBackgroundFetching &&
-            'pointer-events-none opacity-70 select-none'
-        )}
-      >
-        <DataTable className="h-[calc(100dvh-14rem)] md:h-[calc(100dvh-16rem)] xl:h-[calc(100dvh-18rem)] 2xl:h-[calc(100dvh-20rem)]">
-          <DataTableHeader className="bg-sidebar" />
-          <DataTableBody>
-            <DataTableSkeleton rows={controller.params.limit} />
-            <EmployeeTableEmptyState
-              visible={
-                !controller.isInitialLoading &&
-                controller.employees.length === 0
-              }
-              isFiltered={controller.hasActiveFilters}
-            />
-          </DataTableBody>
-        </DataTable>
-      </div>
-
-      <DataTablePagination
-        totalCount={controller.meta.total}
-        isFetching={controller.isListFetching}
-      />
-    </DataTableRoot>
+      isBackgroundFetching={controller.isBackgroundFetching}
+      toolbar={<EmployeeTableFilterToolbar params={controller.params} />}
+      selectionActions={
+        <EmployeeSelectionActions
+          selectedCount={selectedCount}
+          onClear={() => setRowSelection({})}
+          filename={selectedExportFilename}
+          params={controller.params}
+        />
+      }
+      emptyState={
+        <EmployeeTableEmptyState
+          visible={
+            !controller.isInitialLoading && controller.employees.length === 0
+          }
+          isFiltered={controller.hasActiveFilters}
+        />
+      }
+      skeletonRows={controller.params.limit}
+      totalCount={controller.meta.total}
+      isListFetching={controller.isListFetching}
+    />
   )
 }

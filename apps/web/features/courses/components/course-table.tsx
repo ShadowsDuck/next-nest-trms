@@ -5,21 +5,17 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import type { RowSelectionState, VisibilityState } from '@tanstack/react-table'
 import type { CourseQuery, CourseResponse } from '@workspace/schemas'
-import { Button } from '@workspace/ui/components/button'
-import { cn } from '@workspace/ui/lib/utils'
-import { BarChart3, Loader2, Upload } from 'lucide-react'
+import { BarChart3, Upload } from 'lucide-react'
 import { createCourseSummaryReport } from '@/domains/summary-reports/actions'
-import { DataTablePagination } from '@/shared/components/niko-table/components/data-table-pagination'
-import { DataTableSelectionBar } from '@/shared/components/niko-table/components/data-table-selection-bar'
-import { DataTable } from '@/shared/components/niko-table/core/data-table'
-import { useDataTable } from '@/shared/components/niko-table/core/data-table-context'
-import { DataTableRoot } from '@/shared/components/niko-table/core/data-table-root'
 import {
-  DataTableBody,
-  DataTableHeader,
-  DataTableSkeleton,
-} from '@/shared/components/niko-table/core/data-table-structure'
+  ListPageSelectionActions,
+  ListPageTableShell,
+} from '@/shared/components/list-page-action-shell'
 import { useLockPageScroll } from '@/shared/hooks/use-lock-page-scroll'
+import {
+  buildListPageExportTimestamp,
+  countSelectedRows,
+} from '@/shared/lib/list-page-action-shell'
 import { useCourseTableController } from '../hooks/use-course-table-controller'
 import { exportCoursesCSV } from '../lib/export-courses-csv'
 import { exportCoursesWithEmployeesCSV } from '../lib/export-courses-with-employees-csv'
@@ -27,6 +23,7 @@ import { courseTableColumns } from './columns'
 import { CourseTableEmptyState } from './empty-state'
 import { CourseTableFilterToolbar } from './filter-toolbar'
 
+// จัดการ action ของรายการหลักสูตรที่ถูกเลือกโดยคง logic เฉพาะของ feature ไว้ฝั่งหลักสูตร
 function CourseSelectionActions({
   selectedCount,
   onClear,
@@ -39,48 +36,45 @@ function CourseSelectionActions({
   params: CourseQuery
 }) {
   const router = useRouter()
-  const { table } = useDataTable<CourseResponse>()
   const [isExportingWithEmployees, setIsExportingWithEmployees] =
     useState(false)
   const [isExportingCourses, setIsExportingCourses] = useState(false)
   const [isPreparingReport, setIsPreparingReport] = useState(false)
 
-  function getSelectedCourseIds() {
-    return Object.entries(table.getState().rowSelection)
-      .filter(([, selected]) => Boolean(selected))
-      .map(([rowId]) => rowId)
-  }
-
-  async function handleExportSelectedCourses() {
+  // ส่งออกข้อมูลหลักสูตรที่ผู้ใช้เลือกจาก selection bar
+  async function handleExportSelectedCourses(selectedCourseIds: string[]) {
     try {
       setIsExportingCourses(true)
       await exportCoursesCSV({
         params,
         filename,
-        selectedCourseIds: getSelectedCourseIds(),
+        selectedCourseIds,
       })
     } finally {
       setIsExportingCourses(false)
     }
   }
 
-  async function handleExportSelectedCoursesWithEmployees() {
+  // ส่งออกข้อมูลหลักสูตรที่เลือกพร้อมรายชื่อพนักงานที่เกี่ยวข้อง
+  async function handleExportSelectedCoursesWithEmployees(
+    selectedCourseIds: string[]
+  ) {
     try {
       setIsExportingWithEmployees(true)
       await exportCoursesWithEmployeesCSV({
         params,
         filename: `${filename}-พร้อมพนักงาน`,
-        selectedCourseIds: getSelectedCourseIds(),
+        selectedCourseIds,
       })
     } finally {
       setIsExportingWithEmployees(false)
     }
   }
 
-  async function handleGoToSummaryReport() {
+  // สร้างรายงานสรุปจากรายการหลักสูตรที่เลือกแล้วนำผู้ใช้ไปยังหน้ารายงาน
+  async function handleGoToSummaryReport(selectedCourseIds: string[]) {
     try {
       setIsPreparingReport(true)
-      const selectedCourseIds = getSelectedCourseIds()
 
       const { reportId } = await createCourseSummaryReport({
         params,
@@ -94,59 +88,35 @@ function CourseSelectionActions({
   }
 
   return (
-    <DataTableSelectionBar
+    <ListPageSelectionActions<CourseResponse>
       selectedCount={selectedCount}
       onClear={onClear}
-      selectedText="รายการที่เลือก"
-      clearText="ล้างรายการ"
-    >
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          void handleExportSelectedCourses()
-        }}
-        disabled={isExportingCourses}
-      >
-        {isExportingCourses ? (
-          <Loader2 className="mr-1 size-4 animate-spin" />
-        ) : (
-          <Upload className="mr-1 size-4" />
-        )}
-        {isExportingCourses ? 'กำลังส่งออกข้อมูล...' : 'ส่งออกข้อมูลหลักสูตร'}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          void handleExportSelectedCoursesWithEmployees()
-        }}
-        disabled={isExportingWithEmployees}
-      >
-        {isExportingWithEmployees ? (
-          <Loader2 className="mr-1 size-4 animate-spin" />
-        ) : (
-          <Upload className="mr-1 size-4" />
-        )}
-        {isExportingWithEmployees
-          ? 'กำลังส่งออกข้อมูล...'
-          : 'ส่งออกพร้อมพนักงาน'}
-      </Button>
-      <Button
-        size="sm"
-        onClick={() => {
-          void handleGoToSummaryReport()
-        }}
-        disabled={isPreparingReport}
-      >
-        {isPreparingReport ? (
-          <Loader2 className="mr-1 size-4 animate-spin" />
-        ) : (
-          <BarChart3 className="mr-1 size-4" />
-        )}
-        {isPreparingReport ? 'กำลังเตรียมรายงาน...' : 'ไปที่รายงานสรุป'}
-      </Button>
-    </DataTableSelectionBar>
+      actions={[
+        {
+          label: 'ส่งออกข้อมูลหลักสูตร',
+          pendingLabel: 'กำลังส่งออกข้อมูล...',
+          isPending: isExportingCourses,
+          onSelect: handleExportSelectedCourses,
+          icon: Upload,
+          variant: 'outline',
+        },
+        {
+          label: 'ส่งออกพร้อมพนักงาน',
+          pendingLabel: 'กำลังส่งออกข้อมูล...',
+          isPending: isExportingWithEmployees,
+          onSelect: handleExportSelectedCoursesWithEmployees,
+          icon: Upload,
+          variant: 'outline',
+        },
+        {
+          label: 'ไปที่รายงานสรุป',
+          pendingLabel: 'กำลังเตรียมรายงาน...',
+          isPending: isPreparingReport,
+          onSelect: handleGoToSummaryReport,
+          icon: BarChart3,
+        },
+      ]}
+    />
   )
 }
 
@@ -162,17 +132,14 @@ export default function CourseTable() {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const exportTimestamp = useMemo(() => {
-    const now = new Date()
-    const date = now.toISOString().split('T')[0] ?? ''
-    const time = (now.toTimeString().split(' ')[0] ?? '').replace(/:/g, '-')
-    return `${date}_${time}`
+    return buildListPageExportTimestamp(new Date())
   }, [])
   const selectedExportFilename = useMemo(
     () => `ข้อมูลหลักสูตร-${exportTimestamp}`,
     [exportTimestamp]
   )
   const selectedCount = useMemo(
-    () => Object.values(rowSelection).filter(Boolean).length,
+    () => countSelectedRows(rowSelection),
     [rowSelection]
   )
 
@@ -204,10 +171,10 @@ export default function CourseTable() {
   )
 
   return (
-    <DataTableRoot
+    <ListPageTableShell
       data={controller.courses}
       columns={courseTableColumns}
-      getRowId={(row) => row.id}
+      getRowId={(row: CourseResponse) => row.id}
       state={tableState}
       config={tableConfig}
       onPaginationChange={controller.handlePaginationChange}
@@ -216,41 +183,27 @@ export default function CourseTable() {
       onRowSelectionChange={setRowSelection}
       onColumnVisibilityChange={setColumnVisibility}
       isLoading={controller.isInitialLoading}
-    >
-      <CourseTableFilterToolbar params={controller.params} />
-      <CourseSelectionActions
-        selectedCount={selectedCount}
-        onClear={() => setRowSelection({})}
-        filename={selectedExportFilename}
-        params={controller.params}
-      />
-
-      <div
-        className={cn(
-          'transition-opacity duration-200',
-          controller.isBackgroundFetching &&
-            'pointer-events-none opacity-70 select-none'
-        )}
-      >
-        <DataTable className="h-[calc(100dvh-14rem)] md:h-[calc(100dvh-16rem)] xl:h-[calc(100dvh-18rem)] 2xl:h-[calc(100dvh-20rem)]">
-          <DataTableHeader className="bg-sidebar" />
-          <DataTableBody>
-            <DataTableSkeleton rows={controller.params.limit} />
-            <CourseTableEmptyState
-              visible={
-                !controller.isInitialLoading && controller.courses.length === 0
-              }
-              isFiltered={controller.hasActiveFilters}
-            />
-          </DataTableBody>
-        </DataTable>
-      </div>
-
-      <DataTablePagination
-        totalCount={controller.meta.total}
-        isFetching={controller.isListFetching}
-      />
-    </DataTableRoot>
+      isBackgroundFetching={controller.isBackgroundFetching}
+      toolbar={<CourseTableFilterToolbar params={controller.params} />}
+      selectionActions={
+        <CourseSelectionActions
+          selectedCount={selectedCount}
+          onClear={() => setRowSelection({})}
+          filename={selectedExportFilename}
+          params={controller.params}
+        />
+      }
+      emptyState={
+        <CourseTableEmptyState
+          visible={
+            !controller.isInitialLoading && controller.courses.length === 0
+          }
+          isFiltered={controller.hasActiveFilters}
+        />
+      }
+      skeletonRows={controller.params.limit}
+      totalCount={controller.meta.total}
+      isListFetching={controller.isListFetching}
+    />
   )
 }
-
