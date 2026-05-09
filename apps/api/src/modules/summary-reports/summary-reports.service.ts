@@ -17,15 +17,28 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { CoursesService } from '../courses/courses.service';
 import { EmployeesService } from '../employees/employees.service';
+import {
+  buildSummaryReportSnapshot,
+  buildSummaryReportSourceAdapters,
+} from './summary-report-source.adapter';
 
 @Injectable()
 export class SummaryReportsService {
+  private readonly sourceAdapters: ReturnType<
+    typeof buildSummaryReportSourceAdapters
+  >;
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly auditLogsService: AuditLogsService,
     private readonly employeesService: EmployeesService,
     private readonly coursesService: CoursesService,
-  ) {}
+  ) {
+    this.sourceAdapters = buildSummaryReportSourceAdapters(
+      this.employeesService,
+      this.coursesService,
+    );
+  }
 
   async createForUser(
     userId: string,
@@ -178,45 +191,11 @@ export class SummaryReportsService {
   private async buildSnapshot(
     dto: CreateSummaryReport,
   ): Promise<SummaryReportSnapshot> {
-    const generatedAt = new Date().toISOString();
-
-    if (dto.source === 'employees') {
-      const employees = await this.employeesService.findByEmployeeNosForReport(
-        dto.selectedIds,
-      );
-
-      if (employees.length === 0) {
-        throw new NotFoundException(
-          'ไม่พบข้อมูลพนักงานที่เลือกสำหรับสร้างรายงาน',
-        );
-      }
-
-      return {
-        source: 'employees',
-        selectedIds: dto.selectedIds,
-        generatedAt,
-        filtersSnapshot: dto.filtersSnapshot,
-        employees,
-      };
-    }
-
-    const courses = await this.coursesService.findByCourseIdsForReport(
-      dto.selectedIds,
+    return buildSummaryReportSnapshot(
+      this.sourceAdapters,
+      dto,
+      new Date().toISOString(),
     );
-
-    if (courses.length === 0) {
-      throw new NotFoundException(
-        'ไม่พบข้อมูลหลักสูตรที่เลือกสำหรับสร้างรายงาน',
-      );
-    }
-
-    return {
-      source: 'courses',
-      selectedIds: dto.selectedIds,
-      generatedAt,
-      filtersSnapshot: dto.filtersSnapshot,
-      courses,
-    };
   }
 
   private toResponse(report: {
