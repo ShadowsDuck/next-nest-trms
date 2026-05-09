@@ -7,102 +7,26 @@ import type {
   PaginationState,
   Updater,
 } from '@tanstack/react-table'
-import { employeeStatus, jobLevel, prefix } from '@workspace/schemas'
-import type { EmployeeQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
 import { getAllEmployees } from '@/domains/employees'
-import { employeeParsers } from '@/domains/employees'
 import {
-  columnFiltersKey,
-  getFilterValues,
-  pickAllowed,
-} from '@/shared/lib/table-filter-utils'
+  employeeParsers,
+  employeeTableFilterConfig,
+  employeeTableFilterDefaults,
+  employeeTableFilterKeys,
+} from '@/domains/employees'
+import {
+  buildColumnFiltersFromParams,
+  buildFilterParamsFromColumnFilters,
+  buildPaginationMeta,
+  buildPaginationState,
+  buildTableLoadingState,
+  hasActiveTableFilters,
+  shouldSyncColumnFilters,
+} from '@/shared/lib/table-state'
 import { buildEmployeesQueryKey } from '../options/query-options'
 
-type MultiFilterKey =
-  | 'prefix'
-  | 'jobLevel'
-  | 'divisionName'
-  | 'departmentName'
-  | 'status'
-type MultiFilterParams = Pick<EmployeeQuery, MultiFilterKey>
-
-const FILTER_KEYS = [
-  'prefix',
-  'jobLevel',
-  'divisionName',
-  'departmentName',
-  'status',
-] as const
-
-const FILTER_ALLOWED = {
-  prefix,
-  jobLevel,
-  status: employeeStatus,
-  divisionName: [] as const,
-  departmentName: [] as const,
-} as const
-
-// แปลง URL params ไปเป็น column filters เพื่อคืน state หลัง refresh หน้า
-function buildColumnFiltersFromParams(
-  params: MultiFilterParams
-): ColumnFiltersState {
-  return FILTER_KEYS.flatMap((key) => {
-    const values = params[key] ?? []
-    return values.length > 0 ? [{ id: key, value: values }] : []
-  })
-}
-
-/**
- * Assign value to a single filter key with safe TypeScript inference.
- */
-function setFilterParam<K extends MultiFilterKey>(
-  target: MultiFilterParams,
-  key: K,
-  value: MultiFilterParams[K]
-) {
-  target[key] = value
-}
-
-/**
- * Convert table columnFilters -> URL filter params.
- */
-function buildFilterParamsFromColumnFilters(
-  filters: ColumnFiltersState
-): MultiFilterParams {
-  const next: MultiFilterParams = {
-    prefix: [],
-    jobLevel: [],
-    divisionName: [],
-    departmentName: [],
-    status: [],
-  }
-
-  for (const key of FILTER_KEYS) {
-    if (key === 'divisionName' || key === 'departmentName') {
-      setFilterParam(next, key, getFilterValues(filters, key))
-      continue
-    }
-
-    const values = pickAllowed(
-      getFilterValues(filters, key),
-      FILTER_ALLOWED[key]
-    )
-    setFilterParam(next, key, values as MultiFilterParams[typeof key])
-  }
-
-  return next
-}
-
-/**
- * Check if any search/filter is active for empty-state mode.
- */
-function hasActiveFilters(params: EmployeeQuery): boolean {
-  return (
-    Boolean(params.search) ||
-    FILTER_KEYS.some((key) => (params[key]?.length ?? 0) > 0)
-  )
-}
+type EmployeeTableFilterParams = typeof employeeTableFilterDefaults
 
 export function useEmployeeTableController() {
   const [isParamsTransitioning, startTransition] = useTransition()
@@ -160,35 +84,25 @@ export function useEmployeeTableController() {
 
   const employees = query.data?.data ?? []
   const meta = useMemo(
-    () =>
-      query.data?.meta ?? {
-        total: 0,
-        page: params.page,
-        limit: params.limit,
-        totalPages: 1,
-      },
+    () => buildPaginationMeta(query.data?.meta, params.page, params.limit),
     [query.data?.meta, params.page, params.limit]
   )
-
-  /**
-   * First load = no data yet and request is in-flight.
-   */
-  const isInitialLoading = query.isLoading && !query.data
-
-  /**
-   * Background fetch = refetching while old data is still shown.
-   */
-  const isBackgroundFetching =
-    (query.isFetching || isParamsTransitioning) && !isInitialLoading
+  const loadingState = useMemo(
+    () =>
+      buildTableLoadingState({
+        isLoading: query.isLoading,
+        isFetching: query.isFetching,
+        hasData: Boolean(query.data),
+        isParamsTransitioning,
+      }),
+    [isParamsTransitioning, query.data, query.isFetching, query.isLoading]
+  )
 
   /**
    * TanStack pagination is 0-based, API params are 1-based.
    */
   const pagination: PaginationState = useMemo(
-    () => ({
-      pageIndex: params.page - 1,
-      pageSize: params.limit,
-    }),
+    () => buildPaginationState(params.page, params.limit),
     [params.page, params.limit]
   )
 
@@ -196,23 +110,15 @@ export function useEmployeeTableController() {
    * Sync URL params -> filter UI state, so F5 keeps selected filters visible.
    */
   const filtersFromParams = useMemo(
-    () => buildColumnFiltersFromParams(params),
+    () => buildColumnFiltersFromParams(params, employeeTableFilterConfig),
     [params]
-  )
-  const currentFiltersKey = useMemo(
-    () => columnFiltersKey(columnFilters),
-    [columnFilters]
-  )
-  const filtersFromParamsKey = useMemo(
-    () => columnFiltersKey(filtersFromParams),
-    [filtersFromParams]
   )
 
   useEffect(() => {
-    if (currentFiltersKey !== filtersFromParamsKey) {
+    if (shouldSyncColumnFilters(columnFilters, filtersFromParams)) {
       setColumnFilters(filtersFromParams)
     }
-  }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
+  }, [columnFilters, filtersFromParams])
 
   /**
    * Handle page/pageSize changes from the table component.
@@ -250,12 +156,21 @@ export function useEmployeeTableController() {
         typeof updater === 'function' ? updater(columnFilters) : updater
 
       setColumnFilters(next)
-      setFilter(buildFilterParamsFromColumnFilters(next))
+      setFilter(
+        buildFilterParamsFromColumnFilters(
+          next,
+          employeeTableFilterConfig,
+          employeeTableFilterDefaults
+        ) as EmployeeTableFilterParams
+      )
     },
     [columnFilters, setFilter]
   )
 
-  const hasFilters = useMemo(() => hasActiveFilters(params), [params])
+  const hasFilters = useMemo(
+    () => hasActiveTableFilters(params, employeeTableFilterKeys),
+    [params]
+  )
 
   return {
     params,
@@ -263,9 +178,9 @@ export function useEmployeeTableController() {
     employees,
     meta,
     pagination,
-    isInitialLoading,
-    isBackgroundFetching,
-    isListFetching: query.isFetching || isParamsTransitioning,
+    isInitialLoading: loadingState.isInitialLoading,
+    isBackgroundFetching: loadingState.isBackgroundFetching,
+    isListFetching: loadingState.isListFetching,
     hasActiveFilters: hasFilters,
     handlePaginationChange,
     handleGlobalFilterChange,
