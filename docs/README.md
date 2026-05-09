@@ -16,3 +16,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Audit Log Implementation** (`Completed`) — [View Spec](./specs/audit-log-implementation.md) — 2026-05-06
 - [x] **Auth Guard Implementation** (`Completed`) — [View Spec](./specs/auth-guard-implementation.md) — 2026-05-04
 - [x] **Audit Logs Page** (`Completed`) — [View Spec](./specs/audit-logs-page.md) — 2026-05-07
+- [x] **Refactor Code Duplication Utilities** (`Completed`) — [View Spec](./specs/refactor-dupes-utilities.md) — 2026-05-09

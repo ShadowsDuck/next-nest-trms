@@ -8,7 +8,7 @@ import {
   Plant,
   Tag,
 } from '@workspace/database';
-import { toIsoDate, toIsoDateTime } from 'src/lib/date.mapper';
+import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
 import { CourseResponseDto } from '../dto/course-response.dto';
 
 type CourseEmployee = Employee & {

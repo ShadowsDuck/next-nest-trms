@@ -1,22 +1,7 @@
 import { Prisma } from '@workspace/database';
+import { parseNumber } from '../../../lib/builder-utils';
+import { parseTimestamp } from '../../../lib/date-utils';
 import { CourseQueryDto } from '../dto/course-query.dto';
-
-function parseCourseDate(value: unknown): Date | undefined {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return undefined;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
-
-function parseNumber(value: unknown): number | undefined {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return undefined;
-  }
-
-  return value;
-}
 
 export function buildCourseWhereInput(
   queryDto: CourseQueryDto,
@@ -50,8 +35,8 @@ export function buildCourseWhereInput(
   }
 
   if (dateRange && dateRange.length > 0) {
-    const from = parseCourseDate(dateRange[0]);
-    const to = parseCourseDate(dateRange[1] ?? dateRange[0]);
+    const from = parseTimestamp(dateRange[0]);
+    const to = parseTimestamp(dateRange[1] ?? dateRange[0]);
     const dateConditions: Prisma.CourseWhereInput[] = [];
 
     if (to) {
