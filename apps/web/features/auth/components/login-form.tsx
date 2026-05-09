@@ -19,10 +19,14 @@ import { toast } from 'react-toastify'
 import * as z from 'zod'
 import { GoogleButton } from '@/shared/components/google-button'
 import { authClient } from '@/shared/lib/auth-client'
+import {
+  emailField,
+  loginPasswordField,
+} from '../schemas/auth-schema'
 
 const loginSchema = z.object({
-  email: z.email('รูปแบบอีเมลไม่ถูกต้อง'),
-  password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
+  email: emailField,
+  password: loginPasswordField,
 })
 
 type LoginType = z.infer<typeof loginSchema>

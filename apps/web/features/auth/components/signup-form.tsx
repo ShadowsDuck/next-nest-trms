@@ -19,17 +19,15 @@ import { toast } from 'react-toastify'
 import * as z from 'zod'
 import { GoogleButton } from '@/shared/components/google-button'
 import { authClient } from '@/shared/lib/auth-client'
+import {
+  emailField,
+  signupPasswordField,
+} from '../schemas/auth-schema'
 
 const signupSchema = z
   .object({
-    email: z.email('รูปแบบอีเมลไม่ถูกต้อง'),
-    password: z
-      .string()
-      .min(8, 'รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร')
-      .regex(/[a-zA-Z]/, 'รหัสผ่านต้องมีตัวอักษร')
-      .regex(/[0-9]/, 'รหัสผ่านต้องมีตัวเลข')
-      .regex(/[^a-zA-Z0-9]/, 'รหัสผ่านต้องมีตัวอักษรพิเศษ')
-      .trim(),
+    email: emailField,
+    password: signupPasswordField,
     confirmPassword: z.string().trim(),
   })
   .refine((data) => data.password === data.confirmPassword, {
