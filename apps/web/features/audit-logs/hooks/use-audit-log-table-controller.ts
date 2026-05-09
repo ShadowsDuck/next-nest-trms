@@ -7,90 +7,26 @@ import type {
   PaginationState,
   Updater,
 } from '@tanstack/react-table'
-import { auditAction } from '@workspace/schemas'
-import type { AuditLogQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
-import { auditLogParsers, getAllAuditLogs } from '@/domains/audit-logs'
 import {
-  columnFiltersKey,
-  getFilterValues,
-  getNumericFilterValues,
-  pickAllowed,
-} from '@/shared/lib/table-filter-utils'
+  auditLogParsers,
+  auditLogTableFilterConfig,
+  auditLogTableFilterDefaults,
+  auditLogTableFilterKeys,
+  getAllAuditLogs,
+} from '@/domains/audit-logs'
+import {
+  buildColumnFiltersFromParams,
+  buildFilterParamsFromColumnFilters,
+  buildPaginationMeta,
+  buildPaginationState,
+  buildTableLoadingState,
+  hasActiveTableFilters,
+  shouldSyncColumnFilters,
+} from '@/shared/lib/table-state'
 import { buildAuditLogsQueryKey } from '../options/query-options'
 
-type MultiFilterKey = 'model' | 'action' | 'dateRange'
-type MultiFilterParams = Pick<AuditLogQuery, MultiFilterKey>
-
-const FILTER_KEYS = ['model', 'action', 'dateRange'] as const
-
-const FILTER_ALLOWED = {
-  action: auditAction,
-} as const
-
-// แปลงชื่อ query key ให้ตรงกับ column id ที่ table layer จะใช้งานจริง
-function toColumnId(key: MultiFilterKey): string {
-  if (key === 'dateRange') return 'timestamp'
-  return key
-}
-
-// แปลง URL params ไปเป็น column filters เพื่อคืน state หลัง refresh หน้า
-function buildColumnFiltersFromParams(
-  params: MultiFilterParams
-): ColumnFiltersState {
-  return FILTER_KEYS.flatMap((key) => {
-    const values = params[key] ?? []
-    return values.length > 0 ? [{ id: toColumnId(key), value: values }] : []
-  })
-}
-
-// กำหนดค่าให้ object ของ filter params โดยคง type inference ให้ปลอดภัย
-function setFilterParam<K extends MultiFilterKey>(
-  target: MultiFilterParams,
-  key: K,
-  value: MultiFilterParams[K]
-) {
-  target[key] = value
-}
-
-// แปลง column filters กลับไปเป็น URL params สำหรับใช้กับ nuqs
-function buildFilterParamsFromColumnFilters(
-  filters: ColumnFiltersState
-): MultiFilterParams {
-  const next: MultiFilterParams = {
-    model: [],
-    action: [],
-    dateRange: [],
-  }
-
-  for (const key of FILTER_KEYS) {
-    if (key === 'dateRange') {
-      setFilterParam(next, key, getNumericFilterValues(filters, 'timestamp'))
-      continue
-    }
-
-    if (key === 'model') {
-      setFilterParam(next, key, getFilterValues(filters, key))
-      continue
-    }
-
-    const values = pickAllowed(
-      getFilterValues(filters, key),
-      FILTER_ALLOWED[key]
-    )
-    setFilterParam(next, key, values as MultiFilterParams[typeof key])
-  }
-
-  return next
-}
-
-// ตรวจว่าหน้าตารางมี search หรือ filter ใดถูกใช้งานอยู่หรือไม่
-function hasActiveFilters(params: AuditLogQuery): boolean {
-  return (
-    Boolean(params.search) ||
-    FILTER_KEYS.some((key) => (params[key]?.length ?? 0) > 0)
-  )
-}
+type AuditLogTableFilterParams = typeof auditLogTableFilterDefaults
 
 // ควบคุม state ของตาราง audit logs โดยให้ URL เป็น source of truth
 export function useAuditLogTableController() {
@@ -137,49 +73,35 @@ export function useAuditLogTableController() {
 
   const auditLogs = query.data?.data ?? []
   const meta = useMemo(
-    () =>
-      query.data?.meta ?? {
-        total: 0,
-        page: params.page,
-        limit: params.limit,
-        totalPages: 1,
-      },
+    () => buildPaginationMeta(query.data?.meta, params.page, params.limit),
     [query.data?.meta, params.page, params.limit]
   )
-
-  // ระบุสถานะโหลดครั้งแรกเมื่อยังไม่มีข้อมูลเก่าให้แสดง
-  const isInitialLoading = query.isLoading && !query.data
-
-  // ระบุสถานะ refetch เบื้องหลังโดยยังคงข้อมูลเดิมไว้บนหน้าจอ
-  const isBackgroundFetching =
-    (query.isFetching || isParamsTransitioning) && !isInitialLoading
+  const loadingState = useMemo(
+    () =>
+      buildTableLoadingState({
+        isLoading: query.isLoading,
+        isFetching: query.isFetching,
+        hasData: Boolean(query.data),
+        isParamsTransitioning,
+      }),
+    [isParamsTransitioning, query.data, query.isFetching, query.isLoading]
+  )
 
   const pagination: PaginationState = useMemo(
-    () => ({
-      pageIndex: params.page - 1,
-      pageSize: params.limit,
-    }),
+    () => buildPaginationState(params.page, params.limit),
     [params.page, params.limit]
   )
 
   const filtersFromParams = useMemo(
-    () => buildColumnFiltersFromParams(params),
+    () => buildColumnFiltersFromParams(params, auditLogTableFilterConfig),
     [params]
-  )
-  const currentFiltersKey = useMemo(
-    () => columnFiltersKey(columnFilters),
-    [columnFilters]
-  )
-  const filtersFromParamsKey = useMemo(
-    () => columnFiltersKey(filtersFromParams),
-    [filtersFromParams]
   )
 
   useEffect(() => {
-    if (currentFiltersKey !== filtersFromParamsKey) {
+    if (shouldSyncColumnFilters(columnFilters, filtersFromParams)) {
       setColumnFilters(filtersFromParams)
     }
-  }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
+  }, [columnFilters, filtersFromParams])
 
   // แปลง event pagination จาก TanStack ให้ sync กลับไปยัง URL params
   const handlePaginationChange = useCallback(
@@ -211,12 +133,21 @@ export function useAuditLogTableController() {
         typeof updater === 'function' ? updater(columnFilters) : updater
 
       setColumnFilters(next)
-      setFilter(buildFilterParamsFromColumnFilters(next))
+      setFilter(
+        buildFilterParamsFromColumnFilters(
+          next,
+          auditLogTableFilterConfig,
+          auditLogTableFilterDefaults
+        ) as AuditLogTableFilterParams
+      )
     },
     [columnFilters, setFilter]
   )
 
-  const hasFilters = useMemo(() => hasActiveFilters(params), [params])
+  const hasFilters = useMemo(
+    () => hasActiveTableFilters(params, auditLogTableFilterKeys),
+    [params]
+  )
 
   return {
     params,
@@ -224,9 +155,9 @@ export function useAuditLogTableController() {
     auditLogs,
     meta,
     pagination,
-    isInitialLoading,
-    isBackgroundFetching,
-    isListFetching: query.isFetching || isParamsTransitioning,
+    isInitialLoading: loadingState.isInitialLoading,
+    isBackgroundFetching: loadingState.isBackgroundFetching,
+    isListFetching: loadingState.isListFetching,
     hasActiveFilters: hasFilters,
     handlePaginationChange,
     handleGlobalFilterChange,

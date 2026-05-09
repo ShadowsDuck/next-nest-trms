@@ -7,106 +7,26 @@ import type {
   PaginationState,
   Updater,
 } from '@tanstack/react-table'
-import { accreditationStatus, courseType } from '@workspace/schemas'
-import type { CourseQuery } from '@workspace/schemas'
 import { useQueryStates } from 'nuqs'
 import { getAllCourses } from '@/domains/courses'
-import { courseParsers } from '@/domains/courses'
 import {
-  columnFiltersKey,
-  getFilterValues,
-  getNumericFilterValues,
-  pickAllowed,
-} from '@/shared/lib/table-filter-utils'
+  courseParsers,
+  courseTableFilterConfig,
+  courseTableFilterDefaults,
+  courseTableFilterKeys,
+} from '@/domains/courses'
+import {
+  buildColumnFiltersFromParams,
+  buildFilterParamsFromColumnFilters,
+  buildPaginationMeta,
+  buildPaginationState,
+  buildTableLoadingState,
+  hasActiveTableFilters,
+  shouldSyncColumnFilters,
+} from '@/shared/lib/table-state'
 import { buildCoursesQueryKey } from '../options/query-options'
 
-type MultiFilterKey =
-  | 'type'
-  | 'tagName'
-  | 'dateRange'
-  | 'durationRange'
-  | 'accreditationStatus'
-type MultiFilterParams = Pick<CourseQuery, MultiFilterKey>
-
-const FILTER_KEYS = [
-  'type',
-  'tagName',
-  'dateRange',
-  'durationRange',
-  'accreditationStatus',
-] as const
-
-const FILTER_ALLOWED = {
-  type: courseType,
-  accreditationStatus: accreditationStatus,
-} as const
-
-function toColumnId(key: MultiFilterKey): string {
-  if (key === 'durationRange') return 'duration'
-  return key
-}
-
-// แปลง URL params ไปเป็น column filters เพื่อคืน state หลัง refresh หน้า
-function buildColumnFiltersFromParams(
-  params: MultiFilterParams
-): ColumnFiltersState {
-  return FILTER_KEYS.flatMap((key) => {
-    const values = params[key] ?? []
-    return values.length > 0 ? [{ id: toColumnId(key), value: values }] : []
-  })
-}
-
-function setFilterParam<K extends MultiFilterKey>(
-  target: MultiFilterParams,
-  key: K,
-  value: MultiFilterParams[K]
-) {
-  target[key] = value
-}
-
-function buildFilterParamsFromColumnFilters(
-  filters: ColumnFiltersState
-): MultiFilterParams {
-  const next: MultiFilterParams = {
-    type: [],
-    tagName: [],
-    dateRange: [],
-    durationRange: [],
-    accreditationStatus: [],
-  }
-
-  for (const key of FILTER_KEYS) {
-    if (key === 'tagName') {
-      setFilterParam(next, key, getFilterValues(filters, key))
-      continue
-    }
-
-    if (key === 'dateRange') {
-      setFilterParam(next, key, getNumericFilterValues(filters, key))
-      continue
-    }
-
-    if (key === 'durationRange') {
-      setFilterParam(next, key, getNumericFilterValues(filters, 'duration'))
-      continue
-    }
-
-    const values = pickAllowed(
-      getFilterValues(filters, key),
-      FILTER_ALLOWED[key]
-    )
-    setFilterParam(next, key, values as MultiFilterParams[typeof key])
-  }
-
-  return next
-}
-
-function hasActiveFilters(params: CourseQuery): boolean {
-  return (
-    Boolean(params.search) ||
-    FILTER_KEYS.some((key) => (params[key]?.length ?? 0) > 0)
-  )
-}
+type CourseTableFilterParams = typeof courseTableFilterDefaults
 
 export function useCourseTableController() {
   const [isParamsTransitioning, startTransition] = useTransition()
@@ -145,43 +65,35 @@ export function useCourseTableController() {
 
   const courses = query.data?.data ?? []
   const meta = useMemo(
-    () =>
-      query.data?.meta ?? {
-        total: 0,
-        page: params.page,
-        limit: params.limit,
-        totalPages: 1,
-      },
+    () => buildPaginationMeta(query.data?.meta, params.page, params.limit),
     [query.data?.meta, params.page, params.limit]
   )
-
-  const isInitialLoading = query.isLoading && !query.data
-  const isBackgroundFetching =
-    (query.isFetching || isParamsTransitioning) && !isInitialLoading
+  const loadingState = useMemo(
+    () =>
+      buildTableLoadingState({
+        isLoading: query.isLoading,
+        isFetching: query.isFetching,
+        hasData: Boolean(query.data),
+        isParamsTransitioning,
+      }),
+    [isParamsTransitioning, query.data, query.isFetching, query.isLoading]
+  )
 
   const pagination: PaginationState = useMemo(
-    () => ({ pageIndex: params.page - 1, pageSize: params.limit }),
+    () => buildPaginationState(params.page, params.limit),
     [params.page, params.limit]
   )
 
   const filtersFromParams = useMemo(
-    () => buildColumnFiltersFromParams(params),
+    () => buildColumnFiltersFromParams(params, courseTableFilterConfig),
     [params]
-  )
-  const currentFiltersKey = useMemo(
-    () => columnFiltersKey(columnFilters),
-    [columnFilters]
-  )
-  const filtersFromParamsKey = useMemo(
-    () => columnFiltersKey(filtersFromParams),
-    [filtersFromParams]
   )
 
   useEffect(() => {
-    if (currentFiltersKey !== filtersFromParamsKey) {
+    if (shouldSyncColumnFilters(columnFilters, filtersFromParams)) {
       setColumnFilters(filtersFromParams)
     }
-  }, [currentFiltersKey, filtersFromParamsKey, filtersFromParams])
+  }, [columnFilters, filtersFromParams])
 
   const handlePaginationChange = useCallback(
     (updater: Updater<PaginationState>) => {
@@ -207,12 +119,21 @@ export function useCourseTableController() {
       const next =
         typeof updater === 'function' ? updater(columnFilters) : updater
       setColumnFilters(next)
-      setFilter(buildFilterParamsFromColumnFilters(next))
+      setFilter(
+        buildFilterParamsFromColumnFilters(
+          next,
+          courseTableFilterConfig,
+          courseTableFilterDefaults
+        ) as CourseTableFilterParams
+      )
     },
     [columnFilters, setFilter]
   )
 
-  const hasFilters = useMemo(() => hasActiveFilters(params), [params])
+  const hasFilters = useMemo(
+    () => hasActiveTableFilters(params, courseTableFilterKeys),
+    [params]
+  )
 
   return {
     params,
@@ -220,9 +141,9 @@ export function useCourseTableController() {
     courses,
     meta,
     pagination,
-    isInitialLoading,
-    isBackgroundFetching,
-    isListFetching: query.isFetching || isParamsTransitioning,
+    isInitialLoading: loadingState.isInitialLoading,
+    isBackgroundFetching: loadingState.isBackgroundFetching,
+    isListFetching: loadingState.isListFetching,
     hasActiveFilters: hasFilters,
     handlePaginationChange,
     handleGlobalFilterChange,

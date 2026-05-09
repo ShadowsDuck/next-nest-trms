@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:table-state": "node --import tsx --test domains/table-state.test.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
@@ -57,6 +58,7 @@
     "eslint-plugin-boundaries": "^6.0.2",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
 }
