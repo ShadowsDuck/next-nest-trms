@@ -4,11 +4,13 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { OrganizationUnitsService } from '../organization-units/organization-units.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { EmployeeDetailResponseDto } from './dto/employee-detail-response.dto';
 import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { EmployeeResponseDto } from './dto/employee-response.dto';
@@ -200,6 +202,44 @@ export class EmployeesService {
 
       throw error;
     }
+  }
+
+  // ดึงรายละเอียดพนักงาน 1 รายการตาม employeeNo พร้อมข้อมูลหน่วยงานและประวัติการอบรม
+  async findOneByEmployeeNo(
+    employeeNo: string,
+  ): Promise<EmployeeDetailResponseDto> {
+    const employee = await this.prismaService.employee.findUnique({
+      where: {
+        employeeNo,
+      },
+      include: {
+        plant: true,
+        businessUnit: true,
+        orgFunction: true,
+        division: true,
+        department: true,
+        trainingRecords: {
+          include: {
+            course: {
+              include: {
+                tag: true,
+              },
+            },
+          },
+          orderBy: {
+            course: {
+              endDate: 'desc',
+            },
+          },
+        },
+      },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('ไม่พบข้อมูลพนักงานที่ต้องการ');
+    }
+
+    return formatEmployee(employee);
   }
 
   // ดึงพนักงานตาม employeeNo หลายรายการ โดยคงลำดับผลลัพธ์ตาม input เดิม
