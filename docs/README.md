@@ -21,3 +21,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Organization Hierarchy Seam Refactor** (`Completed`) — [View Spec](./specs/organization-hierarchy-seam-refactor.md) — 2026-05-09
 - [x] **Summary Report Seam Refactor** (`Completed`) — [View Spec](./specs/summary-report-seam-refactor.md) — 2026-05-09
 - [x] **List Page Action Seam Refactor** (`Completed`) — [View Spec](./specs/list-page-action-seam-refactor.md) — 2026-05-09
+- [ ] **Employee Detail** (`Draft`) — [View Spec](./specs/employee-detail.md) — 2026-05-10
