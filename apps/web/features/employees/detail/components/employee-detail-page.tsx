@@ -33,8 +33,12 @@ import {
   Upload,
   UserRound,
   Workflow,
+  FileX,
+  Search,
+  Download,
 } from 'lucide-react'
 import { env } from '@/shared/lib/env'
+import { useEffect } from 'react'
 import {
   buildCertificateFileUrl,
   buildEmployeeDetailStats,
@@ -43,6 +47,7 @@ import {
 } from '../lib/employee-detail'
 import { EmployeeTrainingHistoryTable } from './training-history-table'
 import { Separator } from '@workspace/ui/components/separator'
+import Link from 'next/link'
 
 const prefixLabelByValue = new Map<string, string>([
   ['Mr', 'นาย'],
@@ -137,6 +142,10 @@ function EmployeeCertificateDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const [status, setStatus] = useState<'idle' | 'checking' | 'ready' | 'error'>(
+    'idle'
+  )
+
   const certificateUrl = useMemo(
     () =>
       buildCertificateFileUrl(
@@ -146,84 +155,165 @@ function EmployeeCertificateDialog({
     [trainingRecord]
   )
 
+  useEffect(() => {
+    if (!open || !certificateUrl) {
+      setStatus('idle')
+      return
+    }
+
+    const checkFile = async () => {
+      setStatus('checking')
+      try {
+        const response = await fetch(certificateUrl, { method: 'HEAD' })
+        if (response.ok) {
+          setStatus('ready')
+        } else {
+          setStatus('error')
+        }
+      } catch (err) {
+        // Fallback to ready if fetch is blocked by CORS, letting iframe handle it
+        console.warn('Certificate availability check failed (CORS?):', err)
+        setStatus('ready')
+      }
+    }
+
+    void checkFile()
+  }, [open, certificateUrl])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden p-0">
-        <DialogHeader className="border-b border-slate-200 px-6 py-5">
-          <DialogTitle className="text-xl font-semibold">
-            ตัวอย่างใบรับรอง
+      <DialogContent className="max-w-5xl! gap-0 overflow-hidden p-0 sm:rounded-2xl">
+        <DialogHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
+          <DialogTitle className="text-xl font-bold text-slate-900">
+            ใบรับรอง
           </DialogTitle>
-          <DialogDescription>
-            ตรวจสอบใบรับรองของ {employeeName}
-            {trainingRecord?.course?.title
-              ? ` สำหรับหลักสูตร ${trainingRecord.course.title}`
-              : ''}
+          <DialogDescription className="text-slate-500">
+            ตรวจสอบความถูกต้องของใบรับรองอิเล็กทรอนิกส์
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-            {certificateUrl ? (
+        <div className="grid gap-0 lg:grid-cols-[1fr_300px]">
+          {/* Preview Area */}
+          <div className="relative flex min-h-[400px] flex-col bg-slate-50 lg:h-[65vh]">
+            {status === 'checking' && (
+              <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
+                <div className="relative">
+                  <div className="border-t-primary size-16 animate-spin rounded-full border-4 border-slate-200" />
+                  <Search className="absolute inset-0 m-auto size-6 text-slate-400" />
+                </div>
+                <p className="mt-6 text-base font-medium text-slate-900">
+                  กำลังเตรียมการแสดงผล...
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  ระบบกำลังตรวจสอบไฟล์ใบรับรองของคุณ
+                </p>
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="flex flex-1 flex-col items-center justify-center text-center">
+                <div className="text-destructive bg-destructive/10 mb-6 flex size-24 items-center justify-center rounded-full ring-8 ring-red-50/50">
+                  <FileX className="size-12" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">
+                  ไม่พบไฟล์ใบรับรอง
+                </h3>
+                <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-500">
+                  ขออภัย ระบบไม่พบไฟล์ใบรับรองในฐานข้อมูล
+                  หรือไฟล์อาจถูกย้ายตำแหน่ง โปรดตรวจสอบอีกครั้งภายหลัง
+                </p>
+              </div>
+            )}
+
+            {status === 'ready' && certificateUrl && (
               <iframe
                 title="ตัวอย่างใบรับรอง"
                 src={certificateUrl}
-                className="h-[62vh] w-full"
+                className="h-full w-full border-none"
               />
-            ) : (
-              <div className="flex h-[62vh] items-center justify-center px-6 text-center text-sm text-slate-500">
-                ไม่พบไฟล์ใบรับรองสำหรับรายการนี้
+            )}
+
+            {!certificateUrl && status !== 'checking' && (
+              <div className="flex flex-1 flex-col items-center justify-center p-12 text-center text-slate-500">
+                <FileX className="mb-4 size-12 opacity-20" />
+                ไม่พบข้อมูลไฟล์ใบรับรองสำหรับรายการนี้
               </div>
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <h3 className="text-base font-semibold text-slate-900">
-              รายละเอียดใบรับรอง
+          {/* Details Sidebar */}
+          <div className="flex flex-col border-l border-slate-100 bg-white p-6">
+            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <Award className="text-primary size-4" />
+              รายละเอียด
             </h3>
-            <div className="mt-4 space-y-4">
-              <DetailFieldRow label="ชื่อพนักงาน" value={employeeName} />
-              <DetailFieldRow
-                label="หลักสูตร"
-                value={trainingRecord?.course?.title ?? '-'}
-              />
-              <DetailFieldRow
-                label="ช่วงวันที่"
-                value={
-                  trainingRecord ? formatCourseDateRange(trainingRecord) : '-'
-                }
-              />
-              <DetailFieldRow
-                label="ประเภท"
-                value={
-                  courseTypeLabelByValue.get(
+            <div className="mt-6 space-y-6">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                  พนักงาน
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {employeeName}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                  หลักสูตร
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {trainingRecord?.course?.title ?? '-'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                  ช่วงเวลาที่อบรม
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {trainingRecord ? formatCourseDateRange(trainingRecord) : '-'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                  ประเภทหลักสูตร
+                </p>
+                <Badge variant="secondary" className="mt-1 font-medium">
+                  {courseTypeLabelByValue.get(
                     trainingRecord?.course?.type ?? ''
                   ) ??
-                  trainingRecord?.course?.type ??
-                  '-'
-                }
-              />
+                    trainingRecord?.course?.type ??
+                    '-'}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="border-t border-slate-200 px-6 py-5 sm:justify-between">
-          <p className="text-sm text-slate-500">
-            หาก preview ไม่แสดงผล สามารถดาวน์โหลดไฟล์เพื่อตรวจสอบได้
-          </p>
-          {certificateUrl ? (
-            <Button asChild>
-              <a
-                href={certificateUrl}
-                target="_blank"
-                rel="noreferrer"
-                download
-              >
-                ดาวน์โหลดใบรับรอง
-              </a>
-            </Button>
-          ) : (
-            <Button disabled>ดาวน์โหลดใบรับรอง</Button>
-          )}
+        <DialogFooter className="flex-col border-t border-slate-100 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-2 text-slate-500">
+            <div className="size-1.5 rounded-full bg-slate-300" />
+            <p className="text-[13px]">
+              สามารถดาวน์โหลดไฟล์เก็บไว้เป็นหลักฐานได้
+            </p>
+          </div>
+          <div className="mt-3 flex items-center sm:mt-0">
+            {certificateUrl ? (
+              <Button asChild>
+                <Link
+                  href={certificateUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  download
+                >
+                  <Download className="mr-1 size-4" />
+                  ดาวน์โหลดไฟล์
+                </Link>
+              </Button>
+            ) : (
+              <Button disabled className="h-10 px-6">
+                ไม่มีไฟล์ให้ดาวน์โหลด
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
