@@ -5,18 +5,20 @@ import {
 } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { createAuditLogContext } from '../audit-logs/audit-log-context';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { EmployeeDetailResponseDto } from './dto/employee-detail-response.dto';
 import { EmployeeImportDryRunRequestDto } from './dto/employee-import-dry-run-request.dto';
 import { EmployeeImportDryRunResponseDto } from './dto/employee-import-dry-run-response.dto';
 import { EmployeeImportRequestDto } from './dto/employee-import-request.dto';
@@ -130,6 +132,34 @@ export class EmployeesController {
         ? createAuditLogContext(session, request)
         : undefined,
     );
+  }
+
+  @UserHasPermission({ permission: { employee: ['read'] } })
+  @Get(':employeeNo')
+  @ApiOperation({ summary: 'ดึงรายละเอียดพนักงานตามรหัสพนักงาน' })
+  @ZodResponse({
+    type: EmployeeDetailResponseDto,
+    status: 200,
+  })
+  @ApiBadRequestResponse({
+    description: 'ข้อมูลไม่ถูกต้อง',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'เข้าสู่ระบบไม่สำเร็จ',
+  })
+  @ApiForbiddenResponse({ description: 'ไม่มีสิทธิ์เข้าถึง (เฉพาะ Admin)' })
+  @ApiNotFoundResponse({
+    description: 'ไม่พบข้อมูลพนักงานที่ต้องการ',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์',
+  })
+  // ดึงรายละเอียดพนักงานจาก employeeNo เพื่อใช้บนหน้ารายละเอียดแบบรายบุคคล
+  async findOneByEmployeeNo(
+    @Session() _session: UserSession,
+    @Param('employeeNo') employeeNo: string,
+  ): Promise<EmployeeDetailResponseDto> {
+    return await this.employeesService.findOneByEmployeeNo(employeeNo);
   }
 
   // ตรวจว่า request ปัจจุบันถูกเรียกมาเพื่อส่งออกข้อมูลหรือไม่

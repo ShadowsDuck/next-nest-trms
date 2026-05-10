@@ -41,6 +41,8 @@ export const employeeResponseSchema = employeeSchema.extend({
   trainingRecords: z.array(trainingRecordResponseSchema),
 })
 
+export const employeeDetailResponseSchema = employeeResponseSchema
+
 // Pagination Response Schema
 export const employeePaginationResponseSchema = z.object({
   data: z.array(employeeResponseSchema),
@@ -141,6 +143,7 @@ export const employeeImportResponseSchema = z.object({
 // Employee Types
 export type EmployeeType = z.infer<typeof employeeSchema>
 export type EmployeeResponse = z.infer<typeof employeeResponseSchema>
+export type EmployeeDetailResponse = z.infer<typeof employeeDetailResponseSchema>
 export type EmployeeQuery = z.infer<typeof employeeQuerySchema>
 export type EmployeePaginationResponse = z.infer<
   typeof employeePaginationResponseSchema

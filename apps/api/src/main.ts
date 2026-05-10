@@ -1,5 +1,7 @@
 import { apiReference } from '@scalar/nestjs-api-reference';
+import express from 'express';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
+import { join } from 'node:path';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -15,6 +17,7 @@ async function bootstrap() {
   // Project description
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   if (process.env.TRUST_PROXY === 'true') {
     app.getHttpAdapter().getInstance().set('trust proxy', 1);

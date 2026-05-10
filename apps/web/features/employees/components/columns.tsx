@@ -196,8 +196,8 @@ export const employeeTableColumns: DataTableColumnDef<EmployeeResponse>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <DataTableRowActions
-          viewHref={`/admin/employees/${row.original.id}`}
-          editHref={`/admin/employees/${row.original.id}/edit`}
+          viewHref={`/admin/employees/${row.original.employeeNo}`}
+          editHref={`/admin/employees/${row.original.employeeNo}/edit`}
         />
       </div>
     ),
