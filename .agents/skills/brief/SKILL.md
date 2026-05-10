@@ -67,11 +67,15 @@ Interview the user relentlessly about every aspect of this plan until we reach a
 ```md
 ## Why
 
-<problem / motivation>
+<problem / motivation — 2-3 sentences explaining the pain point>
 
 ## What
 
-<concrete deliverable>
+<concrete deliverable — what the feature looks like when done>
+
+## How it works
+
+<brief description of the flow from user perspective — 3-5 bullet points>
 
 ## Constraints
 
@@ -82,7 +86,7 @@ Interview the user relentlessly about every aspect of this plan until we reach a
 ## Execution Strategy
 
 - Branch: `codex/<feature-slug>`
-- Commit Policy: `do` proposes one short commit message per task; actual commits happen in final integration
+- Commit Policy: if batching tasks, `do` proposes one summary commit message; if executing individually, one commit message per task
 - Merge Policy: run `ship` only when all tasks are done and committed
 
 ## Prerequisites

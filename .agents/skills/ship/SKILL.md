@@ -24,7 +24,8 @@ If a check can't be run locally (e.g., CI-only), note it explicitly — don't sk
 A clean commit history is what makes PRs reviewable. Confirm:
 
 - Work happened on the correct feature branch (matches the spec's branch name).
-- Each task has exactly one commit (`1 task = 1 commit`). Combining tasks in one commit makes it impossible to revert cleanly.
+- If tasks were executed individually, each task should have one commit.
+- If tasks were batched (do T1-T6), a single summary commit is acceptable.
 - No unrelated files are mixed into task commits.
 - If uncommitted required changes exist, list them and stop before declaring merge readiness.
 
