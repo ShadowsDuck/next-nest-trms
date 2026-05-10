@@ -105,10 +105,10 @@ function DetailStatCard({
           <Icon className="size-8" />
         </div>
         <div className="min-w-0">
-          <p className="text-md font-medium text-slate-500">{label}</p>
+          <p className="text-md text-muted-foreground font-medium">{label}</p>
           <p
             className={cn(
-              'mt-1 truncate text-2xl font-semibold tracking-tight text-slate-900',
+              'text-foreground mt-1 truncate text-2xl font-semibold tracking-tight',
               valueClassName
             )}
           >
@@ -122,9 +122,9 @@ function DetailStatCard({
 
 function DetailFieldRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-3 first:pt-0 last:border-b-0 last:pb-0">
-      <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-right text-sm font-medium text-slate-900">
+    <div className="border-border flex items-center justify-between gap-4 border-b py-3 first:pt-0 last:border-b-0 last:pb-0">
+      <span className="text-muted-foreground text-sm">{label}</span>
+      <span className="text-foreground text-right text-sm font-medium">
         {value}
       </span>
     </div>
@@ -183,28 +183,28 @@ function EmployeeCertificateDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl! gap-0 overflow-hidden p-0 sm:rounded-2xl">
-        <DialogHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
-          <DialogTitle className="text-xl font-bold text-slate-900">
+        <DialogHeader className="border-border bg-muted/50 border-b px-6 py-5">
+          <DialogTitle className="text-foreground text-xl font-bold">
             ใบรับรอง
           </DialogTitle>
-          <DialogDescription className="text-slate-500">
+          <DialogDescription className="text-muted-foreground">
             ตรวจสอบความถูกต้องของใบรับรองอิเล็กทรอนิกส์
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-0 lg:grid-cols-[1fr_300px]">
           {/* Preview Area */}
-          <div className="relative flex min-h-[400px] flex-col bg-slate-50 lg:h-[65vh]">
+          <div className="bg-muted relative flex min-h-[400px] flex-col lg:h-[65vh]">
             {status === 'checking' && (
               <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
                 <div className="relative">
-                  <div className="border-t-primary size-16 animate-spin rounded-full border-4 border-slate-200" />
-                  <Search className="absolute inset-0 m-auto size-6 text-slate-400" />
+                  <div className="border-t-primary border-border size-16 animate-spin rounded-full border-4" />
+                  <Search className="text-muted-foreground absolute inset-0 m-auto size-6" />
                 </div>
-                <p className="mt-6 text-base font-medium text-slate-900">
+                <p className="text-foreground mt-6 text-base font-medium">
                   กำลังเตรียมการแสดงผล...
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="text-muted-foreground mt-1 text-sm">
                   ระบบกำลังตรวจสอบไฟล์ใบรับรองของคุณ
                 </p>
               </div>
@@ -212,13 +212,13 @@ function EmployeeCertificateDialog({
 
             {status === 'error' && (
               <div className="flex flex-1 flex-col items-center justify-center text-center">
-                <div className="text-destructive bg-destructive/10 mb-6 flex size-24 items-center justify-center rounded-full ring-8 ring-red-50/50">
+                <div className="text-destructive bg-destructive/10 ring-destructive/20 mb-6 flex size-24 items-center justify-center rounded-full ring-8">
                   <FileX className="size-12" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">
+                <h3 className="text-foreground text-xl font-bold">
                   ไม่พบไฟล์ใบรับรอง
                 </h3>
-                <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-500">
+                <p className="text-muted-foreground mt-3 max-w-xs text-sm leading-relaxed">
                   ขออภัย ระบบไม่พบไฟล์ใบรับรองในฐานข้อมูล
                   หรือไฟล์อาจถูกย้ายตำแหน่ง โปรดตรวจสอบอีกครั้งภายหลัง
                 </p>
@@ -234,7 +234,7 @@ function EmployeeCertificateDialog({
             )}
 
             {!certificateUrl && status !== 'checking' && (
-              <div className="flex flex-1 flex-col items-center justify-center p-12 text-center text-slate-500">
+              <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-12 text-center">
                 <FileX className="mb-4 size-12 opacity-20" />
                 ไม่พบข้อมูลไฟล์ใบรับรองสำหรับรายการนี้
               </div>
@@ -242,38 +242,38 @@ function EmployeeCertificateDialog({
           </div>
 
           {/* Details Sidebar */}
-          <div className="flex flex-col border-l border-slate-100 bg-white p-6">
-            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
+          <div className="border-border flex flex-col border-l bg-white p-6">
+            <h3 className="text-foreground flex items-center gap-2 text-base font-bold">
               <Award className="text-primary size-4" />
               รายละเอียด
             </h3>
             <div className="mt-6 space-y-6">
               <div className="space-y-1">
-                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
                   พนักงาน
                 </p>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-foreground text-sm font-semibold">
                   {employeeName}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
                   หลักสูตร
                 </p>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-foreground text-sm font-semibold">
                   {trainingRecord?.course?.title ?? '-'}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
                   ช่วงเวลาที่อบรม
                 </p>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-foreground text-sm font-semibold">
                   {trainingRecord ? formatCourseDateRange(trainingRecord) : '-'}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
                   ประเภทหลักสูตร
                 </p>
                 <Badge variant="secondary" className="mt-1 font-medium">
@@ -288,9 +288,9 @@ function EmployeeCertificateDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex-col border-t border-slate-100 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex items-center gap-2 text-slate-500">
-            <div className="size-1.5 rounded-full bg-slate-300" />
+        <DialogFooter className="border-border flex-col border-t bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="text-muted-foreground flex items-center gap-2">
+            <div className="bg-border size-1.5 rounded-full" />
             <p className="text-[13px]">
               สามารถดาวน์โหลดไฟล์เก็บไว้เป็นหลักฐานได้
             </p>
@@ -352,13 +352,13 @@ export function EmployeeDetailPage({
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       variant="outline"
-                      className="h-7 rounded-lg border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                      className="border-border text-muted-foreground h-7 rounded-lg px-2.5 text-xs font-medium"
                     >
                       {employee.employeeNo}
                     </Badge>
                     <Badge
                       variant="outline"
-                      className="h-7 rounded-lg border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                      className="border-border text-muted-foreground h-7 rounded-lg px-2.5 text-xs font-medium"
                     >
                       {employee.jobLevel}
                     </Badge>
@@ -373,14 +373,14 @@ export function EmployeeDetailPage({
                           'size-1.5 rounded-full',
                           employee.status === 'Active'
                             ? 'bg-success'
-                            : 'bg-gray-400'
+                            : 'bg-inactive'
                         )}
                       />
                       {statusLabelByValue.get(employee.status) ??
                         employee.status}
                     </Badge>
                   </div>
-                  <p className="max-w-2xl text-sm leading-6 text-slate-500">
+                  <p className="text-muted-foreground max-w-2xl text-sm leading-6">
                     ดูข้อมูลพนักงาน โครงสร้างองค์กร
                     และประวัติการอบรมทั้งหมดได้ในหน้าเดียว
                   </p>
@@ -405,26 +405,26 @@ export function EmployeeDetailPage({
                   icon={BookOpen}
                   label="จำนวนหลักสูตรทั้งหมด"
                   value={stats.totalTrainings.toLocaleString('th-TH')}
-                  toneClassName="bg-[#EEF2FF] text-[#4F46E5]"
+                  toneClassName="bg-primary/10 text-primary"
                 />
                 <DetailStatCard
                   icon={Clock3}
                   label="จำนวนชั่วโมงทั้งหมด"
                   value={`${stats.totalHours.toLocaleString('th-TH')} ชม.`}
-                  toneClassName="bg-[#EFF6FF] text-[#2563EB]"
+                  toneClassName="bg-sidebar-primary/10 text-sidebar-primary"
                   valueClassName="text-xl md:text-2xl"
                 />
                 <DetailStatCard
                   icon={Award}
                   label="ใบรับรอง"
                   value={stats.certificateCount.toLocaleString('th-TH')}
-                  toneClassName="bg-[#F0FDF4] text-[#16A34A]"
+                  toneClassName="bg-success/10 text-success"
                 />
                 <DetailStatCard
                   icon={Calendar}
                   label="อบรมล่าสุด"
                   value={formatThaiDate(stats.latestTrainingDate)}
-                  toneClassName="bg-[#FFF7ED] text-[#F97316]"
+                  toneClassName="bg-warning/10 text-warning"
                   valueClassName="text-lg md:text-xl"
                 />
               </div>
@@ -434,7 +434,7 @@ export function EmployeeDetailPage({
                 <div className="space-y-3 sm:col-span-1 xl:col-span-1">
                   <Card className="gap-0 rounded-xl bg-white shadow-none">
                     <CardHeader className="pb-4">
-                      <CardTitle className="flex items-center gap-3 text-base font-semibold text-slate-900">
+                      <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                         <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
                           <UserRound className="size-4" />
                         </span>
@@ -467,7 +467,7 @@ export function EmployeeDetailPage({
 
                   <Card className="gap-0 rounded-xl bg-white shadow-none">
                     <CardHeader className="pb-4">
-                      <CardTitle className="flex items-center gap-3 text-base font-semibold text-slate-900">
+                      <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                         <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
                           <Workflow className="size-4" />
                         </span>
@@ -477,7 +477,7 @@ export function EmployeeDetailPage({
                     <CardContent className="pt-0">
                       <div className="relative">
                         <div className="absolute top-0 bottom-0 flex w-4 justify-center">
-                          <div className="mt-[8px] mb-[8px] w-px bg-slate-900" />
+                          <div className="bg-foreground mt-[8px] mb-[8px] w-px" />
                         </div>
 
                         <div className="space-y-5">
@@ -487,12 +487,12 @@ export function EmployeeDetailPage({
                               className="grid grid-cols-[16px_80px_minmax(0,1fr)] items-start gap-x-3"
                             >
                               <div className="flex justify-center">
-                                <span className="z-10 mt-[3px] block size-2.5 rounded-full bg-slate-900" />
+                                <span className="bg-foreground z-10 mt-[3px] block size-2.5 rounded-full" />
                               </div>
-                              <span className="text-sm text-slate-500">
+                              <span className="text-muted-foreground text-sm">
                                 {item.label}
                               </span>
-                              <span className="text-sm font-medium text-slate-900">
+                              <span className="text-foreground text-sm font-medium">
                                 {item.value || '-'}
                               </span>
                             </div>
@@ -506,13 +506,13 @@ export function EmployeeDetailPage({
                 {/* right column: Training History — span 3 */}
                 <Card className="gap-0 rounded-xl bg-white shadow-none sm:col-span-1 xl:col-span-3">
                   <CardHeader className="gap-2 pb-4">
-                    <CardTitle className="flex items-center gap-3 text-base font-semibold text-slate-900">
+                    <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                       <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
                         <GraduationCap className="size-4" />
                       </span>
                       ประวัติการอบรม
                     </CardTitle>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-muted-foreground text-sm">
                       ตารางนี้แสดงรายการอบรมทั้งหมดของพนักงาน
                       พร้อมดูใบรับรองจากแต่ละหลักสูตรได้ทันที
                     </p>

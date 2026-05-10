@@ -39,7 +39,7 @@ export function useEmployeeTrainingHistoryColumns({
         label: 'ชื่อหลักสูตร',
       },
       cell: ({ row }) => (
-        <div className="ml-2 py-1 font-medium text-slate-900">
+        <div className="text-foreground ml-2 py-1 font-medium">
           {row.original.course?.title ?? '-'}
         </div>
       ),
@@ -103,7 +103,7 @@ export function useEmployeeTrainingHistoryColumns({
         label: 'ช่วงวันที่',
       },
       cell: ({ row }) => (
-        <span className="text-slate-600">
+        <span className="text-muted-foreground">
           {formatCourseDateRange(row.original)}
         </span>
       ),
@@ -123,7 +123,7 @@ export function useEmployeeTrainingHistoryColumns({
         label: 'รวมเวลา (ชม.)',
       },
       cell: ({ row }) => (
-        <div className="text-start font-medium text-slate-900">
+        <div className="text-foreground text-start font-medium">
           {Number(row.original.course?.duration ?? 0).toLocaleString('th-TH')}
         </div>
       ),

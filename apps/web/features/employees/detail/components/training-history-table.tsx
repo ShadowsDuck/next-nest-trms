@@ -120,11 +120,11 @@ function TrainingHistoryPagination({ totalCount }: { totalCount: number }) {
   return (
     <div className="relative flex items-center justify-between pt-3.5">
       {/* ฝั่งซ้าย: แสดงจำนวนรายการ */}
-      <div className="text-sm text-slate-500">
-        <span className="font-medium text-slate-700">
+      <div className="text-muted-foreground text-sm">
+        <span className="text-foreground font-medium">
           {from}-{to}
         </span>{' '}
-        จาก <span className="font-medium text-slate-700">{totalCount}</span>{' '}
+        จาก <span className="text-foreground font-medium">{totalCount}</span>{' '}
         รายการ
       </div>
 
@@ -199,7 +199,7 @@ export function EmployeeTrainingHistoryTable({
     >
       <div className="overflow-hidden rounded-lg">
         <DataTable className="min-h-0">
-          <DataTableHeader className="bg-slate-50/80" />
+          <DataTableHeader className="bg-muted/80" />
           <DataTableBody className="[&_td]:py-2.5">
             <DataTableSkeleton rows={7} />
 
