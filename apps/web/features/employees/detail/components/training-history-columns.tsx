@@ -1,6 +1,7 @@
 'use client'
 
 import type { TrainingRecordResponse } from '@workspace/schemas'
+import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { DataTableColumnHeader } from '@/shared/components/niko-table/components/data-table-column-header'
 import { DataTableColumnSortMenu } from '@/shared/components/niko-table/components/data-table-column-sort'
@@ -58,10 +59,15 @@ export function useEmployeeTrainingHistoryColumns({
       meta: {
         label: 'ประเภท',
       },
-      cell: ({ row }) =>
-        courseTypeLabelByValue.get(row.original.course?.type ?? '') ??
-        row.original.course?.type ??
-        '-',
+      cell: ({ row }) => {
+        const type = row.original.course?.type ?? ''
+        const label = (courseTypeLabelByValue.get(type) ?? type) || '-'
+        return (
+          <Badge variant={type === 'Internal' ? 'primary' : 'success'}>
+            {label}
+          </Badge>
+        )
+      },
     },
     {
       id: 'courseCategory',

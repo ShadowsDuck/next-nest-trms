@@ -42,7 +42,7 @@ export function DataTableRowActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         {viewHref && (
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem className="cursor-pointer" asChild>
             <Link href={viewHref}>
               <Eye className="mr-2 size-4" />
               ดูรายละเอียด
@@ -51,7 +51,7 @@ export function DataTableRowActions({
         )}
 
         {editHref && (
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem className="cursor-pointer" asChild>
             <Link href={editHref}>
               <SquarePen className="mr-2 size-4" />
               แก้ไข

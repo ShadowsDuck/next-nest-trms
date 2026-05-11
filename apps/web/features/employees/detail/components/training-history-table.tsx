@@ -118,7 +118,7 @@ function TrainingHistoryPagination({ totalCount }: { totalCount: number }) {
   if (totalCount === 0) return null
 
   return (
-    <div className="relative flex items-center justify-between pt-3.5">
+    <div className="relative flex items-center justify-between pt-5">
       {/* ฝั่งซ้าย: แสดงจำนวนรายการ */}
       <div className="text-muted-foreground text-sm">
         <span className="text-foreground font-medium">
@@ -201,7 +201,7 @@ export function EmployeeTrainingHistoryTable({
         <DataTable className="min-h-0">
           <DataTableHeader className="bg-muted/80" />
           <DataTableBody className="[&_td]:py-2.5">
-            <DataTableSkeleton rows={7} />
+            <DataTableSkeleton rows={MIN_ROWS} />
 
             {/* แสดง Empty State เมื่อไม่มีข้อมูลเลย */}
             {trainingRecords.length === 0 && (

@@ -36,6 +36,7 @@ import {
   FileX,
   Search,
   Download,
+  ChevronLeft,
 } from 'lucide-react'
 import { env } from '@/shared/lib/env'
 import { useEffect } from 'react'
@@ -46,8 +47,8 @@ import {
   formatThaiDate,
 } from '../lib/employee-detail'
 import { EmployeeTrainingHistoryTable } from './training-history-table'
-import { Separator } from '@workspace/ui/components/separator'
 import Link from 'next/link'
+import { Separator } from '@workspace/ui/components/separator'
 
 const prefixLabelByValue = new Map<string, string>([
   ['Mr', 'นาย'],
@@ -194,7 +195,7 @@ function EmployeeCertificateDialog({
 
         <div className="grid gap-0 lg:grid-cols-[1fr_300px]">
           {/* Preview Area */}
-          <div className="bg-muted relative flex min-h-[400px] flex-col lg:h-[65vh]">
+          <div className="bg-muted relative flex min-h-100 flex-col lg:h-[65vh]">
             {status === 'checking' && (
               <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
                 <div className="relative">
@@ -339,29 +340,106 @@ export function EmployeeDetailPage({
 
   return (
     <>
-      <div className="flex flex-1 bg-white">
-        <div className="mx-auto flex w-full flex-col gap-6 px-2 py-2 md:py-4">
-          <Card className="gap-0 rounded-lg bg-white shadow-none">
-            <CardContent className="space-y-6">
-              {/* header: ชื่อ + actions */}
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
-                  <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+      <div className="flex flex-1">
+        <div className="mx-auto flex w-full flex-col gap-6 px-2 pb-2 md:pb-4">
+          <Button variant="outline" className="mt-2 w-fit" asChild>
+            <Link href="/admin/employees" aria-label="กลับไปหน้าพนักงาน">
+              <ChevronLeft data-icon="inline-start" />
+              ย้อนกลับ
+            </Link>
+          </Button>
+
+          <Card className="bg-muted/45 gap-0! rounded-lg pt-0! shadow-none">
+            {/* header: ชื่อ + actions */}
+            <Card className="relative mb-6 overflow-hidden rounded-lg bg-white px-6 py-8 shadow-none">
+              {/* Decorative Background Blob */}
+              {/* Blob 1 — ใหญ่, ฟ้าอ่อน */}
+              <div className="pointer-events-none absolute -top-40 -right-32 z-0 opacity-80">
+                <svg
+                  viewBox="0 0 200 200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-125 w-175"
+                >
+                  <path
+                    fill="#F3F8FE"
+                    d="M38.5,-59.6C49.4,-53,57.3,-41.4,61.9,-28.9C66.6,-16.5,68,-3.3,66.5,9.8C65,22.9,60.6,35.7,53.3,48.6C45.9,61.5,35.8,74.4,23.3,77.1C10.8,79.8,-4.1,72.3,-19.8,67.6C-35.4,62.9,-51.8,61,-63.2,52.3C-74.6,43.6,-80.9,28.1,-79.8,13.5C-78.7,-1,-70.1,-14.5,-64.3,-30.3C-58.6,-46.1,-55.7,-64.2,-45.5,-71.1C-35.2,-78.1,-17.6,-73.9,-1.9,-71C13.8,-68,27.7,-66.3,38.5,-59.6Z"
+                    transform="translate(100 100) scale(1.5, 1)"
+                  />
+                </svg>
+              </div>
+
+              {/* Blob 2 — เล็กกว่า, ม่วง, เยื้องลงมาหน่อย */}
+              <div className="pointer-events-none absolute top-20 -right-40 z-0 opacity-50">
+                <svg
+                  viewBox="0 0 200 200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-75 w-100"
+                >
+                  <path
+                    fill="#EDE9FE"
+                    d="M38.5,-59.6C49.4,-53,57.3,-41.4,61.9,-28.9C66.6,-16.5,68,-3.3,66.5,9.8C65,22.9,60.6,35.7,53.3,48.6C45.9,61.5,35.8,74.4,23.3,77.1C10.8,79.8,-4.1,72.3,-19.8,67.6C-35.4,62.9,-51.8,61,-63.2,52.3C-74.6,43.6,-80.9,28.1,-79.8,13.5C-78.7,-1,-70.1,-14.5,-64.3,-30.3C-58.6,-46.1,-55.7,-64.2,-45.5,-71.1C-35.2,-78.1,-17.6,-73.9,-1.9,-71C13.8,-68,27.7,-66.3,38.5,-59.6Z"
+                    transform="translate(100 100) scale(1.5, 1)"
+                  />
+                </svg>
+              </div>
+
+              {/* Blob 3 — เล็กกว่า, ม่วง, เยื้องลงมาหน่อย */}
+              <div className="pointer-events-none absolute top-7 -right-72 z-0 opacity-30">
+                <svg
+                  viewBox="0 0 200 200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-75 w-100"
+                >
+                  <path
+                    fill="#EDE9FE"
+                    d="M38.5,-59.6C49.4,-53,57.3,-41.4,61.9,-28.9C66.6,-16.5,68,-3.3,66.5,9.8C65,22.9,60.6,35.7,53.3,48.6C45.9,61.5,35.8,74.4,23.3,77.1C10.8,79.8,-4.1,72.3,-19.8,67.6C-35.4,62.9,-51.8,61,-63.2,52.3C-74.6,43.6,-80.9,28.1,-79.8,13.5C-78.7,-1,-70.1,-14.5,-64.3,-30.3C-58.6,-46.1,-55.7,-64.2,-45.5,-71.1C-35.2,-78.1,-17.6,-73.9,-1.9,-71C13.8,-68,27.7,-66.3,38.5,-59.6Z"
+                    transform="translate(100 100) scale(1.5, 1)"
+                  />
+                </svg>
+              </div>
+
+              {/* Blob 4 — เล็กกว่า, ม่วง */}
+              <div className="pointer-events-none absolute -top-2 right-130 z-0 opacity-60">
+                <svg
+                  viewBox="0 0 200 200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-25 w-25"
+                >
+                  <path
+                    fill="#E8DAFF"
+                    d="M34.3,22.3C25.7,34.7,-12.9,32.2,-23.7,18.6C-34.4,5,-17.2,-19.8,2.1,-18.6C21.5,-17.4,42.9,9.9,34.3,22.3Z"
+                    transform="translate(100 100)"
+                  />
+                </svg>
+              </div>
+
+              <div className="relative z-10 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-4">
+                  <h1 className="text-3xl font-semibold md:text-4xl">
                     {employeeName}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <p className="text-muted-foreground text-sm">รหัสพนักงาน</p>
                     <Badge
                       variant="outline"
                       className="border-border text-muted-foreground h-7 rounded-lg px-2.5 text-xs font-medium"
                     >
                       {employee.employeeNo}
                     </Badge>
+
+                    <Separator orientation="vertical" />
+
+                    <p className="text-muted-foreground text-sm">ระดับ</p>
                     <Badge
                       variant="outline"
                       className="border-border text-muted-foreground h-7 rounded-lg px-2.5 text-xs font-medium"
                     >
                       {employee.jobLevel}
                     </Badge>
+
+                    <Separator orientation="vertical" />
+
+                    <p className="text-muted-foreground text-sm">สถานะ</p>
                     <Badge
                       variant={
                         employee.status === 'Active' ? 'success' : 'inactive'
@@ -380,10 +458,6 @@ export function EmployeeDetailPage({
                         employee.status}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground max-w-2xl text-sm leading-6">
-                    ดูข้อมูลพนักงาน โครงสร้างองค์กร
-                    และประวัติการอบรมทั้งหมดได้ในหน้าเดียว
-                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -393,13 +467,13 @@ export function EmployeeDetailPage({
                   </Button>
                   <Button type="button">
                     <Pen className="mr-1 size-4" />
-                    แก้ไข
+                    แก้ไขข้อมูล
                   </Button>
                 </div>
               </div>
+            </Card>
 
-              <Separator />
-
+            <CardContent className="space-y-6">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <DetailStatCard
                   icon={BookOpen}
@@ -436,7 +510,7 @@ export function EmployeeDetailPage({
                     <CardHeader className="pb-4">
                       <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                         <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-                          <UserRound className="size-4" />
+                          <UserRound className="size-5" />
                         </span>
                         ข้อมูลทั่วไป
                       </CardTitle>
@@ -469,7 +543,7 @@ export function EmployeeDetailPage({
                     <CardHeader className="pb-4">
                       <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                         <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-                          <Workflow className="size-4" />
+                          <Workflow className="size-5" />
                         </span>
                         โครงสร้างองค์กร
                       </CardTitle>
@@ -477,7 +551,7 @@ export function EmployeeDetailPage({
                     <CardContent className="pt-0">
                       <div className="relative">
                         <div className="absolute top-0 bottom-0 flex w-4 justify-center">
-                          <div className="bg-foreground mt-[8px] mb-[8px] w-px" />
+                          <div className="bg-muted-foreground/50 mt-2 mb-2 w-px" />
                         </div>
 
                         <div className="space-y-5">
@@ -487,7 +561,7 @@ export function EmployeeDetailPage({
                               className="grid grid-cols-[16px_80px_minmax(0,1fr)] items-start gap-x-3"
                             >
                               <div className="flex justify-center">
-                                <span className="bg-foreground z-10 mt-[3px] block size-2.5 rounded-full" />
+                                <span className="bg-primary z-10 mt-0.75 block size-2.5 rounded-full" />
                               </div>
                               <span className="text-muted-foreground text-sm">
                                 {item.label}
@@ -508,14 +582,10 @@ export function EmployeeDetailPage({
                   <CardHeader className="gap-2 pb-4">
                     <CardTitle className="text-foreground flex items-center gap-3 text-base font-semibold">
                       <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-                        <GraduationCap className="size-4" />
+                        <GraduationCap className="size-5" />
                       </span>
                       ประวัติการอบรม
                     </CardTitle>
-                    <p className="text-muted-foreground text-sm">
-                      ตารางนี้แสดงรายการอบรมทั้งหมดของพนักงาน
-                      พร้อมดูใบรับรองจากแต่ละหลักสูตรได้ทันที
-                    </p>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <EmployeeTrainingHistoryTable

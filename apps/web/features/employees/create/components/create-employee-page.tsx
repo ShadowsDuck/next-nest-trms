@@ -93,7 +93,7 @@ export function CreateEmployeePage() {
                   <ChevronLeft data-icon="inline-start" />
                 </Link>
               </Button>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                 เพิ่มพนักงาน
               </h1>
             </div>
