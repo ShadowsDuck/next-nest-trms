@@ -57,6 +57,12 @@ src/
 │       │   └── search-<domain>s.query.ts
 │       ├── services/               # Business logic — only when needed
 │       │   └── <operation>-<domain>.service.ts
+│       ├── lib/                    # Domain-specific helpers (mappers, builders, etc.)
+│       │   ├── <domain>.mapper.ts  # Format DB rows → response types
+│       │   └── <domain>-where.builder.ts  # Build Prisma `where` from query params
+│       ├── <feature>/              # Named sub-folder when logic has 3+ related files
+│       │   ├── index.ts            # Single export point for the sub-module
+│       │   └── ...                 # Internal helpers, kept private to this folder
 │       └── __tests__/              # All tests for this domain
 │           ├── <domain>.handlers.test.ts
 │           ├── <domain>.queries.test.ts
@@ -99,6 +105,14 @@ modules/order/
 │   └── delete-order.query.ts
 ├── services/
 │   └── place-order.service.ts  # orchestrates: validate stock → create order → notify
+├── lib/                        # Domain-specific helpers — NOT shared globally
+│   ├── order.mapper.ts         # DB row → OrderResponse
+│   └── order-where.builder.ts  # query params → Prisma WhereInput
+├── shipping/                   # Sub-folder when 3+ files share one concept
+│   ├── index.ts                # exports calculateShipping()
+│   ├── get-courier-cost.ts
+│   ├── calculate-packaging-cost.ts
+│   └── calculate-discount.ts
 └── __tests__/
     ├── order.handlers.test.ts
     ├── order.queries.test.ts
@@ -134,6 +148,27 @@ modules/order/
 - Zod schema for the entity
 - OpenAPI registration
 - Derived types: `Create<Domain>`, `Update<Domain>`, `<Domain>Response`
+
+### `lib/` inside a domain — Domain-specific helpers
+
+- Mappers (`<domain>.mapper.ts`) and query builders (`<domain>-where.builder.ts`) belong here
+- **Only used by this domain** — the moment two domains import the same helper, move it to global `src/utils/`
+- Do not confuse with global `src/lib/` (third-party client inits); domain `lib/` has zero external dependencies
+
+### Named sub-folders — Grouping related helpers
+
+When a single concept spawns 3+ files, group them into a named sub-folder with an `index.ts` entry point:
+
+```
+courses/
+└── storage/          # Named sub-folder for OneDrive attachment logic
+    ├── index.ts      # exports uploadAttachment(), deleteAttachment()
+    ├── onedrive-course-attachment-storage.service.ts
+    ├── course-attachment-storage.contract.ts
+    └── onedrive-course-attachment.contract.ts
+```
+
+The rule: **locate code close to where it is used.** If it is only used in one module, keep it there. If more than one module needs it, move it up a level.
 
 ### `__tests__/` — Co-located with the domain
 
@@ -176,6 +211,13 @@ New code needed?
 │   │
 │   ├─ Zod schema / types for this domain?
 │   │   └─ src/modules/<domain>/<domain>.schema.ts
+│   │
+│   ├─ Domain-specific helper (mapper, builder, formatter)?
+│   │   └─ src/modules/<domain>/lib/<helper-name>.ts
+│   │       (if 2+ domains need it → move to src/utils/)
+│   │
+│   ├─ Domain-specific concept with 3+ related files?
+│   │   └─ src/modules/<domain>/<concept-name>/index.ts  (sub-folder + index)
 │   │
 │   └─ Test or fake data?
 │       └─ src/modules/<domain>/__tests__/
