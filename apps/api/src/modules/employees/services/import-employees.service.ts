@@ -2,25 +2,20 @@ import { AuditAction } from '@workspace/database';
 import type {
   EmployeeImportDryRunRequest,
   EmployeeImportDryRunResponse,
+  EmployeeImportRawRow,
   EmployeeImportRequest,
+  EmployeeImportResponse,
+  EmployeeImportRow,
+  EmployeeType,
 } from '@workspace/schemas';
-import {
-  type EmployeeImportRawRow,
-  type EmployeeImportResponse,
-  type EmployeeImportRow,
-  type EmployeeType,
-  employeeImportRowSchema,
-} from '@workspace/schemas';
-import { db } from '../../lib/db';
+import { employeeImportRowSchema } from '@workspace/schemas';
+import { db } from '../../../lib/db';
 import {
   createAuditLog,
   createFailureLog,
-} from '../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import {
-  type CreateEmployeePayload,
-  createEmployee,
-} from './employees.service';
+} from '../../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+import { createEmployeeService } from './create-employee.service';
 
 const importFieldLabelMap: Record<string, string> = {
   sourceRow: 'ลำดับแถว',
@@ -37,8 +32,10 @@ const importFieldLabelMap: Record<string, string> = {
   departmentName: 'ส่วนงาน',
 };
 
-// ตรวจไฟล์นำเข้าแบบไม่บันทึกข้อมูลจริง แล้วส่งผลสรุปต่อแถวกลับไปให้ผู้ใช้
-export async function importDryRun(
+/**
+ * ตรวจสอบข้อมูลนำเข้าพนักงาน (Dry Run)
+ */
+export async function importDryRunService(
   body: EmployeeImportDryRunRequest,
 ): Promise<EmployeeImportDryRunResponse> {
   const validationResults = await validateImportRows(body.rows);
@@ -60,8 +57,10 @@ export async function importDryRun(
   };
 }
 
-// นำเข้าข้อมูลจริงจาก CSV แบบ partial success (แถวที่ผิดจะถูกข้าม)
-export async function importEmployees(
+/**
+ * นำเข้าข้อมูลพนักงานจริง (Import)
+ */
+export async function importEmployeesService(
   body: EmployeeImportRequest,
   auditLogContext: AuditLogContext,
 ): Promise<EmployeeImportResponse> {
@@ -83,7 +82,7 @@ export async function importEmployees(
 
       try {
         const payload = await toCreateEmployeePayload(row.parsedRow);
-        await createEmployee(payload, auditLogContext);
+        await createEmployeeService(payload, auditLogContext);
         imported += 1;
         rowResults.push({
           sourceRow: row.sourceRow,
@@ -149,7 +148,9 @@ export async function importEmployees(
   }
 }
 
-// ขั้นตอนตรวจนำเข้า: schema -> ซ้ำในไฟล์ -> ซ้ำในฐาน -> ความสัมพันธ์หน่วยงาน
+/**
+ * ตรวจสอบความถูกต้องของข้อมูลรายแถว
+ */
 async function validateImportRows(
   rows: EmployeeImportRawRow[],
 ): Promise<ImportRowValidationResult[]> {
@@ -161,7 +162,9 @@ async function validateImportRows(
   return rowResults;
 }
 
-// normalize ก่อน parse เพื่อให้ error report สะอาดและคาดเดาได้
+/**
+ * ตรวจสอบ Schema ของแถว
+ */
 function validateImportRowSchema(
   rawRow: EmployeeImportRawRow,
 ): ImportRowValidationResult {
@@ -203,7 +206,9 @@ function validateImportRowSchema(
   };
 }
 
-// ตรวจ duplicate ภายในไฟล์เดียวกัน โดยดู employeeNo และ idCardNo
+/**
+ * ตรวจสอบข้อมูลซ้ำในไฟล์
+ */
 function appendFileDuplicateErrors(rows: ImportRowValidationResult[]) {
   const employeeNoCount = new Map<string, number>();
   const idCardCount = new Map<string, number>();
@@ -238,7 +243,9 @@ function appendFileDuplicateErrors(rows: ImportRowValidationResult[]) {
   }
 }
 
-// ตรวจ duplicate กับข้อมูลที่มีอยู่ในระบบก่อนนำเข้า
+/**
+ * ตรวจสอบข้อมูลซ้ำในฐานข้อมูล
+ */
 async function appendDatabaseDuplicateErrors(
   rows: ImportRowValidationResult[],
 ) {
@@ -305,7 +312,9 @@ async function appendDatabaseDuplicateErrors(
   }
 }
 
-// ตรวจว่า chain หน่วยงานจากชื่อสามารถ map ได้จริงทุกระดับ
+/**
+ * ตรวจสอบความถูกต้องของสายบังคับบัญชา (Organization Chain)
+ */
 async function appendOrganizationChainErrors(
   rows: ImportRowValidationResult[],
 ) {
@@ -325,7 +334,9 @@ async function appendOrganizationChainErrors(
   }
 }
 
-// normalize และ map ฟิลด์จากข้อมูลดิบที่อ่านจาก CSV
+/**
+ * ปรับข้อมูลดิบให้เป็นรูปแบบมาตรฐาน
+ */
 function normalizeImportRawRow(
   rawRow: EmployeeImportRawRow,
 ): NormalizedImportRow {
@@ -345,7 +356,9 @@ function normalizeImportRawRow(
   };
 }
 
-// แปลง primitive เป็น string แบบ trim และกันค่าที่ไม่ควรถูกนำมา stringify
+/**
+ * ปรับ String ให้เรียบร้อย (Trim และจัดการ Null)
+ */
 function normalizeString(value: unknown): string | undefined {
   if (
     value == null ||
@@ -362,7 +375,9 @@ function normalizeString(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
-// map คำนำหน้าภาษาไทย/อังกฤษให้เป็นค่ามาตรฐานที่ schema รองรับ
+/**
+ * ปรับคำนำหน้าชื่อให้เป็นค่ามาตรฐาน
+ */
 function normalizePrefix(value: unknown): EmployeeType['prefix'] | undefined {
   const raw = normalizeString(value);
   if (!raw) {
@@ -382,10 +397,12 @@ function normalizePrefix(value: unknown): EmployeeType['prefix'] | undefined {
   return undefined;
 }
 
-// แปลงข้อมูลนำเข้าจาก CSV ให้พร้อมสำหรับ create employee โดย map ชื่อหน่วยงาน -> id
+/**
+ * แปลงข้อมูลจากแถวนำเข้าให้เป็น Payload สำหรับสร้างพนักงาน
+ */
 async function toCreateEmployeePayload(
   row: EmployeeImportRow,
-): Promise<CreateEmployeePayload> {
+): Promise<EmployeeType> {
   const nameParts = splitFullName(row.fullName);
   if (!nameParts) {
     throw new Error('ชื่อ-นามสกุลไม่ถูกต้อง (กรุณาระบุอย่างน้อย 2 คำ)');
@@ -429,7 +446,9 @@ async function toCreateEmployeePayload(
   };
 }
 
-// แยก "ชื่อ-นามสกุล" เป็น firstName/lastName โดยรองรับทั้งรูปแบบเว้นวรรคและคั่นด้วย "-"
+/**
+ * แยกชื่อและนามสกุลออกจากกัน
+ */
 function splitFullName(
   fullName: string,
 ): { firstName: string; lastName: string } | null {
@@ -463,7 +482,9 @@ function splitFullName(
   };
 }
 
-// แปลงวันที่รูปแบบไทย (วว/ดด/ปปปป พ.ศ.) ให้เป็น ISO date (yyyy-mm-dd)
+/**
+ * แปลงวันที่แบบไทยเป็น ISO (YYYY-MM-DD)
+ */
 function parseThaiDateToIso(value: string): string | null {
   const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!match) {
@@ -500,7 +521,9 @@ function parseThaiDateToIso(value: string): string | null {
   return `${gregorianYear.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
 
-// หา id หน่วยงานจาก "ชื่อ" โดยไล่ตาม chain: plant -> bu -> function -> division -> department
+/**
+ * หา ID หน่วยงานจากชื่อ
+ */
 async function resolveOrganizationUnitIdsByName(input: {
   plantName: string;
   buName: string;
@@ -575,7 +598,9 @@ async function resolveOrganizationUnitIdsByName(input: {
   };
 }
 
-// ตรวจสอบความถูกต้องของ chain หน่วยงานจาก "ชื่อ" เพื่อใช้ใน dry-run
+/**
+ * ตรวจสอบความผิดพลาดของสายบังคับบัญชาจากชื่อ
+ */
 async function getOrganizationChainErrorsByNames(input: {
   plantName: string;
   buName: string;
@@ -593,7 +618,9 @@ async function getOrganizationChainErrorsByNames(input: {
   ];
 }
 
-// สร้าง payload สำหรับ audit log ของการนำเข้า โดยเก็บเฉพาะข้อมูลที่อ่านย้อนหลังได้จริง
+/**
+ * สร้าง Audit Payload สำหรับการนำเข้า
+ */
 function toImportAuditPayload(
   body: EmployeeImportRequest,
 ): Record<string, unknown> {
@@ -603,7 +630,9 @@ function toImportAuditPayload(
   };
 }
 
-// สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+/**
+ * สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON
+ */
 function toAuditErrorPayload(error: unknown): Record<string, string> {
   if (error instanceof Error) {
     return {
