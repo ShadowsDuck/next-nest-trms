@@ -1,33 +1,30 @@
 ---
 name: hono-project-structure
 description: >
-  Project structure map and file placement guide for this Hono + Prisma + Kysely backend.
-  Use this skill whenever you are about to create a new file, add a new resource/endpoint,
-  scaffold a feature, or are unsure where to place code in this project. Trigger on phrases
-  like "add a route", "create a controller", "new feature", "new endpoint", "where do I put",
-  "scaffold", "add an entity", or any time code files are about to be created.
-  This is NOT a general Hono syntax guide — for Hono API syntax use the `hono` skill instead.
+  File placement and naming guide for this Hono + Prisma + Kysely backend,
+  organized by Domain Module. Read this skill BEFORE creating any file, adding
+  any endpoint, scaffolding any feature, or deciding where code belongs.
+  Trigger on: "add a route", "create a controller", "new feature", "new endpoint",
+  "scaffold", "add an entity", "where do I put", or any time code files are about
+  to be created. For Hono API syntax → use the `hono` skill instead.
 ---
 
-# Hono Project Structure Guide
+# Hono Project Structure — Domain Module
 
-This skill is the **single source of truth for file placement and naming** in this project.
-Always consult it before creating or moving files.
-
-For Hono API syntax (routing, middleware, streaming, RPC) → use the **`hono` skill** instead.
-For deeper implementation patterns → read the relevant `rules/` file listed in each section below.
+**Core principle:** Every file that belongs to a domain lives inside that domain's folder.
+Opening `src/modules/order/` tells you everything the order domain does — handlers, queries,
+services, schema, and tests — without jumping across the codebase.
 
 ---
 
-## Naming Conventions (Apply Everywhere)
+## Naming Conventions
 
-| Context                                        | Convention    | Example                        |
-| ---------------------------------------------- | ------------- | ------------------------------ |
-| Folders & files                                | `kebab-case`  | `create-user.ts`               |
-| Feature-specific modules                       | `_kebab-case` | `_controllers/`                |
-| Classes & Types                                | `PascalCase`  | `HonoEnv`, `CreateUserBody`    |
-| Functions, Zod schemas                         | `camelCase`   | `createUserData`, `userSchema` |
-| DB tables, columns, query params, request body | `snake_case`  | `first_name`, `user_id`        |
+| Context                                  | Convention   | Example                             |
+| ---------------------------------------- | ------------ | ----------------------------------- |
+| Folders & files                          | `kebab-case` | `create-order.ts`                   |
+| Classes & Types                          | `PascalCase` | `CreateOrderBody`, `OrderSchema`    |
+| Functions, Zod schemas                   | `camelCase`  | `createOrderHandler`, `orderSchema` |
+| DB tables, columns, request/query params | `snake_case` | `user_id`, `created_at`             |
 
 ---
 
@@ -35,65 +32,131 @@ For deeper implementation patterns → read the relevant `rules/` file listed in
 
 ```
 src/
-├── app.ts                  # App bootstrap (OpenAPIHono, middleware, routes)
-├── server.ts               # Standalone Node.js server entry
+├── app.ts                  # Bootstrap: init Hono app, register global middleware, mount routes
+├── server.ts               # Node.js entry point
 ├── env.ts                  # Zod-validated environment variables
-├── constants/              # Shared constants
-├── controllers/            # API routes & handlers  ← see rules/controllers-and-routes.md
-│   ├── <resource>/
-│   │   ├── routes.ts           # Chain .openapi() calls for this resource
-│   │   ├── create-<resource>.ts
-│   │   ├── get-<resource>.ts
-│   │   ├── get-<resource>s.ts
-│   │   ├── update-<resource>.ts
-│   │   ├── delete-<resource>.ts
-│   │   ├── archive-<resource>.ts
-│   │   ├── unarchive-<resource>.ts
-│   │   ├── search-<resource>s.ts
-│   │   └── dto/                # Request/response DTOs (if needed)
-│   └── routes.ts           # Root: imports & exports all resource routes
-├── data/                   # Data access layer  ← see rules/data-access-via-db.md
-│   ├── <entity>/
-│   │   ├── schema.ts           # Zod schema + OpenAPI registration
-│   │   ├── create-<entity>.ts
-│   │   ├── get-<entity>.ts
-│   │   ├── update-<entity>.ts
-│   │   ├── delete-<entity>.ts
-│   │   ├── search-<entity>s.ts
-│   │   └── __test-utils__/     # Fake data factories for tests
-│   └── schema.ts           # Root: registers all entity schemas for OpenAPI
-├── db/                     # Kysely client + Prisma schema types
-├── lib/                    # Third-party integrations (e.g. better-auth)
-├── middlewares/            # Hono middleware functions
-├── services/               # Business logic (only when needed)  ← see rules/service-layer.md
-│   └── <entity>/
-│       └── <operation>-<entity>.ts
-├── types/                  # Shared TypeScript types
-│   └── hono.ts             # HonoEnv + AppRouteHandler
-└── utils/                  # Shared utilities (errors, logger, etc.)
+│
+├── modules/                # ← Domain modules (core of the app)
+│   ├── index.ts            # Mount all module routes into the app
+│   └── <domain>/           # One folder per business domain
+│       ├── index.ts        # Export: routes for this domain
+│       ├── <domain>.schema.ts      # Zod schema, types, OpenAPI registration
+│       ├── <domain>.routes.ts      # Register all handlers for this domain
+│       ├── handlers/               # HTTP layer — one file per endpoint
+│       │   ├── create-<domain>.ts
+│       │   ├── get-<domain>.ts
+│       │   ├── get-<domain>s.ts
+│       │   ├── update-<domain>.ts
+│       │   ├── delete-<domain>.ts
+│       │   └── search-<domain>s.ts
+│       ├── queries/                # DB queries — one file per operation
+│       │   ├── create-<domain>.query.ts
+│       │   ├── get-<domain>.query.ts
+│       │   ├── update-<domain>.query.ts
+│       │   ├── delete-<domain>.query.ts
+│       │   └── search-<domain>s.query.ts
+│       ├── services/               # Business logic — only when needed
+│       │   └── <operation>-<domain>.service.ts
+│       └── __tests__/              # All tests for this domain
+│           ├── <domain>.handlers.test.ts
+│           ├── <domain>.queries.test.ts
+│           └── __fixtures__/       # Fake data factories for tests
+│               └── make-fake-<domain>.ts
+│
+├── db/                     # Kysely client + Prisma-generated types
+│   ├── create-db-client.ts
+│   └── schema.ts           # Override Prisma types for app use
+│
+├── middleware/             # Global middleware (auth, logging, error handling)
+│   └── <name>.middleware.ts
+│
+├── lib/                    # Third-party integrations (e.g. better-auth, storage)
+├── types/
+│   └── hono.ts             # HonoEnv, AppRouteHandler — always import from here
+├── constants/              # App-wide constants
+└── utils/                  # Pure stateless helpers (errors, pagination, etc.)
 ```
 
 ---
 
-## Feature Domain (Optional — only when explicitly required)
+## Anatomy of a Domain Module
 
-Use `src/features/<feature-name>/` only when the requirement explicitly calls for feature isolation.
-Shared domain (`src/`) is the **default**.
+Every domain is self-contained. Example: `modules/order/`
 
 ```
-src/features/<feature-name>/
-├── index.ts
-├── _constants/
-├── _controllers/
-│   ├── routes.ts
-│   └── dto/
-├── _data/
-│   └── schema.ts
-├── _middlewares/       # (only if needed)
-├── _services/          # (only if needed)
-├── _types/
-└── _utils/
+modules/order/
+├── index.ts                    # export { orderRoutes } from './order.routes'
+├── order.schema.ts             # Zod schema + OpenAPI + derived types
+├── order.routes.ts             # .openapi(createOrderRoute, createOrderHandler) ...
+├── handlers/
+│   ├── create-order.ts         # parse → call query or service → return JSON
+│   ├── get-order.ts
+│   ├── get-orders.ts
+│   ├── update-order.ts
+│   └── delete-order.ts
+├── queries/
+│   ├── create-order.query.ts   # Kysely insert
+│   ├── get-order.query.ts      # Kysely select
+│   ├── update-order.query.ts
+│   └── delete-order.query.ts
+├── services/
+│   └── place-order.service.ts  # orchestrates: validate stock → create order → notify
+└── __tests__/
+    ├── order.handlers.test.ts
+    ├── order.queries.test.ts
+    └── __fixtures__/
+        └── make-fake-order.ts
 ```
+
+---
+
+## Responsibility of Each Layer
+
+### handlers/ — HTTP only
+
+- Parse validated input (`c.req.valid(...)`)
+- Call **query** (simple) or **service** (complex)
+- Return typed JSON with correct status code
+- **No business logic, no raw DB calls**
+
+### queries/ — DB only
+
+- Pure Kysely queries, no HTTP context
+- One function per operation, always export a `Response` type
+- Use `executeTakeFirstOrThrow(() => new NotFoundError(...))` for single-record ops
+
+### services/ — Orchestration only
+
+- Use when a handler needs **multiple queries** or **cross-domain logic**
+- Receive dependencies as injected args (easier to test)
+- If the operation is one query → skip service, call query directly from handler
+
+### `<domain>.schema.ts` — Single source of truth for types
+
+- Zod schema for the entity
+- OpenAPI registration
+- Derived types: `Create<Domain>`, `Update<Domain>`, `<Domain>Response`
+
+### `__tests__/` — Co-located with the domain
+
+- Tests live next to the code they test, not in a separate top-level `tests/` folder
+- `__fixtures__/make-fake-<domain>.ts` creates realistic fake data for tests
+
+---
+
+## What Goes in Global Folders
+
+Only code with **zero domain knowledge** belongs outside `modules/`:
+
+| Folder        | Belongs Here                                        | Does NOT Belong Here      |
+| ------------- | --------------------------------------------------- | ------------------------- |
+| `middleware/` | Auth check, request logging, error handler          | Order-specific validation |
+| `utils/`      | `paginate()`, `toISOString()`, custom Error classes | Any domain concept        |
+| `lib/`        | Stripe client init, S3 client init                  | Payment business logic    |
+| `constants/`  | HTTP status codes, env keys                         | Domain-specific enums     |
+| `db/`         | Kysely setup, Prisma type overrides                 | Any query                 |
+
+If you find yourself importing a domain module into `utils/`, the code is in the wrong place.
 
 ---
 
@@ -102,82 +165,69 @@ src/features/<feature-name>/
 ```
 New code needed?
 │
-├─ New API endpoint?
-│   └─ src/controllers/<resource>/       (read rules/controllers-and-routes.md)
-│       ├─ Create the operation file: <operation>-<resource>.ts
-│       ├─ Register in: src/controllers/<resource>/routes.ts
-│       └─ Export from: src/controllers/routes.ts
+├─ Belongs to a specific domain? (user, order, product...)
+│   │
+│   ├─ HTTP handler (parse input, return response)?
+│   │   └─ src/modules/<domain>/handlers/<operation>-<domain>.ts
+│   │
+│   ├─ DB query?
+│   │   └─ src/modules/<domain>/queries/<operation>-<domain>.query.ts
+│   │
+│   ├─ Multi-step business logic (multiple queries / cross-domain)?
+│   │   └─ src/modules/<domain>/services/<operation>-<domain>.service.ts
+│   │
+│   ├─ Zod schema / types for this domain?
+│   │   └─ src/modules/<domain>/<domain>.schema.ts
+│   │
+│   └─ Test or fake data?
+│       └─ src/modules/<domain>/__tests__/
 │
-├─ New DB query / data access?
-│   └─ src/data/<entity>/               (read rules/data-access-via-db.md)
-│       ├─ Create the operation file: <operation>-<entity>.ts
-│       └─ Register schema in: src/data/schema.ts
-│
-├─ Complex business logic (multi-step, orchestration)?
-│   └─ src/services/<entity>/           (read rules/service-layer.md)
-│       └─ Use dependency injection pattern
-│
-├─ Middleware?
-│   └─ src/middlewares/<name>.ts
-│       └─ Register in src/app.ts with app.use()
-│
-├─ Constants?
-│   └─ src/constants/<name>.ts
-│
-└─ New complete feature (isolated domain)?
-    └─ src/features/<feature-name>/     (use _kebab-case prefix for sub-modules)
+└─ No domain (truly shared)?
+    ├─ Global middleware?  →  src/middleware/
+    ├─ Pure helper fn?     →  src/utils/
+    ├─ 3rd party client?   →  src/lib/
+    └─ App-wide constant?  →  src/constants/
 ```
 
 ---
 
-## Workflow Patterns
+## Checklist: Adding a New Domain
 
-Choose based on operation complexity:
-
-| Pattern       | Use When                         | Flow                                                             |
-| ------------- | -------------------------------- | ---------------------------------------------------------------- |
-| **Pattern 1** | Simple CRUD, single data call    | `Data Layer → Controller → App`                                  |
-| **Pattern 2** | Complex logic, strict separation | `Data Layer → Service → Controller → App`                        |
-| **Pattern 3** | Flexible (recommended default)   | Mix: call data layer directly or via service based on complexity |
+- [ ] Create `src/modules/<domain>/` folder
+- [ ] `<domain>.schema.ts` — Zod schema, types, OpenAPI registration
+- [ ] `queries/` — create operation files
+- [ ] `handlers/` — create handler files
+- [ ] `<domain>.routes.ts` — register handlers via `.openapi()`
+- [ ] `index.ts` — export routes
+- [ ] Register routes in `src/modules/index.ts`
+- [ ] `__tests__/__fixtures__/make-fake-<domain>.ts` — fake data factory
+- [ ] `__tests__/` — add handler + query tests
+- [ ] `services/` — add only if orchestration is needed
 
 ---
 
-## Key Types (Always Use These)
+## Key Types
 
 ```typescript
-// types/hono.ts — always import from here
-import type { HonoEnv } from '@/types/hono';
-import type { AppRouteHandler } from '@/types/hono';
+// Always import from here
+import type { HonoEnv } from "@/types/hono";
+import type { AppRouteHandler } from "@/types/hono";
 
-// HonoEnv provides: session, dbClient in context variables
-// AppRouteHandler<typeof myRoute> — type-safe route handler
+// HonoEnv:         provides dbClient, session via Hono context
+// AppRouteHandler: full type-safety for c.req / c.json()
 ```
 
 ---
 
-## Adding a New Resource: Checklist
+## Implementation Details
 
-When adding a completely new resource (e.g. `orders`):
+For full code patterns and examples, read the rules files:
 
-- [ ] **Data layer**: Create `src/data/orders/schema.ts` + operation files
-- [ ] **Register schema**: Add to `src/data/schema.ts`
-- [ ] **Controllers**: Create `src/controllers/orders/` with operation files
-- [ ] **Resource routes**: Create `src/controllers/orders/routes.ts` (chain `.openapi()`)
-- [ ] **Root routes**: Add `ordersRoutes` to `src/controllers/routes.ts`
-- [ ] **Service** (if needed): Create `src/services/orders/<operation>.ts`
-- [ ] **Tests**: Add `__test-utils__/` under the data folder
-
----
-
-## Rules Files Reference
-
-Read these for full implementation details and code examples:
-
-| Topic                      | File                                 |
-| -------------------------- | ------------------------------------ |
-| Controllers & routes       | `rules/controllers-and-routes.md`    |
-| Data access (DB queries)   | `rules/data-access-via-db.md`        |
-| Data access (external API) | `rules/data-access-via-api.md`       |
-| Service layer              | `rules/service-layer.md`             |
-| DB schema design           | `rules/db-schema.md`                 |
-| Testing data access        | `rules/testing-data-access-layer.md` |
+| Need                     | File                           |
+| ------------------------ | ------------------------------ |
+| Handler + route patterns | `rules/handlers-and-routes.md` |
+| Query patterns (Kysely)  | `rules/queries.md`             |
+| Service layer patterns   | `rules/services.md`            |
+| Schema + type patterns   | `rules/schema.md`              |
+| Prisma type overrides    | `rules/db-schema.md`           |
+| Testing patterns         | `rules/testing.md`             |

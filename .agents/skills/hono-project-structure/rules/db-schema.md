@@ -1,136 +1,89 @@
+# DB Schema
+
+## Responsibility
+
+Prisma generate types จาก `schema.prisma` อัตโนมัติ ใช้ได้เลยไม่ต้อง override
+`src/lib/db.ts` เป็นที่ init `PrismaClient` และ export `db` ให้ทุก query ใช้
+
 ---
-description: 
-globs: **/prisma/schema.prisma
-alwaysApply: false
----
-# Guidelines for Prisma Schema Integration
 
-## Purpose & Overview
-These rules define the standard patterns for working with Prisma-generated schemas and integrating them with the application's type system. The guidelines ensure consistent handling of database types across the codebase.
-
-## Schema Integration Pattern
-
-### Type Override Pattern
-Follow this pattern for overriding Prisma-generated types to ensure consistent handling of fields:
+## db client
 
 ```typescript
-/**
- * Utility type to override specific field types from database tables:
- * - DATE fields: converted to `Date | string` if not null else do `Date | string | null`
- * - JSON fields: specific type overrides
- * - w/ DEFAULT fields: any field with a default value
- * @example
- * type SampleTable = {
- *   id: Generated<string>; // w/o DEFAULT
- *   name: string; // w/o DEFAULT
- *   created_at: Generated<Timestamp>; // w/ DEFAULT
- *   updated_at: Generated<Timestamp>; // w/ DEFAULT
- *   deleted_at: Timestamp | null; // w/o DEFAULT
- *   status: Generated<UserStatusType>; // w/ DEFAULT
- *   json: unknown; // w/o DEFAULT
- *   is_active: Generated<boolean>; // w/ DEFAULT
- * };
- *
- * type OverrideSampleTable = Omit<OverrideCommonFields<SampleTable>, 'status'> & {
- *   status: UserStatusType;
- *   json: SomeJsonType;
- *   is_active: boolean;
- * };
- */
-type OverrideCommonFields<TTable> = Omit<
-  TTable,
-  'id' | 'created_at' | 'updated_at' | 'deleted_at'
-> & {
-  id: string;
-  created_at: Date | string;
-  updated_at: Date | string;
-  deleted_at: Date | string | null;
-};
+// src/lib/db.ts
+import { PrismaClient } from '@workspace/database'
+
+export const db = new PrismaClient()
 ```
 
-### Field-Specific Overrides
-For fields requiring specific types beyond common fields:
-
+Import ใช้งาน:
 
 ```typescript
-type OverrideEntityName = Omit<OverrideCommonFields<entity_name>, 'specific_field'> & {
-  specific_field: SpecificType;
-};
-
-export type EntityName = OverrideEntityName;
+import { db } from '@/lib/db'
 ```
 
-## When to Override Types
+---
 
-1. **Common Fields**:
-   - `id`: Always override to remove `Generated<>` wrapper
-   - `created_at`, `updated_at`: Always override to allow both `Date` and `string` types
-   - `deleted_at`: Always override to allow `Date`, `string`, or `null`
+## Adding a New Model
 
-2. **Specific Fields**:
-   - **Enum Fields**: Override to use the explicit enum type instead of the Prisma-generated type
-   - **JSON Fields**: Override with a properly typed structure rather than `unknown`
-   - **Fields with Defaults**: Override to remove the `Generated<>` wrapper
-
-3. **Relation Fields**:
-   - For relation fields, override with the proper entity type
-
-## Example Implementation
-
-For a table with the following Prisma schema:
+1. เพิ่ม model ใน `prisma/schema.prisma`
+2. รัน `pnpm prisma migrate dev --name <migration-name>`
+3. Prisma generate types ให้อัตโนมัติ — ใช้ได้เลยใน query files
 
 ```prisma
-model Entity {
-  id          String      @id @default(uuid())
-  created_at  DateTime    @default(now())
-  updated_at  DateTime    @updatedAt
-  deleted_at  DateTime?   
-  status      Status      @default(ACTIVE)
-  metadata    Json?
-  // Relations
-  related     Related[]
+model Order {
+  id        String   @id @default(uuid())
+  status    String   @default("pending")
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
 }
 ```
 
-After creation of Prisma Schema model make sure to also update the `src/db/schema.ts` to make it reusable for zod schemas in the `Data Access Layer's Schema`:
+---
+
+## Using Prisma Types in Queries
+
+ใช้ `Prisma.ModelWhereInput` และ type อื่น ๆ จาก Prisma โดยตรง:
 
 ```typescript
-// src/db/schema.ts
-import { type entity, type Status } from './types';
+import { type Prisma } from '@workspace/database'
 
-type OverrideEntity = Omit<OverrideCommonFields<entity>, 'status' | 'metadata'> & {
-  status: Status;
-  metadata: EntityMetadata | null;
-};
+const where: Prisma.OrderWhereInput = {
+  deletedAt: null,
+  status: 'pending',
+}
 
-type EntityMetadata = {
-  key1: string;
-  key2: number;
-  // Other metadata fields
-};
-
-export type Entity = OverrideEntity;
+// Transaction client
+async function someQuery({ tx }: { tx?: Prisma.TransactionClient }) {
+  const client = tx ?? db
+  // ...
+}
 ```
 
-## Best Practices
+---
 
-1. **Consistency**: Follow the same pattern for all entity types
-2. **Type Safety**: Ensure proper typing for JSON fields to leverage TypeScript type checking
-3. **Documentation**: Document any complex type overrides with comments
-4. **Minimalism**: Only override fields that need specific typing beyond the Prisma defaults
-5. **Exports**: Export the final overridden types for use throughout the application
+## Soft Delete Convention
 
-## Type Export Convention
-
-Follow this naming convention for exported types:
+ใช้ `deletedAt DateTime?` ใน schema — ไม่ลบจริง แต่ set วันที่:
 
 ```typescript
-// Original Prisma-generated type: users
-// Exported type name: User (singular, PascalCase)
+// archive
+await db.order.update({
+  where: { id },
+  data: { deletedAt: new Date() },
+})
 
-export type User = OverrideUsers;
-``` 
+// unarchive
+await db.order.update({
+  where: { id },
+  data: { deletedAt: null },
+})
 
-## Important Note
-1. Create the Prisma Schema Model
-2. Add the newly added Prisma Schema Model in `src/db/schema.ts`
+// query เฉพาะ active records
+const where: Prisma.OrderWhereInput = { deletedAt: null }
+```
