@@ -24,4 +24,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Employee Detail** (`Completed`) — [View Spec](./specs/employee-detail.md) — 2026-05-10
 - [x] **Employee Detail Deepening** (`Completed`) — [View Spec](./specs/employee-detail-deepening.md) — 2026-05-12
 - [x] **Dependency Cleanup** (`Completed`) — [View Spec](./specs/dependency-cleanup.md) — 2026-05-12
-- [ ] **Migrate to Hono** (`Draft`) — [View Spec](./specs/migrate-to-hono.md) — 2026-05-12
+- [x] **Migrate to Hono** (`Completed`) — [View Spec](./specs/migrate-to-hono.md) — 2026-05-12
