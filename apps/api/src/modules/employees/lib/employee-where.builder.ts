@@ -1,8 +1,9 @@
 import { Prisma } from '@workspace/database';
-import { EmployeeQueryDto } from '../dto/employee-query.dto';
+import type { EmployeeQuery } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 
 export function buildEmployeeWhereInput(
-  queryDto: EmployeeQueryDto,
+  queryDto: EmployeeQuery,
 ): Prisma.EmployeeWhereInput {
   const { search, prefix, jobLevel, divisionName, departmentName, status } =
     queryDto;

@@ -1,23 +1,22 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { HealthResponseDto } from './dto/health-response.dto';
+import { db } from '../../lib/db';
 
-@Injectable()
-export class HealthService {
-  constructor(private readonly prismaService: PrismaService) {}
-
-  async check(): Promise<HealthResponseDto> {
-    try {
-      await this.prismaService.$queryRaw`SELECT 1`;
-    } catch {
-      throw new ServiceUnavailableException('Database is unavailable');
-    }
-
+// ตรวจสอบความพร้อมของระบบและฐานข้อมูล
+export async function checkHealth() {
+  try {
+    await db.$queryRaw`SELECT 1`;
+  } catch {
     return {
-      status: 'ok',
-      database: 'up',
+      status: 'error',
+      database: 'down',
       uptime: Number(process.uptime().toFixed(2)),
       timestamp: new Date().toISOString(),
     };
   }
+
+  return {
+    status: 'ok',
+    database: 'up',
+    uptime: Number(process.uptime().toFixed(2)),
+    timestamp: new Date().toISOString(),
+  };
 }

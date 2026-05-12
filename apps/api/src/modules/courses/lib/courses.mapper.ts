@@ -8,8 +8,9 @@ import {
   Plant,
   Tag,
 } from '@workspace/database';
+import type { CourseResponse } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
-import { CourseResponseDto } from '../dto/course-response.dto';
 
 type CourseEmployee = Employee & {
   plant: Plant;
@@ -26,7 +27,7 @@ export type CourseWithRelations = Course & {
   }[];
 };
 
-export function formatCourse(course: CourseWithRelations): CourseResponseDto {
+export function formatCourse(course: CourseWithRelations): CourseResponse {
   return {
     ...course,
     startDate: toIsoDate(course.startDate),

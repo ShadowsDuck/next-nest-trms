@@ -1,20 +1,15 @@
-import { TagResponse } from '@workspace/schemas';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import type { TagResponse } from '@workspace/schemas';
+import { db } from '../../lib/db';
 
-@Injectable()
-export class TagsService {
-  constructor(private readonly prismaService: PrismaService) {}
+// ดึงรายการหมวดหมู่ทั้งหมด
+export async function findAllTags(): Promise<TagResponse[]> {
+  const tags = await db.tag.findMany({
+    orderBy: { name: 'asc' },
+  });
 
-  async findAll(): Promise<TagResponse[]> {
-    const tags = await this.prismaService.tag.findMany({
-      orderBy: { name: 'asc' },
-    });
-
-    return tags.map((tag) => ({
-      id: tag.id,
-      name: tag.name,
-      colorCode: tag.colorCode,
-    }));
-  }
+  return tags.map((tag) => ({
+    id: tag.id,
+    name: tag.name,
+    colorCode: tag.colorCode,
+  }));
 }

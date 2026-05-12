@@ -1,6 +1,7 @@
 import { AuditAction, Prisma } from '@workspace/database';
+import type { AuditLogQuery } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { parseTimestamp } from '../../../lib/date-utils';
-import { AuditLogQueryDto } from '../dto/audit-log-query.dto';
 
 const AUDIT_ACTIONS = Object.values(AuditAction);
 
@@ -18,7 +19,7 @@ function getMatchedAuditActions(search: string): AuditAction[] {
 }
 
 export function buildAuditLogWhereInput(
-  queryDto: AuditLogQueryDto,
+  queryDto: AuditLogQuery,
 ): Prisma.AuditLogWhereInput {
   const { search, model, action, dateRange } = queryDto;
   const where: Prisma.AuditLogWhereInput = {};
