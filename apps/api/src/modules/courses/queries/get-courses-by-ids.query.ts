@@ -1,9 +1,9 @@
 import { db } from '../../../lib/db';
 
 /**
- * ค้นหาข้อมูลหลักสูตรตามรายการ ID สำหรับการออกรายงาน
+ * ค้นหาข้อมูลหลักสูตรตามรายการ ID (ใช้สำหรับออกรายงานหรือดึงข้อมูลแบบกลุ่ม)
  */
-export async function getCoursesForReportQuery(courseIds: string[]) {
+export async function getCoursesByIdsQuery(courseIds: string[]) {
   return await db.course.findMany({
     where: {
       id: { in: courseIds },

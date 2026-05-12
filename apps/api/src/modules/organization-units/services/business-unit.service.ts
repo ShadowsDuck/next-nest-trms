@@ -1,12 +1,12 @@
 import { BusinessUnitQuery, BusinessUnitResponse } from '@workspace/schemas';
 import { toIsoDateTime } from '../../../utils/date-utils';
+import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createBusinessUnitQuery,
   getBusinessUnitByIdQuery,
   getBusinessUnitsQuery,
   updateBusinessUnitQuery,
 } from '../queries/business-unit.query';
-import { rethrowDuplicateNameError } from './organization-units.utils';
 import { ensurePlantExists } from './plant.service';
 
 /**

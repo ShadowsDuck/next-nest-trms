@@ -1,12 +1,12 @@
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
-import { checkDatabaseConnectionQuery } from '../queries/health.query';
+import { getHealthQuery } from '../queries/get-health.query';
 
 /**
  * Handler สำหรับตรวจสอบความพร้อมของระบบ
  */
-export async function checkHealthHandler(c: Context<HonoEnv>) {
-  const isDbUp = await checkDatabaseConnectionQuery();
+export async function getHealthHandler(c: Context<HonoEnv>) {
+  const isDbUp = await getHealthQuery();
 
   if (!isDbUp) {
     return c.json(

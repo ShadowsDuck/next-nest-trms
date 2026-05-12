@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
-import { getLatestSummaryReportService } from '../services/get-summary-report.service';
+import { getLatestSummaryReportService } from '../services/get-latest-summary-report.service';
 
 /**
  * Handler สำหรับดึงรายงานล่าสุดของผู้ใช้ปัจจุบัน

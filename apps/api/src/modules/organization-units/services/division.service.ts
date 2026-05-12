@@ -1,5 +1,6 @@
 import { DivisionQuery, DivisionResponse } from '@workspace/schemas';
 import { toIsoDateTime } from '../../../utils/date-utils';
+import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createDivisionQuery,
   getDivisionByIdQuery,
@@ -7,7 +8,6 @@ import {
   updateDivisionQuery,
 } from '../queries/division.query';
 import { ensureFunctionExists } from './org-function.service';
-import { rethrowDuplicateNameError } from './organization-units.utils';
 
 /**
  * ดึงข้อมูล Divisions

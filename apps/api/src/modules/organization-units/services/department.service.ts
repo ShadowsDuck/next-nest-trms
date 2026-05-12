@@ -1,5 +1,6 @@
 import { DepartmentQuery, DepartmentResponse } from '@workspace/schemas';
 import { toIsoDateTime } from '../../../utils/date-utils';
+import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createDepartmentQuery,
   getDepartmentByIdQuery,
@@ -7,7 +8,6 @@ import {
   updateDepartmentQuery,
 } from '../queries/department.query';
 import { ensureDivisionExists } from './division.service';
-import { rethrowDuplicateNameError } from './organization-units.utils';
 
 /**
  * ดึงข้อมูล Departments

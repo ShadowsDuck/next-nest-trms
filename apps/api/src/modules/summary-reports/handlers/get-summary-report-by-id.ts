@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
-import { getSummaryReportByIdService } from '../services/get-summary-report.service';
+import { getSummaryReportByIdService } from '../services/get-summary-report-by-id.service';
 
 /**
  * Handler สำหรับดึงรายงานตาม ID

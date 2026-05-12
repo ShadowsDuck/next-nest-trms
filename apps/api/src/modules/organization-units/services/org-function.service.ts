@@ -1,5 +1,6 @@
 import { OrgFunctionQuery, OrgFunctionResponse } from '@workspace/schemas';
 import { toIsoDateTime } from '../../../utils/date-utils';
+import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createFunctionQuery,
   getFunctionByIdQuery,
@@ -7,7 +8,6 @@ import {
   updateFunctionQuery,
 } from '../queries/org-function.query';
 import { ensureBusinessUnitExists } from './business-unit.service';
-import { rethrowDuplicateNameError } from './organization-units.utils';
 
 /**
  * ดึงข้อมูล Functions
