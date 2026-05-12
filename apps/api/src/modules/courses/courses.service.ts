@@ -1,10 +1,10 @@
-import { AuditAction, CourseType } from '@workspace/database';
+import { AuditAction } from '@workspace/database';
 import type {
   CoursePaginationResponse,
   CourseQuery,
   CourseResponse,
+  CourseType as CourseSchemaType,
 } from '@workspace/schemas';
-import type {} from '@workspace/schemas';
 import { db } from '../../lib/db';
 import {
   createAuditLog,
@@ -19,19 +19,9 @@ import {
   uploadAttachment,
 } from './storage/onedrive-course-attachment-storage.service';
 
-export type CreateCoursePayload = {
-  title: string;
-  type: CourseType;
-  tagId: string;
-  expense: number;
-  duration: number;
-  startDate: string | Date;
-  endDate: string | Date;
-  startTime?: string | null;
-  endTime?: string | null;
+export type CreateCoursePayload = CourseSchemaType & {
   accreditationFile?: any;
   attendanceFile?: any;
-  [key: string]: any;
 };
 
 type UploadableAttachment = {

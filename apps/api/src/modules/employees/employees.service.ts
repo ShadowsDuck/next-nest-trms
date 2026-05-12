@@ -1,14 +1,10 @@
-import {
-  AuditAction,
-  EmployeeStatus,
-  JobLevel,
-  Prefix,
-} from '@workspace/database';
+import { AuditAction } from '@workspace/database';
 import type {
   EmployeeDetailResponse,
   EmployeePaginationResponse,
   EmployeeQuery,
   EmployeeResponse,
+  EmployeeType,
 } from '@workspace/schemas';
 import { db } from '../../lib/db';
 import {
@@ -20,21 +16,7 @@ import { validateEmployeeHierarchy } from '../organization-units/organization-un
 import { buildEmployeeWhereInput } from './lib/employee-where.builder';
 import { formatEmployee } from './lib/employees.mapper';
 
-export type CreateEmployeePayload = {
-  employeeNo: string;
-  prefix: Prefix;
-  firstName: string;
-  lastName: string;
-  idCardNo?: string | null;
-  hireDate?: string | Date | null;
-  jobLevel: JobLevel;
-  status: EmployeeStatus;
-  plantId: string;
-  buId: string;
-  functionId: string;
-  divisionId: string;
-  departmentId: string;
-};
+export type CreateEmployeePayload = EmployeeType;
 
 // สร้างพนักงานใหม่ 1 รายการ พร้อมตรวจข้อมูลซ้ำและความถูกต้องของ chain หน่วยงาน
 export async function createEmployee(
