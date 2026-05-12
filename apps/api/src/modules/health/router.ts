@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
+import { HonoEnv } from '../../types/hono';
 import { checkHealth } from './health.service';
 
-const healthRouter = new Hono();
+const healthRouter = new Hono<HonoEnv>();
 
 // ตรวจสอบความพร้อมของระบบ
 healthRouter.get('/', async (c) => {

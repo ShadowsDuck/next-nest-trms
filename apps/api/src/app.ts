@@ -1,26 +1,20 @@
-import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { auth } from './auth/auth';
-import auditLogsRouter from './modules/audit-logs/router';
-import coursesRouter from './modules/courses/router';
-import employeesRouter from './modules/employees/router';
-import healthRouter from './modules/health/router';
-import organizationUnitsRouter from './modules/organization-units/router';
-import summaryReportsRouter from './modules/summary-reports/router';
-import tagsRouter from './modules/tags/router';
-import usersRouter from './modules/users/router';
+import { env } from './env';
+import { auth } from './lib/auth';
+import { modules } from './modules';
+import { HonoEnv } from './types/hono';
 
-const app = new Hono();
+const app = new Hono<HonoEnv>();
 
 // Global Middlewares
 app.use(logger());
 app.use(
   '*',
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+    origin: env.ALLOWED_ORIGINS,
     credentials: true,
   }),
 );
@@ -34,16 +28,7 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 app.use('/uploads/*', serveStatic({ root: './' }));
 
 // API Routers — เชื่อมต่อ router ทุกตัวผ่าน basePath เพื่อให้ AppType ดึง type ได้ครบถ้วน
-export const routes = app
-  .basePath('/api')
-  .route('/health', healthRouter)
-  .route('/users', usersRouter)
-  .route('/tags', tagsRouter)
-  .route('/courses', coursesRouter)
-  .route('/employees', employeesRouter)
-  .route('/organization-units', organizationUnitsRouter)
-  .route('/audit-logs', auditLogsRouter)
-  .route('/summary-reports', summaryReportsRouter);
+export const routes = app.basePath('/api').route('/', modules);
 
 // Global Error Handler — จัดการ error ที่หลุดออกมาจาก handler ทุกตัวให้เป็น JSON เสมอ
 app.onError((err, c) => {
@@ -59,11 +44,4 @@ app.notFound((c) => {
 // Export AppType สำหรับใช้กับ Hono RPC Client ฝั่ง Frontend
 export type AppType = typeof routes;
 
-const port = Number(process.env.PORT || 3000);
-
-console.log(`API is running at http://localhost:${port}/api`);
-
-serve({
-  fetch: app.fetch,
-  port,
-});
+export default app;

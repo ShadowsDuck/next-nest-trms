@@ -1,6 +1,6 @@
 import { AuditLog, User } from '@workspace/database';
 import type { AuditLog as AuditLogResponse } from '@workspace/schemas';
-import { toIsoDateTime } from 'src/lib/date-utils';
+import { toIsoDateTime } from 'src/utils/date-utils';
 
 export type AuditLogWithUser = AuditLog & {
   user: User;

@@ -15,8 +15,9 @@ import {
   updateOrgFunctionSchema,
   updatePlantSchema,
 } from '@workspace/schemas';
-import { factory } from '../../lib/factory';
-import { requireAuth } from '../../middlewares/auth';
+import { Hono } from 'hono';
+import { requireAuth } from '../../middleware/auth.middleware';
+import { HonoEnv } from '../../types/hono';
 import {
   createBusinessUnit,
   createDepartment,
@@ -35,7 +36,7 @@ import {
   updatePlant,
 } from './organization-units.service';
 
-const orgUnitsRouter = factory.createApp();
+const orgUnitsRouter = new Hono<HonoEnv>();
 
 orgUnitsRouter.use('/*', requireAuth);
 

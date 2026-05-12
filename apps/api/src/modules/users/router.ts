@@ -1,7 +1,8 @@
-import { factory } from '../../lib/factory';
-import { requireAuth } from '../../middlewares/auth';
+import { Hono } from 'hono';
+import { requireAuth } from '../../middleware/auth.middleware';
+import { HonoEnv } from '../../types/hono';
 
-const usersRouter = factory.createApp();
+const usersRouter = new Hono<HonoEnv>();
 
 // Middleware ตรวจสอบการล็อกอิน
 usersRouter.use('/*', requireAuth);

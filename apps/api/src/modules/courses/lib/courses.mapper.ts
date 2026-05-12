@@ -10,7 +10,7 @@ import {
 } from '@workspace/database';
 import type { CourseResponse } from '@workspace/schemas';
 import type {} from '@workspace/schemas';
-import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
+import { toIsoDate, toIsoDateTime } from 'src/utils/date-utils';
 
 type CourseEmployee = Employee & {
   plant: Plant;

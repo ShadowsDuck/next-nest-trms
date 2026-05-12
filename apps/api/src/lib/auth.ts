@@ -4,6 +4,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { admin } from 'better-auth/plugins';
 import { createAccessControl } from 'better-auth/plugins/access';
 import { adminAc, defaultStatements } from 'better-auth/plugins/admin/access';
+import { env } from '../env';
 
 const ac = createAccessControl({
   // defaultStatements มีหน้าตาประมาณนี้
@@ -56,8 +57,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
   // ถ้า User model มี custom field เพิ่ม
@@ -75,7 +76,7 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: process.env.ALLOWED_ORIGINS?.split(','),
+  trustedOrigins: env.ALLOWED_ORIGINS,
   plugins: [
     admin({
       ac,

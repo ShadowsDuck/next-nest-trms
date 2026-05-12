@@ -1,3 +1,4 @@
+import { env } from '../../../env';
 import {
   CourseAttachmentDeleteInput,
   CourseAttachmentUploadInput,
@@ -49,7 +50,10 @@ export async function uploadAttachment(
 ): Promise<CourseAttachmentUploadResult> {
   const request = toOneDriveUploadRequest(input);
   const accessToken = await getAccessToken();
-  const folderId = getRequiredEnv('ONEDRIVE_FOLDER_ID');
+  const folderId = env.ONEDRIVE_FOLDER_ID;
+  if (!folderId) {
+    throw new Error('Missing required env: ONEDRIVE_FOLDER_ID');
+  }
   const storedFileName = buildStoredFileName(input.kind, request.fileName);
   const contentType = request.mimeType.trim() || 'application/octet-stream';
 
@@ -141,14 +145,20 @@ async function getAccessToken(): Promise<string> {
     return cachedToken.token;
   }
 
-  const clientId = getRequiredEnv('ONEDRIVE_CLIENT_ID');
-  const clientSecret = getRequiredEnv('ONEDRIVE_CLIENT_SECRET');
-  const refreshToken = getRequiredEnv('ONEDRIVE_REFRESH_TOKEN');
-  const scope = process.env.ONEDRIVE_SCOPE ?? 'offline_access Files.ReadWrite';
+  const clientId = env.ONEDRIVE_CLIENT_ID;
+  const clientSecret = env.ONEDRIVE_CLIENT_SECRET;
+  const refreshToken = env.ONEDRIVE_REFRESH_TOKEN;
 
-  const tokenEndpoint =
-    process.env.ONEDRIVE_TOKEN_ENDPOINT ??
-    'https://login.microsoftonline.com/consumers/oauth2/v2.0/token';
+  if (!clientId || !clientSecret || !refreshToken) {
+    const missing = [];
+    if (!clientId) missing.push('ONEDRIVE_CLIENT_ID');
+    if (!clientSecret) missing.push('ONEDRIVE_CLIENT_SECRET');
+    if (!refreshToken) missing.push('ONEDRIVE_REFRESH_TOKEN');
+    throw new Error(`Missing required env: ${missing.join(', ')}`);
+  }
+
+  const scope = env.ONEDRIVE_SCOPE;
+  const tokenEndpoint = env.ONEDRIVE_TOKEN_ENDPOINT;
 
   const body = new URLSearchParams({
     client_id: clientId,
@@ -181,16 +191,6 @@ async function getAccessToken(): Promise<string> {
   };
 
   return payload.access_token;
-}
-
-// อ่านค่า environment ที่จำเป็นและหยุดทันทีเมื่อยังไม่ได้ตั้งค่า
-function getRequiredEnv(key: string): string {
-  const value = process.env[key]?.trim();
-  if (!value) {
-    throw new Error(`Missing required env: ${key}`);
-  }
-
-  return value;
 }
 
 // สร้าง Path ของโฟลเดอร์สำหรับเก็บไฟล์คอร์สโดยเฉพาะ (รูปแบบ: ปีพ.ศ./วัน-เดือน-ปี-ชื่อคอร์ส)

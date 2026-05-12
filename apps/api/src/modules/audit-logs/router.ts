@@ -1,10 +1,11 @@
 import { zValidator } from '@hono/zod-validator';
 import { auditLogQuerySchema } from '@workspace/schemas';
-import { factory } from '../../lib/factory';
-import { requireAuth } from '../../middlewares/auth';
+import { Hono } from 'hono';
+import { requireAuth } from '../../middleware/auth.middleware';
+import { HonoEnv } from '../../types/hono';
 import { findAllAuditLogs, findAllAuditModels } from './audit-logs.service';
 
-const auditLogsRouter = factory.createApp();
+const auditLogsRouter = new Hono<HonoEnv>();
 
 auditLogsRouter.use('/*', requireAuth);
 

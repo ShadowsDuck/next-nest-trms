@@ -16,7 +16,7 @@ import type {
   OrgFunctionResponse,
   PlantResponse,
 } from '@workspace/schemas';
-import { toIsoDateTime } from '../../lib/date-utils';
+import { toIsoDateTime } from '../../utils/date-utils';
 import { db } from '../../lib/db';
 import { EmployeeOrganizationHierarchyInput } from './organization-hierarchy.types';
 

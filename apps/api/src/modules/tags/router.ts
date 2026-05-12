@@ -1,8 +1,9 @@
-import { factory } from '../../lib/factory';
-import { requireAuth } from '../../middlewares/auth';
+import { Hono } from 'hono';
+import { requireAuth } from '../../middleware/auth.middleware';
+import { HonoEnv } from '../../types/hono';
 import { findAllTags } from './tags.service';
 
-const tagsRouter = factory.createApp();
+const tagsRouter = new Hono<HonoEnv>();
 
 // Middleware ตรวจสอบการล็อกอิน
 tagsRouter.use('/*', requireAuth);

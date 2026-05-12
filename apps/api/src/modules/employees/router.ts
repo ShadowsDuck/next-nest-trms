@@ -5,8 +5,9 @@ import {
   employeeQuerySchema,
   employeeSchema,
 } from '@workspace/schemas';
-import { factory } from '../../lib/factory';
-import { requireAuth } from '../../middlewares/auth';
+import { Hono } from 'hono';
+import { requireAuth } from '../../middleware/auth.middleware';
+import { HonoEnv } from '../../types/hono';
 import { importDryRun, importEmployees } from './employee-import.service';
 import {
   createEmployee,
@@ -14,7 +15,7 @@ import {
   findOneEmployeeByNo,
 } from './employees.service';
 
-const employeesRouter = factory.createApp();
+const employeesRouter = new Hono<HonoEnv>();
 
 employeesRouter.use('/*', requireAuth);
 
