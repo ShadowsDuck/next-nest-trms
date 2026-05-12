@@ -8,8 +8,6 @@ import { auth } from './auth/auth';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ZodValidationExceptionFilter } from './filters/zod-validation-exception.filter';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
-import { CoursesModule } from './modules/courses/courses.module';
-import { EmployeesModule } from './modules/employees/employees.module';
 import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
 import { SummaryReportsModule } from './modules/summary-reports/summary-reports.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -26,8 +24,6 @@ import { PrismaModule } from './prisma/prisma.module';
     ]),
     PrismaModule,
     AuditLogsModule,
-    CoursesModule,
-    EmployeesModule,
     OrganizationUnitsModule,
     SummaryReportsModule,
   ],
