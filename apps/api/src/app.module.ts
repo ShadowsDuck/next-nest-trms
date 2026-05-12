@@ -10,11 +10,8 @@ import { ZodValidationExceptionFilter } from './filters/zod-validation-exception
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { EmployeesModule } from './modules/employees/employees.module';
-import { HealthModule } from './modules/health/health.module';
 import { OrganizationUnitsModule } from './modules/organization-units/organization-units.module';
 import { SummaryReportsModule } from './modules/summary-reports/summary-reports.module';
-import { TagsModule } from './modules/tags/tags.module';
-import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -31,11 +28,8 @@ import { PrismaModule } from './prisma/prisma.module';
     AuditLogsModule,
     CoursesModule,
     EmployeesModule,
-    HealthModule,
     OrganizationUnitsModule,
     SummaryReportsModule,
-    TagsModule,
-    UsersModule,
   ],
   providers: [
     {
