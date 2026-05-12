@@ -1,7 +1,7 @@
 ---
 name: hono-project-structure
 description: >
-  File placement and naming guide for this Hono + Prisma + Kysely backend,
+  File placement and naming guide for this Hono + Prisma backend,
   organized by Domain Module. Read this skill BEFORE creating any file, adding
   any endpoint, scaffolding any feature, or deciding where code belongs.
   Trigger on: "add a route", "create a controller", "new feature", "new endpoint",
@@ -63,9 +63,7 @@ src/
 │           └── __fixtures__/       # Fake data factories for tests
 │               └── make-fake-<domain>.ts
 │
-├── db/                     # Kysely client + Prisma-generated types
-│   ├── create-db-client.ts
-│   └── schema.ts           # Override Prisma types for app use
+├── lib/db.ts               # Prisma client — export `db` ให้ทุก query ใช้
 │
 ├── middleware/             # Global middleware (auth, logging, error handling)
 │   └── <name>.middleware.ts
@@ -95,8 +93,8 @@ modules/order/
 │   ├── update-order.ts
 │   └── delete-order.ts
 ├── queries/
-│   ├── create-order.query.ts   # Kysely insert
-│   ├── get-order.query.ts      # Kysely select
+│   ├── create-order.query.ts   # Prisma create
+│   ├── get-order.query.ts      # Prisma findUnique / findFirst
 │   ├── update-order.query.ts
 │   └── delete-order.query.ts
 ├── services/
@@ -121,9 +119,9 @@ modules/order/
 
 ### queries/ — DB only
 
-- Pure Kysely queries, no HTTP context
+- Pure Prisma queries, no HTTP context
 - One function per operation, always export a `Response` type
-- Use `executeTakeFirstOrThrow(() => new NotFoundError(...))` for single-record ops
+- `findUnique` แล้วตรวจ `null` → throw `NotFoundError` เอง (Prisma ไม่ throw เองเมื่อหาไม่เจอ)
 
 ### services/ — Orchestration only
 
@@ -154,7 +152,7 @@ Only code with **zero domain knowledge** belongs outside `modules/`:
 | `utils/`      | `paginate()`, `toISOString()`, custom Error classes | Any domain concept        |
 | `lib/`        | Stripe client init, S3 client init                  | Payment business logic    |
 | `constants/`  | HTTP status codes, env keys                         | Domain-specific enums     |
-| `db/`         | Kysely setup, Prisma type overrides                 | Any query                 |
+| `lib/db.ts`   | Prisma client init (`new PrismaClient()`)           | Any query                 |
 
 If you find yourself importing a domain module into `utils/`, the code is in the wrong place.
 
@@ -213,7 +211,7 @@ New code needed?
 import type { HonoEnv } from "@/types/hono";
 import type { AppRouteHandler } from "@/types/hono";
 
-// HonoEnv:         provides dbClient, session via Hono context
+// HonoEnv:         provides session via Hono context
 // AppRouteHandler: full type-safety for c.req / c.json()
 ```
 
@@ -226,8 +224,8 @@ For full code patterns and examples, read the rules files:
 | Need                     | File                           |
 | ------------------------ | ------------------------------ |
 | Handler + route patterns | `rules/handlers-and-routes.md` |
-| Query patterns (Kysely)  | `rules/queries.md`             |
+| Query patterns (Prisma)  | `rules/queries.md`             |
 | Service layer patterns   | `rules/services.md`            |
 | Schema + type patterns   | `rules/schema.md`              |
-| Prisma type overrides    | `rules/db-schema.md`           |
+| DB client + Prisma types | `rules/db-schema.md`           |
 | Testing patterns         | `rules/testing.md`             |
