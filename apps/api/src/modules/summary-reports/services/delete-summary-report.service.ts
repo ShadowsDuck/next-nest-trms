@@ -1,4 +1,4 @@
-import { AuditAction, SummaryReportSource } from '@workspace/database';
+import { AuditAction } from '@workspace/database';
 import { db } from '../../../lib/db';
 import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {

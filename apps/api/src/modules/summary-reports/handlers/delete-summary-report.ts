@@ -1,5 +1,6 @@
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
+import { extractAuditContext } from '../../audit-logs';
 import { deleteSummaryReportService } from '../services/delete-summary-report.service';
 
 /**
@@ -8,11 +9,7 @@ import { deleteSummaryReportService } from '../services/delete-summary-report.se
 export async function deleteSummaryReportByIdHandler(c: Context<HonoEnv>) {
   const user = c.get('user');
   const id = c.req.param('id');
-  const auditContext = {
-    userId: user.id,
-    ipAddress: c.req.header('x-forwarded-for') || '127.0.0.1',
-    userAgent: c.req.header('user-agent') || 'Unknown',
-  };
+  const auditContext = extractAuditContext(c);
 
   try {
     await deleteSummaryReportService(user.id, id, auditContext);

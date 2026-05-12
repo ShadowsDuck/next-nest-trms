@@ -1,4 +1,3 @@
-import { Prisma } from '@workspace/database';
 import type { CourseQuery } from '@workspace/schemas';
 import { db } from '../../../lib/db';
 import { buildCourseWhereInput } from '../lib/course-where.builder';

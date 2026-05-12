@@ -1,5 +1,6 @@
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
+import { extractAuditContext } from '../../audit-logs';
 import { CreateCoursePayload } from '../courses.schema';
 import {
   createCourseService,
@@ -20,12 +21,7 @@ const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
  * Handler สำหรับการสร้างหลักสูตรใหม่
  */
 export async function createCourseHandler(c: Context<HonoEnv>) {
-  const user = c.get('user');
-  const auditContext = {
-    userId: user.id,
-    ipAddress: c.req.header('x-forwarded-for') || '127.0.0.1',
-    userAgent: c.req.header('user-agent') || 'Unknown',
-  };
+  const auditContext = extractAuditContext(c);
 
   const body = await c.req.parseBody();
 

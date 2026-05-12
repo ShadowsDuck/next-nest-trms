@@ -1,18 +1,14 @@
 import { EmployeeImportRequest } from '@workspace/schemas';
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
+import { extractAuditContext } from '../../audit-logs';
 import { importEmployeesService } from '../import';
 
 /**
  * Handler สำหรับการนำเข้าพนักงาน
  */
 export async function importEmployeesHandler(c: Context<HonoEnv>) {
-  const user = c.get('user');
-  const auditContext = {
-    userId: user.id,
-    ipAddress: c.req.header('x-forwarded-for') || '127.0.0.1',
-    userAgent: c.req.header('user-agent') || 'Unknown',
-  };
+  const auditContext = extractAuditContext(c);
   const body = c.req.valid('json' as never) as EmployeeImportRequest;
   try {
     const result = await importEmployeesService(body, auditContext);

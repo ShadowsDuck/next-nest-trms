@@ -6,6 +6,12 @@ export type AuditLogContext = {
   userAgent: string | null;
 };
 
+export type AuditContextInput = {
+  userId: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+};
+
 export type CreateAuditLogInput = {
   action: AuditAction;
   model: string;

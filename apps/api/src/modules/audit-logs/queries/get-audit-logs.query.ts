@@ -1,4 +1,3 @@
-import { Prisma } from '@workspace/database';
 import type { AuditLogQuery } from '@workspace/schemas';
 import { db } from '../../../lib/db';
 import { buildAuditLogWhereInput } from '../lib/audit-log-where.builder';
