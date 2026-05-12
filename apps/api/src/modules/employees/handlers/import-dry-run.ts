@@ -1,7 +1,7 @@
 import { EmployeeImportDryRunRequest } from '@workspace/schemas';
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
-import { importDryRunService } from '../services/import-employees.service';
+import { importDryRunService } from '../import';
 
 /**
  * Handler สำหรับตรวจสอบข้อมูลนำเข้าพนักงาน (Dry Run)

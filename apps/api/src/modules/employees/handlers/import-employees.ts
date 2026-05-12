@@ -1,7 +1,7 @@
 import { EmployeeImportRequest } from '@workspace/schemas';
 import { Context } from 'hono';
 import { HonoEnv } from '../../../types/hono';
-import { importEmployeesService } from '../services/import-employees.service';
+import { importEmployeesService } from '../import';
 
 /**
  * Handler สำหรับการนำเข้าพนักงาน
