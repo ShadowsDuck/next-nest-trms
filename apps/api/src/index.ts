@@ -31,20 +31,33 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 });
 
 // Static files for uploads
-// serveStatic in Node resolves relative to where the node process is running
 app.use('/uploads/*', serveStatic({ root: './' }));
 
-// API Routers
-const api = app.basePath('/api');
+// API Routers — เชื่อมต่อ router ทุกตัวผ่าน basePath เพื่อให้ AppType ดึง type ได้ครบถ้วน
+export const routes = app
+  .basePath('/api')
+  .route('/health', healthRouter)
+  .route('/users', usersRouter)
+  .route('/tags', tagsRouter)
+  .route('/courses', coursesRouter)
+  .route('/employees', employeesRouter)
+  .route('/organization-units', organizationUnitsRouter)
+  .route('/audit-logs', auditLogsRouter)
+  .route('/summary-reports', summaryReportsRouter);
 
-api.route('/health', healthRouter);
-api.route('/users', usersRouter);
-api.route('/tags', tagsRouter);
-api.route('/courses', coursesRouter);
-api.route('/employees', employeesRouter);
-api.route('/organization-units', organizationUnitsRouter);
-api.route('/audit-logs', auditLogsRouter);
-api.route('/summary-reports', summaryReportsRouter);
+// Global Error Handler — จัดการ error ที่หลุดออกมาจาก handler ทุกตัวให้เป็น JSON เสมอ
+app.onError((err, c) => {
+  console.error('[API Error]', err);
+  return c.json({ message: err.message || 'Internal Server Error' }, 500);
+});
+
+// Global Not Found Handler — จัดการ 404 ให้เป็น JSON แทน HTML default ของ Hono
+app.notFound((c) => {
+  return c.json({ message: `Route not found: ${c.req.path}` }, 404);
+});
+
+// Export AppType สำหรับใช้กับ Hono RPC Client ฝั่ง Frontend
+export type AppType = typeof routes;
 
 const port = Number(process.env.PORT || 3000);
 

@@ -5,7 +5,7 @@ import {
   employeeQuerySchema,
   employeeSchema,
 } from '@workspace/schemas';
-import { Hono } from 'hono';
+import { factory } from '../../lib/factory';
 import { requireAuth } from '../../middlewares/auth';
 import { importDryRun, importEmployees } from './employee-import.service';
 import {
@@ -14,9 +14,7 @@ import {
   findOneEmployeeByNo,
 } from './employees.service';
 
-const employeesRouter = new Hono<{
-  Variables: { user: { id: string; [key: string]: any }; session: any };
-}>();
+const employeesRouter = factory.createApp();
 
 employeesRouter.use('/*', requireAuth);
 
@@ -38,7 +36,6 @@ employeesRouter.post(
   zValidator('json', employeeImportRequestSchema),
   async (c) => {
     const user = c.get('user');
-    const _session = c.get('session'); // เก็บไว้เผื่อต้องการข้อมูลเซสชัน
     const auditContext = {
       userId: user.id,
       ipAddress: c.req.header('x-forwarded-for') || '127.0.0.1',

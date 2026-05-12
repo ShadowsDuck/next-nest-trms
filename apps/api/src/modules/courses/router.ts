@@ -1,6 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
 import { courseQuerySchema } from '@workspace/schemas';
-import { Hono } from 'hono';
+import { factory } from '../../lib/factory';
 import { requireAuth } from '../../middlewares/auth';
 import {
   type CreateCoursePayload,
@@ -9,9 +9,7 @@ import {
   toUploadableAttachment,
 } from './courses.service';
 
-const coursesRouter = new Hono<{
-  Variables: { user: { id: string; [key: string]: any }; session: any };
-}>();
+const coursesRouter = factory.createApp();
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([

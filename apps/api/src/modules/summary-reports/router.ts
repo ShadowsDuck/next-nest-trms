@@ -1,6 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
 import { createSummaryReportSchema } from '@workspace/schemas';
-import { Hono } from 'hono';
+import { factory } from '../../lib/factory';
 import { requireAuth } from '../../middlewares/auth';
 import {
   createSummaryReportForUser,
@@ -9,9 +9,7 @@ import {
   findSummaryReportByIdForUser,
 } from './summary-reports.service';
 
-const summaryReportsRouter = new Hono<{
-  Variables: { user: { id: string; [key: string]: any }; session: any };
-}>();
+const summaryReportsRouter = factory.createApp();
 
 summaryReportsRouter.use('/*', requireAuth);
 

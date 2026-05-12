@@ -1,8 +1,8 @@
-import { createMiddleware } from 'hono/factory';
 import { auth } from '../auth/auth';
+import { factory } from '../lib/factory';
 
 // Middleware สำหรับตรวจสอบ Session และฝัง User ลงใน Context
-export const requireAuth = createMiddleware(async (c, next) => {
+export const requireAuth = factory.createMiddleware(async (c, next) => {
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   });
