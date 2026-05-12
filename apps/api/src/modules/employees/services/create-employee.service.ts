@@ -1,12 +1,12 @@
 import { AuditAction } from '@workspace/database';
 import type { EmployeeResponse, EmployeeType } from '@workspace/schemas';
 import { db } from '../../../lib/db';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {
   createAuditLog,
   createFailureLog,
-} from '../../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
-import { validateEmployeeHierarchy } from '../../organization-units/organization-units.service';
+} from '../../audit-logs/services/audit-logs-write.service';
+import { validateEmployeeHierarchyService as validateEmployeeHierarchy } from '../../organization-units/services/validate-hierarchy.service';
 import { formatEmployee } from '../lib/employees.mapper';
 import { createEmployeeQuery } from '../queries/create-employee.query';
 

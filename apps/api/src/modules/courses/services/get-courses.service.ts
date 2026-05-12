@@ -1,10 +1,10 @@
 import { AuditAction } from '@workspace/database';
 import type { CoursePaginationResponse, CourseQuery } from '@workspace/schemas';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {
   createAuditLog,
   createFailureLog,
-} from '../../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+} from '../../audit-logs/services/audit-logs-write.service';
 import { formatCourse } from '../lib/courses.mapper';
 import { getCoursesQuery } from '../queries/get-courses.query';
 

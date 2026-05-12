@@ -3,11 +3,11 @@ import type {
   EmployeePaginationResponse,
   EmployeeQuery,
 } from '@workspace/schemas';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {
   createAuditLog,
   createFailureLog,
-} from '../../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+} from '../../audit-logs/services/audit-logs-write.service';
 import { formatEmployee } from '../lib/employees.mapper';
 import { getEmployeesQuery } from '../queries/get-employees.query';
 

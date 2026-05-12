@@ -1,1 +1,1 @@
-export { default } from './router';
+export { default } from './summary-reports.routes';

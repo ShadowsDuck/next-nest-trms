@@ -10,11 +10,11 @@ import type {
 } from '@workspace/schemas';
 import { employeeImportRowSchema } from '@workspace/schemas';
 import { db } from '../../../lib/db';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {
   createAuditLog,
   createFailureLog,
-} from '../../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+} from '../../audit-logs/services/audit-logs-write.service';
 import { createEmployeeService } from './create-employee.service';
 
 const importFieldLabelMap: Record<string, string> = {

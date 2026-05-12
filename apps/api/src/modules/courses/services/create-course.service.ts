@@ -1,11 +1,11 @@
 import { AuditAction } from '@workspace/database';
 import type { CourseResponse } from '@workspace/schemas';
 import { db } from '../../../lib/db';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
 import {
   createAuditLog,
   createFailureLog,
-} from '../../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+} from '../../audit-logs/services/audit-logs-write.service';
 import type {
   CreateCoursePayload,
   UploadableAttachment,
