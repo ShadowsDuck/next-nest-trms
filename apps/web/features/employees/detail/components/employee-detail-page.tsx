@@ -36,29 +36,15 @@ import {
   buildEmployeeDetailStats,
   formatCourseDateRange,
   formatThaiDate,
+  getPrefixLabel,
+  getStatusLabel,
 } from '../lib/employee-detail'
 import { EmployeeTrainingHistoryTable } from './training-history-table'
 import Link from 'next/link'
 import { Separator } from '@workspace/ui/components/separator'
 
-const prefixLabelByValue = new Map<string, string>([
-  ['Mr', 'นาย'],
-  ['Mrs', 'นาง'],
-  ['Miss', 'นางสาว'],
-])
-
-const statusLabelByValue = new Map<string, string>([
-  ['Active', 'ทำงาน'],
-  ['Resigned', 'ลาออก'],
-])
-
-const courseTypeLabelByValue = new Map<string, string>([
-  ['Internal', 'ภายใน'],
-  ['External', 'ภายนอก'],
-])
-
 function getEmployeeDisplayName(employee: EmployeeDetailResponse): string {
-  const prefixLabel = prefixLabelByValue.get(employee.prefix) ?? employee.prefix
+  const prefixLabel = getPrefixLabel(employee.prefix)
   return `${prefixLabel} ${employee.firstName} ${employee.lastName}`
 }
 
@@ -256,8 +242,7 @@ export function EmployeeDetailPage({
                             : 'bg-inactive'
                         )}
                       />
-                      {statusLabelByValue.get(employee.status) ??
-                        employee.status}
+                      {getStatusLabel(employee.status)}
                     </Badge>
                   </div>
                 </div>
@@ -320,10 +305,7 @@ export function EmployeeDetailPage({
                     <CardContent className="pt-0">
                       <DetailFieldRow
                         label="คำนำหน้า"
-                        value={
-                          prefixLabelByValue.get(employee.prefix) ??
-                          employee.prefix
-                        }
+                        value={getPrefixLabel(employee.prefix)}
                       />
                       <DetailFieldRow label="ชื่อ" value={employee.firstName} />
                       <DetailFieldRow

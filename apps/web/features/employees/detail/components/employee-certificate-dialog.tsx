@@ -17,13 +17,9 @@ import { env } from '@/shared/lib/env'
 import {
   buildCertificateFileUrl,
   formatCourseDateRange,
+  getCourseTypeLabel,
 } from '../lib/employee-detail'
 import Link from 'next/link'
-
-const courseTypeLabelByValue = new Map<string, string>([
-  ['Internal', 'ภายใน'],
-  ['External', 'ภายนอก'],
-])
 
 /**
  * คอมโพเนนต์แสดงหน้าต่าง Dialog สำหรับพรีวิวและดาวน์โหลดใบรับรอง
@@ -175,11 +171,7 @@ export function EmployeeCertificateDialog({
                   ประเภทหลักสูตร
                 </p>
                 <Badge variant="secondary" className="mt-1 font-medium">
-                  {courseTypeLabelByValue.get(
-                    trainingRecord?.course?.type ?? ''
-                  ) ??
-                    trainingRecord?.course?.type ??
-                    '-'}
+                  {getCourseTypeLabel(trainingRecord?.course?.type)}
                 </Badge>
               </div>
             </div>
