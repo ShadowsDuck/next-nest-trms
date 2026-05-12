@@ -1,48 +1,34 @@
 import { AuditAction } from '@workspace/database';
-import type {
-  CoursePaginationResponse,
-  CourseQuery,
-  CourseResponse,
-  CourseType as CourseSchemaType,
-} from '@workspace/schemas';
-import { db } from '../../lib/db';
+import type { CourseResponse } from '@workspace/schemas';
+import { db } from '../../../lib/db';
 import {
   createAuditLog,
   createFailureLog,
-} from '../audit-logs/audit-logs.service';
-import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import { buildCourseWhereInput } from './lib/course-where.builder';
-import { formatCourse } from './lib/courses.mapper';
-import type { CourseAttachmentUploadResult } from './storage/course-attachment-storage.contract';
+} from '../../audit-logs/audit-logs.service';
+import type { AuditLogContext } from '../../audit-logs/audit-logs.types';
+import type {
+  CreateCoursePayload,
+  UploadableAttachment,
+} from '../courses.schema';
+import { formatCourse } from '../lib/courses.mapper';
+import { createCourseQuery } from '../queries/create-course.query';
+import type { CourseAttachmentUploadResult } from '../storage/course-attachment-storage.contract';
 import {
   deleteAttachment,
   uploadAttachment,
-} from './storage/onedrive-course-attachment-storage.service';
+} from '../storage/onedrive-course-attachment-storage.service';
 
-export type CreateCoursePayload = CourseSchemaType & {
-  accreditationFile?: any;
-  attendanceFile?: any;
-};
-
-type UploadableAttachment = {
-  originalname: string;
-  mimetype: string;
-  size: number;
-  buffer: Buffer;
-};
-
-// สร้างหลักสูตรใหม่ พร้อมตรวจความถูกต้องของวันที่ เวลา และหมวดหมู่
-export async function createCourse(
+/**
+ * จัดการการสร้างหลักสูตรใหม่ (Validation, Upload, Audit)
+ */
+export async function createCourseService(
   createCourseDto: CreateCoursePayload,
   auditLogContext: AuditLogContext,
 ): Promise<CourseResponse> {
-  const attachmentPayload = createCourseDto;
   const accreditationFile = toUploadableAttachment(
-    attachmentPayload.accreditationFile,
+    createCourseDto.accreditationFile,
   );
-  const attendanceFile = toUploadableAttachment(
-    attachmentPayload.attendanceFile,
-  );
+  const attendanceFile = toUploadableAttachment(createCourseDto.attendanceFile);
   const uploadedFiles: CourseAttachmentUploadResult[] = [];
 
   try {
@@ -83,8 +69,8 @@ export async function createCourse(
       );
 
     const created = await db.$transaction(async (tx) => {
-      const createdCourse = await tx.course.create({
-        data: {
+      const createdCourse = await createCourseQuery(
+        {
           title: createCourseDto.title,
           type: createCourseDto.type,
           startDate,
@@ -108,10 +94,8 @@ export async function createCourse(
             toFallbackFilePath(attendanceFile),
           tagId: createCourseDto.tagId,
         },
-        include: {
-          tag: true,
-        },
-      });
+        tx,
+      );
 
       await createAuditLog(
         {
@@ -146,128 +130,9 @@ export async function createCourse(
   }
 }
 
-export async function findAllCourses(
-  queryDto: CourseQuery,
-  auditLogContext?: AuditLogContext,
-): Promise<CoursePaginationResponse> {
-  const { page, limit, includeEmployees } = queryDto;
-  const where = buildCourseWhereInput(queryDto);
-
-  try {
-    const [courses, total] = await Promise.all([
-      db.course.findMany({
-        where,
-        include: {
-          tag: true,
-          ...(includeEmployees
-            ? {
-                trainingRecords: {
-                  include: {
-                    employee: {
-                      include: {
-                        plant: true,
-                        businessUnit: true,
-                        orgFunction: true,
-                        division: true,
-                        department: true,
-                      },
-                    },
-                  },
-                },
-              }
-            : {}),
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { startDate: 'desc' },
-      }),
-      db.course.count({ where }),
-    ]);
-
-    const response = {
-      data: courses.map((course) => formatCourse(course)),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-
-    if (auditLogContext) {
-      await createAuditLog({
-        action: AuditAction.Export,
-        model: 'Course',
-        newValues: {
-          filters: queryDto,
-          exportedCount: response.data.length,
-          includeEmployees,
-        },
-        context: auditLogContext,
-      });
-    }
-
-    return response;
-  } catch (error) {
-    if (auditLogContext) {
-      await createFailureLog({
-        model: 'Course',
-        newValues: {
-          filters: queryDto,
-          includeEmployees,
-          error: toAuditErrorPayload(error),
-        },
-        context: auditLogContext,
-      });
-    }
-
-    throw error;
-  }
-}
-
-export async function findByCourseIdsForReport(
-  courseIds: string[],
-): Promise<CourseResponse[]> {
-  if (courseIds.length === 0) {
-    return [];
-  }
-
-  const courses = await db.course.findMany({
-    where: {
-      id: { in: courseIds },
-    },
-    include: {
-      tag: true,
-      trainingRecords: {
-        include: {
-          employee: {
-            include: {
-              plant: true,
-              businessUnit: true,
-              orgFunction: true,
-              division: true,
-              department: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const orderMap = new Map(
-    courseIds.map((courseId, index) => [courseId, index] as const),
-  );
-
-  return courses
-    .map((course) => formatCourse(course))
-    .sort(
-      (a, b) =>
-        (orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
-        (orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER),
-    );
-}
-
-// แปลงค่าเวลา HH:mm:ss ให้เป็น Date สำหรับฟิลด์ @db.Time
+/**
+ * แปลงค่าเวลา HH:mm:ss ให้เป็น Date สำหรับฟิลด์ @db.Time
+ */
 function parseTime(value: string | null): Date | null {
   if (!value) {
     return null;
@@ -286,7 +151,9 @@ function parseTime(value: string | null): Date | null {
   return parsed;
 }
 
-// แปลงข้อมูลไฟล์ที่อาจถูกส่งมาจาก multipart ให้เป็นรูปแบบที่พร้อมอัปโหลด
+/**
+ * แปลงข้อมูลไฟล์ที่อาจถูกส่งมาจาก multipart ให้เป็นรูปแบบที่พร้อมอัปโหลด
+ */
 export function toUploadableAttachment(
   value: unknown,
 ): UploadableAttachment | null {
@@ -305,7 +172,6 @@ export function toUploadableAttachment(
   }
 
   return {
-    // แก้ปัญหา multer decode ชื่อไฟล์ด้วย latin1 ทำให้ภาษาไทยแสดงผลผิด
     originalname: Buffer.from(maybeFile.originalname, 'latin1').toString(
       'utf8',
     ),
@@ -315,7 +181,9 @@ export function toUploadableAttachment(
   };
 }
 
-// อัปโหลดไฟล์แนบตามประเภทที่ระบุ และบันทึกไฟล์ที่อัปโหลดสำเร็จไว้สำหรับ rollback
+/**
+ * อัปโหลดไฟล์แนบตามประเภทที่ระบุ และบันทึกไฟล์ที่อัปโหลดสำเร็จไว้สำหรับ rollback
+ */
 async function uploadOptionalAttachment(
   kind: 'accreditation' | 'attendance',
   file: UploadableAttachment | null,
@@ -341,7 +209,9 @@ async function uploadOptionalAttachment(
   return uploaded;
 }
 
-// อัปโหลดไฟล์หลักสูตรทั้งหมดพร้อมจัดการ rollback เมื่ออัปโหลดไม่สำเร็จ
+/**
+ * อัปโหลดไฟล์หลักสูตรทั้งหมดพร้อมจัดการ rollback เมื่ออัปโหลดไม่สำเร็จ
+ */
 async function uploadCourseAttachments(
   accreditationFile: UploadableAttachment | null,
   attendanceFile: UploadableAttachment | null,
@@ -352,7 +222,6 @@ async function uploadCourseAttachments(
   [CourseAttachmentUploadResult | null, CourseAttachmentUploadResult | null]
 > {
   try {
-    // อัปโหลดทั้ง 2 ไฟล์พร้อมกันเพื่อลดเวลารวม
     return await Promise.all([
       uploadOptionalAttachment(
         'accreditation',
@@ -375,7 +244,9 @@ async function uploadCourseAttachments(
   }
 }
 
-// ลบไฟล์ที่อัปโหลดแล้วทั้งหมดเมื่อเกิดข้อผิดพลาดภายหลัง เพื่อคงพฤติกรรมแบบ atomic
+/**
+ * ลบไฟล์ที่อัปโหลดแล้วทั้งหมดเมื่อเกิดข้อผิดพลาดภายหลัง เพื่อคงพฤติกรรมแบบ atomic
+ */
 async function rollbackUploadedFiles(
   uploadedFiles: CourseAttachmentUploadResult[],
 ): Promise<void> {
@@ -390,7 +261,9 @@ async function rollbackUploadedFiles(
   uploadedFiles.length = 0;
 }
 
-// สร้างค่า path สำรองจากชื่อไฟล์ เมื่อยังไม่มี path ที่คืนกลับจาก provider
+/**
+ * สร้างค่า path สำรองจากชื่อไฟล์ เมื่อยังไม่มี path ที่คืนกลับจาก provider
+ */
 function toFallbackFilePath(file: UploadableAttachment | null): string | null {
   if (!file) {
     return null;
@@ -399,7 +272,9 @@ function toFallbackFilePath(file: UploadableAttachment | null): string | null {
   return `uploads/courses/${file.originalname}`;
 }
 
-// สร้าง payload สำหรับ audit log โดยตัดข้อมูลไฟล์ binary ออกและเก็บเฉพาะ metadata ที่จำเป็น
+/**
+ * สร้าง payload สำหรับ audit log โดยตัดข้อมูลไฟล์ binary ออกและเก็บเฉพาะ metadata ที่จำเป็น
+ */
 function toCourseAuditPayload(
   createCourseDto: CreateCoursePayload,
   accreditationFile: UploadableAttachment | null,
@@ -425,7 +300,9 @@ function toCourseAuditPayload(
   };
 }
 
-// แปลง metadata ของไฟล์แนบให้พร้อมบันทึกใน audit log โดยไม่เก็บ binary จริง
+/**
+ * แปลง metadata ของไฟล์แนบให้พร้อมบันทึกใน audit log โดยไม่เก็บ binary จริง
+ */
 function toAttachmentAuditPayload(
   file: UploadableAttachment | null,
 ): Record<string, unknown> | null {
@@ -440,7 +317,9 @@ function toAttachmentAuditPayload(
   };
 }
 
-// สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+/**
+ * สรุปข้อผิดพลาดให้อยู่ในรูปแบบ JSON ที่อ่านย้อนหลังได้ง่าย
+ */
 function toAuditErrorPayload(error: unknown): Record<string, string> {
   if (error instanceof Error) {
     return {
