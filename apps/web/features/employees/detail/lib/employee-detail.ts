@@ -103,3 +103,37 @@ export function getTrainingCategoryBadgeStyle(colorCode?: string | null) {
     color: colorCode,
   }
 }
+
+const prefixLabelByValue = new Map<string, string>([
+  ['Mr', 'นาย'],
+  ['Mrs', 'นาง'],
+  ['Miss', 'นางสาว'],
+])
+
+const statusLabelByValue = new Map<string, string>([
+  ['Active', 'ทำงาน'],
+  ['Resigned', 'ลาออก'],
+])
+
+const courseTypeLabelByValue = new Map<string, string>([
+  ['Internal', 'ภายใน'],
+  ['External', 'ภายนอก'],
+])
+
+// แปลงคำนำหน้าให้เป็นภาษาไทย
+export function getPrefixLabel(prefix: string | null | undefined): string {
+  if (!prefix) return '-'
+  return prefixLabelByValue.get(prefix) ?? prefix
+}
+
+// แปลงสถานะพนักงานให้เป็นภาษาไทย
+export function getStatusLabel(status: string | null | undefined): string {
+  if (!status) return '-'
+  return statusLabelByValue.get(status) ?? status
+}
+
+// แปลงประเภทหลักสูตรให้เป็นภาษาไทย
+export function getCourseTypeLabel(type: string | null | undefined): string {
+  if (!type) return '-'
+  return courseTypeLabelByValue.get(type) ?? type
+}

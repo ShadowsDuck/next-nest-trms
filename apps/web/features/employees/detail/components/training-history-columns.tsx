@@ -10,13 +10,9 @@ import type { DataTableColumnDef } from '@/shared/components/niko-table/types'
 import { Eye } from 'lucide-react'
 import {
   formatCourseDateRange,
+  getCourseTypeLabel,
   getTrainingCategoryBadgeStyle,
 } from '../lib/employee-detail'
-
-const courseTypeLabelByValue = new Map<string, string>([
-  ['Internal', 'ภายใน'],
-  ['External', 'ภายนอก'],
-])
 
 // สร้าง column definition ของตารางประวัติการอบรมให้ใช้ร่วมกับ Niko Table
 export function useEmployeeTrainingHistoryColumns({
@@ -61,7 +57,7 @@ export function useEmployeeTrainingHistoryColumns({
       },
       cell: ({ row }) => {
         const type = row.original.course?.type ?? ''
-        const label = (courseTypeLabelByValue.get(type) ?? type) || '-'
+        const label = getCourseTypeLabel(type)
         return (
           <Badge variant={type === 'Internal' ? 'primary' : 'success'}>
             {label}
