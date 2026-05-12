@@ -1,0 +1,2007 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>รายละเอียดหลักสูตร – TRMS</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #0d1b2a;
+        --navy-mid: #1a2e42;
+        --bg: #f4f6f9;
+        --bg2: #eaecf0;
+        --surface: #ffffff;
+        --border: #e0e4ea;
+        --border-s: #eef0f4;
+        --t1: #0d1b2a;
+        --t2: #4a5568;
+        --t3: #8a96a3;
+        --accent: #2563eb;
+        --accent-l: #eff6ff;
+        --accent-b: #bfdbfe;
+        --green: #059669;
+        --green-l: #ecfdf5;
+        --green-b: #a7f3d0;
+        --amber: #d97706;
+        --amber-l: #fffbeb;
+        --amber-b: #fde68a;
+        --red: #dc2626;
+        --red-l: #fef2f2;
+        --red-b: #fecaca;
+        --orange: #f97316;
+        --rs: 8px;
+        --rm: 12px;
+        --sh-xs: 0 1px 2px rgba(13, 27, 42, 0.06);
+        --sh-sm:
+          0 1px 4px rgba(13, 27, 42, 0.08), 0 1px 2px rgba(13, 27, 42, 0.04);
+        --sh-md:
+          0 4px 16px rgba(13, 27, 42, 0.1), 0 2px 4px rgba(13, 27, 42, 0.06);
+        --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: "DM Sans", "Noto Sans Thai", sans-serif;
+        background: var(--bg);
+        color: var(--t1);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        background: var(--navy);
+        height: 48px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        flex-shrink: 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 18px;
+        height: 100%;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        width: 220px;
+        flex-shrink: 0;
+      }
+      .brand-icon {
+        width: 26px;
+        height: 26px;
+        background: var(--orange);
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .brand-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.5px;
+      }
+      .topbar-bc {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 20px;
+        font-size: 12.5px;
+      }
+      .topbar-bc a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .topbar-bc a:hover {
+        color: #fff;
+      }
+      .topbar-bc .sep {
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 11px;
+      }
+      .topbar-bc .cur {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+      }
+
+      .body-wrap {
+        display: flex;
+        flex: 1;
+      }
+
+      .sidebar {
+        width: 220px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: sticky;
+        top: 48px;
+        height: calc(100vh - 48px);
+        overflow-y: auto;
+      }
+      .sb-nav {
+        flex: 1;
+        padding: 14px 0 0;
+      }
+      .sb-sec {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--t3);
+        text-transform: uppercase;
+        letter-spacing: 0.9px;
+        padding: 0 16px;
+        margin: 12px 0 4px;
+      }
+      .sb-sec:first-child {
+        margin-top: 0;
+      }
+      .sb-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 16px;
+        font-size: 13px;
+        color: var(--t2);
+        cursor: pointer;
+        transition: background 0.1s;
+        text-decoration: none;
+      }
+      .sb-item:hover {
+        background: var(--bg);
+        color: var(--t1);
+      }
+      .sb-item.active {
+        background: var(--bg);
+        color: var(--t1);
+        font-weight: 600;
+      }
+      .sb-item .ico {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .sb-item .ico svg {
+        width: 15px;
+        height: 15px;
+      }
+      .sb-item.active .ico {
+        color: var(--orange);
+      }
+      .sb-foot {
+        border-top: 1px solid var(--border);
+        padding: 11px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--orange);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .sb-uname {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .sb-uemail {
+        font-size: 11px;
+        color: var(--t3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+      }
+
+      .main {
+        flex: 1;
+        padding: 24px;
+        min-width: 0;
+      }
+
+      .back-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        animation: rise 0.3s var(--ease) both;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 12px;
+        height: 32px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--rs);
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--t2);
+        cursor: pointer;
+        font-family: inherit;
+        box-shadow: var(--sh-xs);
+        transition: all 0.15s;
+      }
+      .back-btn:hover {
+        background: var(--bg2);
+        border-color: #cbd5e1;
+      }
+      .back-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+      .bc-inline {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--t3);
+      }
+      .bc-inline svg {
+        width: 10px;
+        height: 10px;
+      }
+      .bc-inline .cur {
+        color: var(--t2);
+        font-weight: 500;
+      }
+
+      /* ── OUTER PAGE CARD (ครอบทุกอย่าง เหมือน bg-muted/45 ใน employee-detail) ── */
+      .page-card {
+        background: #edeef2;
+        border: 1px solid var(--border);
+        border-radius: var(--rm);
+        box-shadow: var(--sh-sm);
+        margin-bottom: 16px;
+        overflow: hidden;
+        animation: rise 0.35s var(--ease) 0.05s both;
+      }
+
+      .page-card-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* ── HERO (white card ลอยบนพื้นเทา) ── */
+      .hero {
+        background: var(--surface);
+        padding: 24px 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero-deco {
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        width: 180px;
+        height: 180px;
+        background: linear-gradient(135deg, #e0e7ff, #f4f6f9);
+        border-radius: 50%;
+        opacity: 0.6;
+      }
+      .hero-deco2 {
+        position: absolute;
+        right: 50px;
+        top: 20px;
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #dbeafe, #f4f6f9);
+        border-radius: 50%;
+        opacity: 0.5;
+      }
+      .hero-inner {
+        position: relative;
+      }
+      .hero-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .hero-title {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.4px;
+        line-height: 1.3;
+        margin-bottom: 10px;
+      }
+      .hero-pills {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 600;
+      }
+      .pill svg {
+        width: 11px;
+        height: 11px;
+      }
+      .p-gray {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        color: var(--t2);
+      }
+      .p-blue {
+        background: var(--accent-l);
+        border: 1px solid var(--accent-b);
+        color: var(--accent);
+      }
+      .p-green {
+        background: var(--green-l);
+        border: 1px solid var(--green-b);
+        color: var(--green);
+      }
+      .p-amber {
+        background: var(--amber-l);
+        border: 1px solid var(--amber-b);
+        color: var(--amber);
+      }
+      .hero-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+        padding-top: 2px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        height: 36px;
+        border-radius: var(--rs);
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+        white-space: nowrap;
+        transition: all 0.15s;
+      }
+      .btn svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+      .btn-solid {
+        background: var(--navy);
+        color: #fff;
+        box-shadow: var(--sh-sm);
+      }
+      .btn-solid:hover {
+        background: var(--navy-mid);
+        box-shadow: var(--sh-md);
+        transform: translateY(-1px);
+      }
+      .btn-danger {
+        background: var(--surface);
+        color: var(--red);
+        border: 1px solid var(--red-b);
+        box-shadow: var(--sh-xs);
+      }
+      .btn-danger:hover {
+        background: var(--red-l);
+        border-color: #fca5a5;
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 288px;
+        gap: 16px;
+        align-items: start;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--rm);
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: var(--sh-xs);
+      }
+      .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--rs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .stat-icon svg {
+        width: 20px;
+        height: 20px;
+      }
+      .si-blue {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+      .si-teal {
+        background: #f0fdfa;
+        color: #0d9488;
+      }
+      .si-green {
+        background: var(--green-l);
+        color: var(--green);
+      }
+      .si-amber {
+        background: var(--amber-l);
+        color: var(--amber);
+      }
+      .stat-lbl {
+        font-size: 11.5px;
+        color: var(--t3);
+        margin-bottom: 2px;
+      }
+      .stat-val {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .stat-val.sm {
+        font-size: 15px;
+      }
+
+      .col-main {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .col-side {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        position: sticky;
+        top: 24px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--rm);
+        box-shadow: var(--sh-sm);
+        overflow: hidden;
+      }
+      .ch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border-s);
+      }
+      .ch-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ch-icon {
+        width: 24px;
+        height: 24px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--t2);
+      }
+      .ch-icon svg {
+        width: 12px;
+        height: 12px;
+      }
+      .ch-title {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .ch-count {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--t2);
+        padding: 1px 8px;
+      }
+
+      .frows {
+        padding: 2px 0;
+      }
+      .frow {
+        display: flex;
+        align-items: center;
+        padding: 9px 18px;
+        gap: 12px;
+        transition: background 0.1s;
+      }
+      .frow:hover {
+        background: #fafbfc;
+      }
+      .frow + .frow {
+        border-top: 1px solid var(--border-s);
+      }
+      .fl {
+        width: 160px;
+        flex-shrink: 0;
+        font-size: 12.5px;
+        color: var(--t3);
+      }
+      .fv {
+        font-size: 13.5px;
+        font-weight: 500;
+      }
+
+      .tbl-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead tr {
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        padding: 9px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--t3);
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        white-space: nowrap;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--border-s);
+        transition: background 0.1s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: #fafbfc;
+      }
+      td {
+        padding: 9px 14px;
+        vertical-align: middle;
+      }
+      .td-num {
+        color: var(--t3);
+        font-size: 12px;
+        width: 32px;
+      }
+      .td-name {
+        font-size: 13.5px;
+        font-weight: 500;
+      }
+      .td-dept {
+        font-size: 12.5px;
+        color: var(--t2);
+      }
+      .acts {
+        display: flex;
+        gap: 5px;
+      }
+      .ibtn {
+        width: 27px;
+        height: 27px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--t3);
+        transition: all 0.12s;
+      }
+      .ibtn:hover {
+        background: var(--bg);
+        border-color: #cbd5e1;
+        color: var(--t1);
+      }
+      .ibtn.del:hover {
+        background: var(--red-l);
+        border-color: var(--red-b);
+        color: var(--red);
+      }
+      .ibtn svg {
+        width: 12px;
+        height: 12px;
+        pointer-events: none;
+      }
+      .btn-add {
+        background: var(--accent);
+        color: #fff;
+        font-size: 13px;
+        height: 30px;
+        padding: 0 12px;
+        border: none;
+        border-radius: var(--rs);
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+        transition: all 0.15s;
+      }
+      .btn-add:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+      }
+      .btn-add svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .pag-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 18px;
+        border-top: 1px solid var(--border-s);
+        background: var(--bg);
+      }
+      .pag-info {
+        font-size: 12px;
+        color: var(--t3);
+      }
+      .pag-info strong {
+        color: var(--t2);
+        font-weight: 600;
+      }
+      .pager {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .pgbtn {
+        min-width: 29px;
+        height: 29px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 4px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--t2);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.12s;
+        padding: 0 5px;
+      }
+      .pgbtn:hover:not(:disabled) {
+        background: var(--bg2);
+        border-color: #cbd5e1;
+        color: var(--t1);
+      }
+      .pgbtn.active {
+        background: var(--navy);
+        color: #fff;
+        border-color: var(--navy);
+      }
+      .pgbtn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .pgbtn svg {
+        width: 13px;
+        height: 13px;
+      }
+      .pg-dots {
+        color: var(--t3);
+        font-size: 13px;
+        padding: 0 2px;
+      }
+
+      .sch {
+        padding: 11px 16px 10px;
+        border-bottom: 1px solid var(--border-s);
+      }
+      .sch-lbl {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--t3);
+        text-transform: uppercase;
+        letter-spacing: 0.9px;
+      }
+      .status-block {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-s);
+      }
+      .status-ring {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--green-l);
+        border: 2px solid var(--green-b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--green);
+        flex-shrink: 0;
+      }
+      .status-ring svg {
+        width: 20px;
+        height: 20px;
+      }
+      .status-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--green);
+        line-height: 1.2;
+      }
+      .status-en {
+        font-size: 11.5px;
+        color: var(--t3);
+        margin-top: 2px;
+      }
+      .dl-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: background 0.1s;
+      }
+      .dl-item:hover {
+        background: var(--bg);
+      }
+      .dl-item + .dl-item {
+        border-top: 1px solid var(--border-s);
+      }
+      .dl-ico {
+        width: 30px;
+        height: 30px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--rs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--t2);
+        flex-shrink: 0;
+        transition: all 0.12s;
+      }
+      .dl-ico svg {
+        width: 13px;
+        height: 13px;
+      }
+      .dl-item:hover .dl-ico {
+        background: var(--accent-l);
+        border-color: var(--accent-b);
+        color: var(--accent);
+      }
+      .dl-name {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .dl-sub {
+        font-size: 11.5px;
+        color: var(--t3);
+        margin-top: 1px;
+      }
+
+      .fin-body {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .fin-main {
+        background: linear-gradient(145deg, #fffbeb, #fef3c7);
+        border: 1px solid var(--amber-b);
+        border-radius: var(--rs);
+        padding: 13px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .fin-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--amber-b);
+        border-radius: var(--rs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b45309;
+        flex-shrink: 0;
+      }
+      .fin-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .fin-lbl {
+        font-size: 10.5px;
+        color: #92400e;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+      }
+      .fin-amt {
+        font-size: 18px;
+        font-weight: 700;
+        color: #78350f;
+        letter-spacing: -0.4px;
+        font-variant-numeric: tabular-nums;
+      }
+      .fin-rows {
+        border: 1px solid var(--border);
+        border-radius: var(--rs);
+        overflow: hidden;
+      }
+      .fin-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        background: var(--surface);
+        transition: background 0.1s;
+      }
+      .fin-row:hover {
+        background: var(--bg);
+      }
+      .fin-row + .fin-row {
+        border-top: 1px solid var(--border-s);
+      }
+      .fin-rl {
+        color: var(--t3);
+      }
+      .fin-rv {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .fin-rv.ok {
+        color: var(--green);
+      }
+      .fin-rv.neutral {
+        color: var(--t1);
+      }
+      .fin-appr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--rs);
+        font-size: 12.5px;
+      }
+      .fin-appr-lbl {
+        color: var(--t3);
+      }
+      .prog-wrap {
+        padding: 2px 0;
+      }
+      .prog-lbl {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--t3);
+        margin-bottom: 5px;
+      }
+      .prog-lbl span:last-child {
+        font-weight: 600;
+        color: var(--t2);
+      }
+      .prog-bg {
+        height: 5px;
+        background: var(--bg2);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .prog-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--green), #34d399);
+        border-radius: 99px;
+        width: 0;
+        transition: width 0.6s var(--ease);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(13, 27, 42, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .modal-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .modal {
+        background: var(--surface);
+        border-radius: var(--rm);
+        box-shadow: var(--sh-md);
+        padding: 24px;
+        width: 360px;
+        transform: scale(0.96) translateY(8px);
+        transition:
+          transform 0.2s var(--ease),
+          opacity 0.2s;
+        opacity: 0;
+      }
+      .modal-overlay.open .modal {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+      .modal-ico {
+        width: 40px;
+        height: 40px;
+        background: var(--red-l);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .modal-ico svg {
+        width: 18px;
+        height: 18px;
+        color: var(--red);
+      }
+      .modal h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .modal p {
+        font-size: 13px;
+        color: var(--t2);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .modal-acts {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .btn-cancel {
+        height: 34px;
+        padding: 0 14px;
+        background: var(--surface);
+        color: var(--t2);
+        border: 1px solid var(--border);
+        border-radius: var(--rs);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.12s;
+      }
+      .btn-cancel:hover {
+        background: var(--bg);
+      }
+      .btn-confirm {
+        height: 34px;
+        padding: 0 14px;
+        background: var(--red);
+        color: #fff;
+        border: none;
+        border-radius: var(--rs);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.12s;
+      }
+      .btn-confirm:hover {
+        background: #b91c1c;
+      }
+
+      .toast-stack {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 600;
+      }
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--navy);
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: var(--rs);
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: var(--sh-md);
+        min-width: 240px;
+        animation: toastIn 0.25s var(--ease) both;
+      }
+      .toast.out {
+        animation: toastOut 0.2s ease-in both;
+      }
+      .toast-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .dot-green {
+        background: #34d399;
+      }
+      .dot-red {
+        background: #f87171;
+      }
+      .dot-amber {
+        background: #fcd34d;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translateX(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes toastOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(16px);
+        }
+      }
+
+      @media (max-width: 1023px) {
+        .grid {
+          grid-template-columns: 1fr 250px;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 767px) {
+        .sidebar {
+          display: none;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .col-side {
+          position: static;
+          order: -1;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .main {
+          padding: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <nav class="topbar">
+        <div class="brand">
+          <div class="brand-icon">T</div>
+          <span class="brand-name">TRMS</span>
+        </div>
+        <nav class="topbar-bc" aria-label="Breadcrumb">
+          <a href="#">เมนูหลัก</a><span class="sep">›</span>
+          <a href="#">ข้อมูลหลักสูตร</a><span class="sep">›</span>
+          <span class="cur">รายละเอียดหลักสูตร</span>
+        </nav>
+      </nav>
+
+      <div class="body-wrap">
+        <aside class="sidebar">
+          <div class="sb-nav">
+            <div class="sb-sec">เมนูหลัก</div>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" /></svg
+              ></span>
+              แดชบอร์ด
+            </a>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg
+              ></span>
+              ข้อมูลพนักงาน
+            </a>
+            <a class="sb-item active" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg
+              ></span>
+              ข้อมูลหลักสูตร
+            </a>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" /></svg
+              ></span>
+              บันทึกกิจกรรม
+            </a>
+            <div class="sb-sec">รายงาน</div>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" /></svg
+              ></span>
+              รายงานสรุป
+            </a>
+            <div class="sb-sec">ระบบ</div>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" /></svg
+              ></span>
+              ผู้ใช้ในระบบ
+            </a>
+            <a class="sb-item" href="#">
+              <span class="ico"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  /></svg
+              ></span>
+              ตั้งค่าระบบ
+            </a>
+          </div>
+          <div class="sb-foot">
+            <div class="avatar">ธก</div>
+            <div>
+              <div class="sb-uname">ธนภัทร ประทุม</div>
+              <div class="sb-uemail">ommykung2033@gmail.com</div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <!-- BACK -->
+          <div class="back-row">
+            <button class="back-btn" onclick="history.back()">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              ย้อนกลับ
+            </button>
+            <div class="bc-inline">
+              <span>ข้อมูลหลักสูตรทั้งหมด</span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              <span class="cur">รายละเอียดหลักสูตร</span>
+            </div>
+          </div>
+
+          <!-- OUTER PAGE CARD ครอบทุกอย่าง -->
+          <div class="page-card">
+            <!-- HERO -->
+            <div class="hero">
+              <div class="hero-deco"></div>
+              <div class="hero-deco2"></div>
+              <div class="hero-inner">
+                <div class="hero-top">
+                  <div>
+                    <div class="hero-title">
+                      การพัฒนาทักษะการเป็นผู้นำเชิงกลยุทธ์
+                    </div>
+                    <div class="hero-pills">
+                      <span class="pill p-gray">CRS-2026-001</span>
+                      <span class="pill p-blue">อบรมภายใน</span>
+                      <span class="pill p-amber">Leadership</span>
+                      <span class="pill p-green">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        อนุมัติแล้ว
+                      </span>
+                    </div>
+                  </div>
+                  <div class="hero-actions">
+                    <button
+                      class="btn btn-solid"
+                      onclick="showToast('กำลังเปิดหน้าแก้ไข…', 'amber')"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                        />
+                        <path
+                          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                        />
+                      </svg>
+                      แก้ไขหลักสูตร
+                    </button>
+                    <button
+                      class="btn btn-danger"
+                      onclick="openModal('course')"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path
+                          d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+                        />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M9 6V4h6v2" />
+                      </svg>
+                      ลบ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- page-card-body (stats + grid) -->
+            <div class="page-card-body">
+              <!-- STATS -->
+              <div class="stats-row">
+                <div class="stat-card">
+                  <div class="stat-icon si-blue">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="stat-lbl">ผู้เข้าอบรมทั้งหมด</div>
+                    <div class="stat-val" id="stat-participants">30 คน</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon si-teal">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="stat-lbl">ระยะเวลาทั้งหมด</div>
+                    <div class="stat-val">18 ชม.</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon si-green">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="stat-lbl">สถานะการรับรอง</div>
+                    <div class="stat-val sm" style="color: var(--green)">
+                      อนุมัติแล้ว
+                    </div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon si-amber">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="stat-lbl">วันอบรมล่าสุด</div>
+                    <div class="stat-val sm">14 พ.ค. 2568</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GRID -->
+              <div class="grid">
+                <div class="col-main">
+                  <div class="card">
+                    <div class="ch">
+                      <div class="ch-left">
+                        <div class="ch-icon">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                        </div>
+                        <span class="ch-title">ข้อมูลทั่วไป</span>
+                      </div>
+                    </div>
+                    <div class="frows">
+                      <div class="frow">
+                        <span class="fl">ประเภทหลักสูตร</span
+                        ><span class="fv">อบรมภายใน (Internal)</span>
+                      </div>
+                      <div class="frow">
+                        <span class="fl">หมวดหมู่ / ป้ายกำกับ</span
+                        ><span class="fv"
+                          ><span class="pill p-amber">Leadership</span></span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="ch">
+                      <div class="ch-left">
+                        <div class="ch-icon">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                        </div>
+                        <span class="ch-title">รายละเอียดการอบรม</span>
+                      </div>
+                    </div>
+                    <div class="frows">
+                      <div class="frow">
+                        <span class="fl">วันที่เริ่ม – สิ้นสุด</span
+                        ><span class="fv">12 พ.ค. 2568 – 14 พ.ค. 2568</span>
+                      </div>
+                      <div class="frow">
+                        <span class="fl">เวลา</span
+                        ><span class="fv">09:00 – 16:00 น.</span>
+                      </div>
+                      <div class="frow">
+                        <span class="fl">ระยะเวลาทั้งหมด</span
+                        ><span class="fv">18.00 ชั่วโมง</span>
+                      </div>
+                      <div class="frow">
+                        <span class="fl">วิทยากร</span
+                        ><span class="fv">ดร. สมชาย รักเรียน</span>
+                      </div>
+                      <div class="frow">
+                        <span class="fl">สถาบัน / หน่วยงาน</span
+                        ><span class="fv">สถาบันการจัดการระดับสูง</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="ch">
+                      <div class="ch-left">
+                        <div class="ch-icon">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path
+                              d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                            />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                        </div>
+                        <span class="ch-title">รายชื่อผู้เข้าอบรม</span>
+                        <span class="ch-count" id="pt-count">30 คน</span>
+                      </div>
+                      <button
+                        class="btn-add"
+                        onclick="
+                          showToast('เปิดฟอร์มเพิ่มผู้เข้าอบรม', 'amber')
+                        "
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        เพิ่มผู้เข้าอบรม
+                      </button>
+                    </div>
+                    <div class="tbl-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>แผนก / หน่วยงาน</th>
+                            <th>สถานะการอบรม</th>
+                            <th style="width: 68px"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="pt-body"></tbody>
+                      </table>
+                    </div>
+                    <div class="pag-wrap" id="pag-wrap"></div>
+                  </div>
+                </div>
+
+                <div class="col-side">
+                  <div class="card">
+                    <div class="sch">
+                      <span class="sch-lbl">การรับรองและเอกสาร</span>
+                    </div>
+                    <div class="status-block">
+                      <div class="status-ring">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="status-name">อนุมัติแล้ว</div>
+                        <div class="status-en">Approved</div>
+                      </div>
+                    </div>
+                    <div
+                      class="dl-item"
+                      tabindex="0"
+                      role="button"
+                      onclick="showToast('กำลังดาวน์โหลด PDF…', 'green')"
+                    >
+                      <div class="dl-ico">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                          />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="dl-name">เอกสารการรับรอง</div>
+                        <div class="dl-sub">ดาวน์โหลด PDF</div>
+                      </div>
+                    </div>
+                    <div
+                      class="dl-item"
+                      tabindex="0"
+                      role="button"
+                      onclick="showToast('กำลังดาวน์โหลด Excel…', 'green')"
+                    >
+                      <div class="dl-ico">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="dl-name">รายชื่อผู้เข้าเรียน</div>
+                        <div class="dl-sub">ดาวน์โหลด Excel</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="sch">
+                      <span class="sch-lbl">สรุปค่าใช้จ่าย</span>
+                    </div>
+                    <div class="fin-body">
+                      <div class="fin-main">
+                        <div class="fin-icon">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <rect
+                              x="1"
+                              y="4"
+                              width="22"
+                              height="16"
+                              rx="2"
+                              ry="2"
+                            />
+                            <line x1="1" y1="10" x2="23" y2="10" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="fin-lbl">งบประมาณ</div>
+                          <div class="fin-amt">30,000.00 บาท</div>
+                        </div>
+                      </div>
+                      <div class="fin-rows">
+                        <div class="fin-row">
+                          <span class="fin-rl">ค่าใช้จ่ายจริง</span
+                          ><span class="fin-rv ok">25,000.00 บาท</span>
+                        </div>
+                        <div class="fin-row">
+                          <span class="fin-rl">ต้นทุน / หัว</span
+                          ><span class="fin-rv neutral">833.33 บาท</span>
+                        </div>
+                        <div class="fin-row">
+                          <span class="fin-rl">คงเหลือ</span
+                          ><span class="fin-rv ok">5,000.00 บาท</span>
+                        </div>
+                      </div>
+                      <div class="prog-wrap">
+                        <div class="prog-lbl">
+                          <span>การใช้งบประมาณ</span><span>83.3%</span>
+                        </div>
+                        <div
+                          class="prog-bg"
+                          role="progressbar"
+                          aria-valuenow="83"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          <div class="prog-fill" id="budget-bar"></div>
+                        </div>
+                      </div>
+                      <div class="fin-appr">
+                        <span class="fin-appr-lbl">สถานะการอนุมัติ</span>
+                        <span class="pill p-green">อนุมัติแล้ว</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /page-card-body -->
+          </div>
+          <!-- /page-card -->
+        </main>
+      </div>
+    </div>
+
+    <div
+      class="modal-overlay"
+      id="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="modal">
+        <div class="modal-ico">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M9 6V4h6v2" />
+          </svg>
+        </div>
+        <h3 id="modal-title">ยืนยันการลบ</h3>
+        <p id="modal-desc">
+          คุณต้องการลบรายการนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้
+        </p>
+        <div class="modal-acts">
+          <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+          <button class="btn-confirm" onclick="confirmDelete()">ลบ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+    <script>
+      const ALL = [
+        { id: 1, name: "นายกฤษฎา จันทร์ดี", dept: "ฝ่ายกลยุทธ์องค์กร" },
+        { id: 2, name: "นางสาวปวีณา ศรีสมบัติ", dept: "ฝ่ายทรัพยากรบุคคล" },
+        { id: 3, name: "นายอรรถพล นาคสุข", dept: "ฝ่ายการเงิน" },
+        { id: 4, name: "นางสาววิลาวัณย์ ทองมาก", dept: "ฝ่ายการตลาด" },
+        { id: 5, name: "นายธนวัฒน์ พลอยศรี", dept: "ฝ่ายเทคโนโลยีสารสนเทศ" },
+        { id: 6, name: "นางสาวสุภาพร มีสุข", dept: "ฝ่ายปฏิบัติการ" },
+        { id: 7, name: "นายพิชิต รักชาติ", dept: "ฝ่ายกฎหมาย" },
+        { id: 8, name: "นางสาวอารีรัตน์ ใจดี", dept: "ฝ่ายบัญชี" },
+        { id: 9, name: "นายสุรชัย ดีงาม", dept: "ฝ่ายจัดซื้อ" },
+        { id: 10, name: "นางสาวนภาพร แสงทอง", dept: "ฝ่ายประชาสัมพันธ์" },
+        { id: 11, name: "นายวิรัตน์ สุขสบาย", dept: "ฝ่ายกลยุทธ์องค์กร" },
+        { id: 12, name: "นางสาวพรทิพย์ มณีแดง", dept: "ฝ่ายทรัพยากรบุคคล" },
+        { id: 13, name: "นายชัยวัฒน์ ศรีสุข", dept: "ฝ่ายการเงิน" },
+        { id: 14, name: "นางสาวรัตนา วงศ์ทอง", dept: "ฝ่ายการตลาด" },
+        { id: 15, name: "นายอภิชาต บุญมี", dept: "ฝ่ายเทคโนโลยีสารสนเทศ" },
+        { id: 16, name: "นางสาวกานดา พรมมา", dept: "ฝ่ายปฏิบัติการ" },
+        { id: 17, name: "นายสมพล หาญกล้า", dept: "ฝ่ายกฎหมาย" },
+        { id: 18, name: "นางสาวนิตยา ทองดี", dept: "ฝ่ายบัญชี" },
+        { id: 19, name: "นายประสิทธิ์ ชาญวิชา", dept: "ฝ่ายจัดซื้อ" },
+        { id: 20, name: "นางสาวจิราพร สดใส", dept: "ฝ่ายประชาสัมพันธ์" },
+        { id: 21, name: "นายณัฐพล วิชาดี", dept: "ฝ่ายกลยุทธ์องค์กร" },
+        { id: 22, name: "นางสาวสิริพร เจริญสุข", dept: "ฝ่ายทรัพยากรบุคคล" },
+        { id: 23, name: "นายกิตติศักดิ์ มั่นคง", dept: "ฝ่ายการเงิน" },
+        { id: 24, name: "นางสาวอุมาพร ลาภมาก", dept: "ฝ่ายการตลาด" },
+        { id: 25, name: "นายเอกชัย สว่างใจ", dept: "ฝ่ายเทคโนโลยีสารสนเทศ" },
+        { id: 26, name: "นางสาวพัชรี บุญรอด", dept: "ฝ่ายปฏิบัติการ" },
+        { id: 27, name: "นายสมศักดิ์ เพชรดี", dept: "ฝ่ายกฎหมาย" },
+        { id: 28, name: "นางสาววรรณา ขยันดี", dept: "ฝ่ายบัญชี" },
+        { id: 29, name: "นายธีรพล นาคสวรรค์", dept: "ฝ่ายจัดซื้อ" },
+        { id: 30, name: "นางสาวมาลี สุขเจริญ", dept: "ฝ่ายประชาสัมพันธ์" },
+      ]
+
+      const PER = 10
+      let page = 1
+      let data = [...ALL]
+      const tp = () => Math.ceil(data.length / PER)
+
+      function render() {
+        const tbody = document.getElementById("pt-body")
+        const slice = data.slice((page - 1) * PER, page * PER)
+        const start = (page - 1) * PER
+        tbody.innerHTML = slice
+          .map(
+            (p, i) => `
+          <tr style="animation:rise .22s var(--ease) ${i * 0.03}s both">
+            <td class="td-num">${start + i + 1}</td>
+            <td class="td-name">${p.name}</td>
+            <td class="td-dept">${p.dept}</td>
+            <td><span class="pill p-green" style="font-size:11.5px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><polyline points="20 6 9 17 4 12"/></svg>
+              อนุมัติแล้ว
+            </span></td>
+            <td><div class="acts">
+              <button class="ibtn" onclick="showToast('แก้ไข: ${p.name}','amber')" title="แก้ไข">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="ibtn del" onclick="openModal('participant',${p.id})" title="ลบ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div></td>
+          </tr>`
+          )
+          .join("")
+        renderPag()
+        document.getElementById("pt-count").textContent = data.length + " คน"
+        document.getElementById("stat-participants").textContent =
+          data.length + " คน"
+      }
+
+      function renderPag() {
+        const wrap = document.getElementById("pag-wrap")
+        const t = tp(),
+          c = page
+        const s = (c - 1) * PER + 1,
+          e = Math.min(c * PER, data.length)
+        let nums = []
+        if (t <= 7) {
+          for (let i = 1; i <= t; i++) nums.push(i)
+        } else if (c <= 4) nums = [1, 2, 3, 4, 5, "…", t]
+        else if (c >= t - 3) nums = [1, "…", t - 4, t - 3, t - 2, t - 1, t]
+        else nums = [1, "…", c - 1, c, c + 1, "…", t]
+        wrap.innerHTML = `
+          <span class="pag-info">แสดง <strong>${s}–${e}</strong> จาก <strong>${data.length}</strong> คน</span>
+          <div class="pager">
+            <button class="pgbtn" onclick="go(${c - 1})" ${c === 1 ? "disabled" : ""} aria-label="หน้าก่อน">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            ${nums.map((n) => (n === "…" ? `<span class="pg-dots">…</span>` : `<button class="pgbtn${n === c ? " active" : ""}" onclick="go(${n})">${n}</button>`)).join("")}
+            <button class="pgbtn" onclick="go(${c + 1})" ${c === t ? "disabled" : ""} aria-label="หน้าถัดไป">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>`
+      }
+
+      function go(p) {
+        if (p < 1 || p > tp()) return
+        page = p
+        render()
+        document
+          .querySelector(".col-main .card:last-child")
+          .scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+
+      let _mtype = null,
+        _mid = null
+      function openModal(type, id = null) {
+        _mtype = type
+        _mid = id
+        const desc = document.getElementById("modal-desc")
+        if (type === "participant") {
+          const p = data.find((x) => x.id === id)
+          desc.textContent = `คุณต้องการลบ "${p?.name}" ออกจากหลักสูตรนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้`
+        } else {
+          desc.textContent =
+            "คุณต้องการลบหลักสูตรนี้ใช่หรือไม่? ข้อมูลทั้งหมดจะถูกลบถาวร"
+        }
+        document.getElementById("modal-overlay").classList.add("open")
+      }
+      function closeModal() {
+        document.getElementById("modal-overlay").classList.remove("open")
+        _mid = null
+      }
+      function confirmDelete() {
+        if (_mtype === "participant" && _mid) {
+          data = data.filter((p) => p.id !== _mid)
+          if (page > tp()) page = Math.max(1, tp())
+          render()
+          showToast("ลบผู้เข้าอบรมออกแล้ว", "red")
+        } else {
+          showToast("ลบหลักสูตรแล้ว (mock)", "red")
+        }
+        closeModal()
+      }
+      document
+        .getElementById("modal-overlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeModal()
+        })
+
+      function showToast(msg, type = "green") {
+        const stack = document.getElementById("toast-stack")
+        const el = document.createElement("div")
+        el.className = "toast"
+        el.innerHTML = `<div class="toast-dot dot-${type}"></div><span>${msg}</span>`
+        stack.appendChild(el)
+        setTimeout(() => {
+          el.classList.add("out")
+          setTimeout(() => el.remove(), 200)
+        }, 3500)
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        render()
+        setTimeout(() => {
+          const b = document.getElementById("budget-bar")
+          if (b) b.style.width = "83.3%"
+        }, 600)
+      })
+    </script>
+  </body>
+</html>
