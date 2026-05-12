@@ -1,3 +1,4 @@
+import { getConnInfo } from '@hono/node-server/conninfo';
 import type { Context } from 'hono';
 import type { HonoEnv } from '../../../types/hono';
 import type { AuditContextInput, AuditLogContext } from '../audit-logs.types';
@@ -20,12 +21,21 @@ export function buildAuditLogContext(
  * Layer 2: Policy layer — จัดการนโยบายการดึงค่าจาก HTTP Header
  */
 export function resolveIpAddress(c: Context<HonoEnv>): string | null {
-  return (
-    c.req.header('cf-connecting-ip') ??
-    c.req.header('x-forwarded-for') ??
-    c.req.header('x-real-ip') ??
-    null
-  );
+  // 1. เชื่อ Cloudflare ก่อนเสมอ
+  const cfIp = c.req.header('cf-connecting-ip');
+  if (cfIp) return cfIp;
+
+  // 2. เชื่อ x-forwarded-for (ดึงตัวแรกสุดใน proxy chain)
+  const xff = c.req.header('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+
+  // 3. fallback ไปที่ x-real-ip
+  const xri = c.req.header('x-real-ip');
+  if (xri) return xri;
+
+  // 4. ก๊อกสุดท้าย: ดึงจาก TCP level ผ่าน Hono Helper
+  const connInfo = getConnInfo(c);
+  return connInfo.remote.address || null;
 }
 
 /**

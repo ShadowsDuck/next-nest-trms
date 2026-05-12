@@ -8,20 +8,16 @@ import { deleteSummaryReportByIdHandler } from './handlers/delete-summary-report
 import { getLatestSummaryReportHandler } from './handlers/get-latest-summary-report';
 import { getSummaryReportByIdHandler } from './handlers/get-summary-report-by-id';
 
-const summaryReportsRouter = new Hono<HonoEnv>();
+const routes = new Hono<HonoEnv>()
+  .use('/*', requireAuth)
+  .post(
+    '/',
+    zValidator('json', createSummaryReportSchema),
+    createSummaryReportHandler,
+  )
+  .get('/latest', getLatestSummaryReportHandler)
+  .get('/:id', getSummaryReportByIdHandler)
+  .delete('/:id', deleteSummaryReportByIdHandler);
 
-summaryReportsRouter.use('/*', requireAuth);
-
-/**
- * เส้นทาง (Routes) สำหรับจัดการข้อมูลรายงานสรุป
- */
-summaryReportsRouter.post(
-  '/',
-  zValidator('json', createSummaryReportSchema),
-  createSummaryReportHandler,
-);
-summaryReportsRouter.get('/latest', getLatestSummaryReportHandler);
-summaryReportsRouter.get('/:id', getSummaryReportByIdHandler);
-summaryReportsRouter.delete('/:id', deleteSummaryReportByIdHandler);
-
-export default summaryReportsRouter;
+export default routes;
+export type SummaryReportsRoute = typeof routes;

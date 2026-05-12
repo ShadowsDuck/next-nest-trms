@@ -3,14 +3,9 @@ import { requireAuth } from '../../middleware/auth.middleware';
 import { HonoEnv } from '../../types/hono';
 import { getTagsHandler } from './handlers/get-tags';
 
-const tagsRouter = new Hono<HonoEnv>();
+const routes = new Hono<HonoEnv>()
+  .use('/*', requireAuth)
+  .get('/', getTagsHandler);
 
-// Middleware ตรวจสอบการล็อกอิน
-tagsRouter.use('/*', requireAuth);
-
-/**
- * เส้นทาง (Routes) สำหรับจัดการข้อมูลหมวดหมู่ (tags)
- */
-tagsRouter.get('/', getTagsHandler);
-
-export default tagsRouter;
+export default routes;
+export type TagsRoute = typeof routes;

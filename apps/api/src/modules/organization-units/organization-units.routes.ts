@@ -44,89 +44,76 @@ import {
   updatePlantHandler,
 } from './handlers/plants';
 
-const orgUnitsRouter = new Hono<HonoEnv>();
+const routes = new Hono<HonoEnv>()
+  .use('/*', requireAuth)
+  // Plants
+  .get('/plants', getPlantsHandler)
+  .post('/plants', zValidator('json', plantSchema), createPlantHandler)
+  .patch(
+    '/plants/:id',
+    zValidator('json', updatePlantSchema),
+    updatePlantHandler,
+  )
+  // Business Units
+  .get(
+    '/business-units',
+    zValidator('query', businessUnitQuerySchema),
+    getBusinessUnitsHandler,
+  )
+  .post(
+    '/business-units',
+    zValidator('json', businessUnitSchema),
+    createBusinessUnitHandler,
+  )
+  .patch(
+    '/business-units/:id',
+    zValidator('json', updateBusinessUnitSchema),
+    updateBusinessUnitHandler,
+  )
+  // Functions
+  .get(
+    '/functions',
+    zValidator('query', orgFunctionQuerySchema),
+    getFunctionsHandler,
+  )
+  .post(
+    '/functions',
+    zValidator('json', orgFunctionSchema),
+    createFunctionHandler,
+  )
+  .patch(
+    '/functions/:id',
+    zValidator('json', updateOrgFunctionSchema),
+    updateFunctionHandler,
+  )
+  // Divisions
+  .get(
+    '/divisions',
+    zValidator('query', divisionQuerySchema),
+    getDivisionsHandler,
+  )
+  .post('/divisions', zValidator('json', divisionSchema), createDivisionHandler)
+  .patch(
+    '/divisions/:id',
+    zValidator('json', updateDivisionSchema),
+    updateDivisionHandler,
+  )
+  // Departments
+  .get(
+    '/departments',
+    zValidator('query', departmentQuerySchema),
+    getDepartmentsHandler,
+  )
+  .post(
+    '/departments',
+    zValidator('json', departmentSchema),
+    createDepartmentHandler,
+  )
+  .patch(
+    '/departments/:id',
+    zValidator('json', updateDepartmentSchema),
+    updateDepartmentHandler,
+  );
 
-orgUnitsRouter.use('/*', requireAuth);
-
-// Plants
-orgUnitsRouter.get('/plants', getPlantsHandler);
-orgUnitsRouter.post(
-  '/plants',
-  zValidator('json', plantSchema),
-  createPlantHandler,
-);
-orgUnitsRouter.patch(
-  '/plants/:id',
-  zValidator('json', updatePlantSchema),
-  updatePlantHandler,
-);
-
-// Business Units
-orgUnitsRouter.get(
-  '/business-units',
-  zValidator('query', businessUnitQuerySchema),
-  getBusinessUnitsHandler,
-);
-orgUnitsRouter.post(
-  '/business-units',
-  zValidator('json', businessUnitSchema),
-  createBusinessUnitHandler,
-);
-orgUnitsRouter.patch(
-  '/business-units/:id',
-  zValidator('json', updateBusinessUnitSchema),
-  updateBusinessUnitHandler,
-);
-
-// Functions
-orgUnitsRouter.get(
-  '/functions',
-  zValidator('query', orgFunctionQuerySchema),
-  getFunctionsHandler,
-);
-orgUnitsRouter.post(
-  '/functions',
-  zValidator('json', orgFunctionSchema),
-  createFunctionHandler,
-);
-orgUnitsRouter.patch(
-  '/functions/:id',
-  zValidator('json', updateOrgFunctionSchema),
-  updateFunctionHandler,
-);
-
-// Divisions
-orgUnitsRouter.get(
-  '/divisions',
-  zValidator('query', divisionQuerySchema),
-  getDivisionsHandler,
-);
-orgUnitsRouter.post(
-  '/divisions',
-  zValidator('json', divisionSchema),
-  createDivisionHandler,
-);
-orgUnitsRouter.patch(
-  '/divisions/:id',
-  zValidator('json', updateDivisionSchema),
-  updateDivisionHandler,
-);
-
-// Departments
-orgUnitsRouter.get(
-  '/departments',
-  zValidator('query', departmentQuerySchema),
-  getDepartmentsHandler,
-);
-orgUnitsRouter.post(
-  '/departments',
-  zValidator('json', departmentSchema),
-  createDepartmentHandler,
-);
-orgUnitsRouter.patch(
-  '/departments/:id',
-  zValidator('json', updateDepartmentSchema),
-  updateDepartmentHandler,
-);
-
-export default orgUnitsRouter;
+export default routes;
+export type OrganizationUnitsRoute = typeof routes;

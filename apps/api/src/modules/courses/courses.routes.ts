@@ -6,18 +6,10 @@ import { HonoEnv } from '../../types/hono';
 import { createCourseHandler } from './handlers/create-course';
 import { getCoursesHandler } from './handlers/get-courses';
 
-const coursesRouter = new Hono<HonoEnv>();
+const routes = new Hono<HonoEnv>()
+  .use('/*', requireAuth)
+  .post('/', createCourseHandler)
+  .get('/', zValidator('query', courseQuerySchema), getCoursesHandler);
 
-coursesRouter.use('/*', requireAuth);
-
-/**
- * เส้นทาง (Routes) สำหรับจัดการข้อมูลหลักสูตร
- */
-coursesRouter.post('/', createCourseHandler);
-coursesRouter.get(
-  '/',
-  zValidator('query', courseQuerySchema),
-  getCoursesHandler,
-);
-
-export default coursesRouter;
+export default routes;
+export type CoursesRoute = typeof routes;

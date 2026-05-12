@@ -14,38 +14,21 @@ import { getEmployeesHandler } from './handlers/get-employees';
 import { importDryRunHandler } from './handlers/import-dry-run';
 import { importEmployeesHandler } from './handlers/import-employees';
 
-const employeesRouter = new Hono<HonoEnv>();
+const routes = new Hono<HonoEnv>()
+  .use('/*', requireAuth)
+  .post(
+    '/import/dry-run',
+    zValidator('json', employeeImportDryRunRequestSchema),
+    importDryRunHandler,
+  )
+  .post(
+    '/import',
+    zValidator('json', employeeImportRequestSchema),
+    importEmployeesHandler,
+  )
+  .post('/', zValidator('json', employeeSchema), createEmployeeHandler)
+  .get('/', zValidator('query', employeeQuerySchema), getEmployeesHandler)
+  .get('/:employeeNo', getEmployeeByNoHandler);
 
-employeesRouter.use('/*', requireAuth);
-
-/**
- * เส้นทาง (Routes) สำหรับการนำเข้าพนักงาน
- */
-employeesRouter.post(
-  '/import/dry-run',
-  zValidator('json', employeeImportDryRunRequestSchema),
-  importDryRunHandler,
-);
-
-employeesRouter.post(
-  '/import',
-  zValidator('json', employeeImportRequestSchema),
-  importEmployeesHandler,
-);
-
-/**
- * เส้นทาง (Routes) สำหรับจัดการข้อมูลพนักงาน
- */
-employeesRouter.post(
-  '/',
-  zValidator('json', employeeSchema),
-  createEmployeeHandler,
-);
-employeesRouter.get(
-  '/',
-  zValidator('query', employeeQuerySchema),
-  getEmployeesHandler,
-);
-employeesRouter.get('/:employeeNo', getEmployeeByNoHandler);
-
-export default employeesRouter;
+export default routes;
+export type EmployeesRoute = typeof routes;
