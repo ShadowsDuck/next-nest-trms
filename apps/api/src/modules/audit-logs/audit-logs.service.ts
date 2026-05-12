@@ -1,8 +1,7 @@
 import { AuditAction, Prisma } from '@workspace/database';
+import type { AuditLogPaginationResponse, AuditLogQuery } from '@workspace/schemas';
 import { db } from '../../lib/db';
 import type { CreateAuditLogInput } from './audit-logs.types';
-import { AuditLogPaginationResponseDto } from './dto/audit-log-pagination-response.dto';
-import { AuditLogQueryDto } from './dto/audit-log-query.dto';
 import { buildAuditLogWhereInput } from './lib/audit-log-where.builder';
 import { formatAuditLog } from './lib/audit-logs.mapper';
 
@@ -10,8 +9,8 @@ type AuditLogDbClient = typeof db | Prisma.TransactionClient;
 
 // ดึง audit logs แบบแบ่งหน้าโดยรองรับ filter และ search จากหน้า admin
 export async function findAllAuditLogs(
-  queryDto: AuditLogQueryDto,
-): Promise<AuditLogPaginationResponseDto> {
+  queryDto: AuditLogQuery,
+): Promise<AuditLogPaginationResponse> {
   const { page, limit } = queryDto;
   const where = buildAuditLogWhereInput(queryDto);
 

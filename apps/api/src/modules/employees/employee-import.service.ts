@@ -1,3 +1,4 @@
+import type { EmployeeImportDryRunRequest, EmployeeImportDryRunResponse, EmployeeImportRequest } from '@workspace/schemas';
 import { AuditAction } from '@workspace/database';
 import {
   type EmployeeImportRawRow,
@@ -12,10 +13,6 @@ import {
   createFailureLog,
 } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import { EmployeeImportDryRunRequestDto } from './dto/employee-import-dry-run-request.dto';
-import { EmployeeImportDryRunResponseDto } from './dto/employee-import-dry-run-response.dto';
-import { EmployeeImportRequestDto } from './dto/employee-import-request.dto';
-import { EmployeeImportResponseDto } from './dto/employee-import-response.dto';
 import { createEmployee } from './employees.service';
 
 const importFieldLabelMap: Record<string, string> = {
@@ -35,8 +32,8 @@ const importFieldLabelMap: Record<string, string> = {
 
 // ตรวจไฟล์นำเข้าแบบไม่บันทึกข้อมูลจริง แล้วส่งผลสรุปต่อแถวกลับไปให้ผู้ใช้
 export async function importDryRun(
-  body: EmployeeImportDryRunRequestDto,
-): Promise<EmployeeImportDryRunResponseDto> {
+  body: EmployeeImportDryRunRequest,
+): Promise<EmployeeImportDryRunResponse> {
   const validationResults = await validateImportRows(body.rows);
   const valid = validationResults.filter((row) => row.errors.length === 0);
   const invalid = validationResults.length - valid.length;
@@ -58,9 +55,9 @@ export async function importDryRun(
 
 // นำเข้าข้อมูลจริงจาก CSV แบบ partial success (แถวที่ผิดจะถูกข้าม)
 export async function importEmployees(
-  body: EmployeeImportRequestDto,
+  body: EmployeeImportRequest,
   auditLogContext: AuditLogContext,
-): Promise<EmployeeImportResponseDto> {
+): Promise<EmployeeImportResponse> {
   try {
     const validationResults = await validateImportRows(body.rows);
     const rowResults: EmployeeImportResponse['rows'] = [];
@@ -589,7 +586,7 @@ async function getOrganizationChainErrorsByNames(input: {
 
 // สร้าง payload สำหรับ audit log ของการนำเข้า โดยเก็บเฉพาะข้อมูลที่อ่านย้อนหลังได้จริง
 function toImportAuditPayload(
-  body: EmployeeImportRequestDto,
+  body: EmployeeImportRequest,
 ): Record<string, unknown> {
   return {
     totalRows: body.rows.length,

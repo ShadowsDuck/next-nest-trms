@@ -1,3 +1,4 @@
+import type { CourseResponse, CourseQuery, CoursePaginationResponse } from '@workspace/schemas';
 import { AuditAction } from '@workspace/database';
 import { db } from '../../lib/db';
 import {
@@ -5,9 +6,7 @@ import {
   createFailureLog,
 } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import { CoursePaginationResponseDto } from './dto/course-pagination-response.dto';
-import { CourseQueryDto } from './dto/course-query.dto';
-import { CourseResponseDto } from './dto/course-response.dto';
+import type {  } from '@workspace/schemas';
 import { buildCourseWhereInput } from './lib/course-where.builder';
 import { formatCourse } from './lib/courses.mapper';
 import type { CourseAttachmentUploadResult } from './storage/course-attachment-storage.contract';
@@ -29,7 +28,7 @@ type UploadableAttachment = {
 export async function createCourse(
   createCourseDto: CreateCoursePayload,
   auditLogContext: AuditLogContext,
-): Promise<CourseResponseDto> {
+): Promise<CourseResponse> {
   const attachmentPayload = createCourseDto as CreateCoursePayload &
     Record<string, unknown>;
   const accreditationFile = toUploadableAttachment(
@@ -142,9 +141,9 @@ export async function createCourse(
 }
 
 export async function findAllCourses(
-  queryDto: CourseQueryDto,
+  queryDto: CourseQuery,
   auditLogContext?: AuditLogContext,
-): Promise<CoursePaginationResponseDto> {
+): Promise<CoursePaginationResponse> {
   const { page, limit, includeEmployees } = queryDto;
   const where = buildCourseWhereInput(queryDto);
 
@@ -222,7 +221,7 @@ export async function findAllCourses(
 
 export async function findByCourseIdsForReport(
   courseIds: string[],
-): Promise<CourseResponseDto[]> {
+): Promise<CourseResponse[]> {
   if (courseIds.length === 0) {
     return [];
   }

@@ -1,3 +1,4 @@
+import type { EmployeeResponse, EmployeeQuery, EmployeePaginationResponse, EmployeeDetailResponse } from '@workspace/schemas';
 import { AuditAction } from '@workspace/database';
 import { db } from '../../lib/db';
 import {
@@ -6,10 +7,6 @@ import {
 } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import { validateEmployeeHierarchy } from '../organization-units/organization-units.service';
-import { EmployeeDetailResponseDto } from './dto/employee-detail-response.dto';
-import { EmployeePaginationResponseDto } from './dto/employee-pagination-response.dto';
-import { EmployeeQueryDto } from './dto/employee-query.dto';
-import { EmployeeResponseDto } from './dto/employee-response.dto';
 import { buildEmployeeWhereInput } from './lib/employee-where.builder';
 import { formatEmployee } from './lib/employees.mapper';
 
@@ -19,7 +16,7 @@ type CreateEmployeePayload = any; // Will be properly typed by schemas later if 
 export async function createEmployee(
   createEmployeeDto: CreateEmployeePayload,
   auditLogContext: AuditLogContext,
-): Promise<EmployeeResponseDto> {
+): Promise<EmployeeResponse> {
   try {
     const existingEmployeeNo = await db.employee.findUnique({
       where: {
@@ -114,9 +111,9 @@ export async function createEmployee(
 
 // ดึงข้อมูลพนักงานแบบแบ่งหน้า รองรับตัวกรอง และเลือกว่าจะ include training records หรือไม่
 export async function findAllEmployees(
-  queryDto: EmployeeQueryDto,
+  queryDto: EmployeeQuery,
   auditLogContext?: AuditLogContext,
-): Promise<EmployeePaginationResponseDto> {
+): Promise<EmployeePaginationResponse> {
   const { page, limit, includeTrainingRecords } = queryDto;
   const where = buildEmployeeWhereInput(queryDto);
 
@@ -197,7 +194,7 @@ export async function findAllEmployees(
 // ดึงรายละเอียดพนักงาน 1 รายการตาม employeeNo พร้อมข้อมูลหน่วยงานและประวัติการอบรม
 export async function findOneEmployeeByNo(
   employeeNo: string,
-): Promise<EmployeeDetailResponseDto> {
+): Promise<EmployeeDetailResponse> {
   const employee = await db.employee.findUnique({
     where: {
       employeeNo,
@@ -235,7 +232,7 @@ export async function findOneEmployeeByNo(
 // ดึงพนักงานตาม employeeNo หลายรายการ โดยคงลำดับผลลัพธ์ตาม input เดิม
 export async function findByEmployeeNosForReport(
   employeeNos: string[],
-): Promise<EmployeeResponseDto[]> {
+): Promise<EmployeeResponse[]> {
   if (employeeNos.length === 0) {
     return [];
   }

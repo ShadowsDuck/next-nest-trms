@@ -1,3 +1,4 @@
+import type { EmployeeResponse } from '@workspace/schemas';
 import {
   BusinessUnit,
   Course,
@@ -10,7 +11,7 @@ import {
   TrainingRecord,
 } from '@workspace/database';
 import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
-import { EmployeeResponseDto } from '../dto/employee-response.dto';
+import type {  } from '@workspace/schemas';
 
 export type EmployeeWithRelations = Employee & {
   plant: Plant;
@@ -27,7 +28,7 @@ export type EmployeeWithRelations = Employee & {
 
 export function formatEmployee(
   employee: EmployeeWithRelations,
-): EmployeeResponseDto {
+): EmployeeResponse {
   const {
     plant,
     businessUnit,

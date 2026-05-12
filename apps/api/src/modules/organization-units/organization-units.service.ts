@@ -7,27 +7,7 @@ import {
 } from '@workspace/database';
 import { toIsoDateTime } from '../../lib/date-utils';
 import { db } from '../../lib/db';
-import {
-  BusinessUnitQueryDto,
-  BusinessUnitResponseDto,
-  CreateBusinessUnitDto,
-  CreateDepartmentDto,
-  CreateDivisionDto,
-  CreateOrgFunctionDto,
-  CreatePlantDto,
-  DepartmentQueryDto,
-  DepartmentResponseDto,
-  DivisionQueryDto,
-  DivisionResponseDto,
-  OrgFunctionQueryDto,
-  OrgFunctionResponseDto,
-  PlantResponseDto,
-  UpdateBusinessUnitDto,
-  UpdateDepartmentDto,
-  UpdateDivisionDto,
-  UpdateOrgFunctionDto,
-  UpdatePlantDto,
-} from './dto/organization-unit-resources.dto';
+import type { PlantResponse, BusinessUnitResponse, OrgFunctionResponse, DivisionResponse, DepartmentResponse, BusinessUnitQuery, OrgFunctionQuery, DivisionQuery, DepartmentQuery } from '@workspace/schemas';
 import { EmployeeOrganizationHierarchyInput } from './organization-hierarchy.types';
 
 // ตรวจสอบว่า chain หน่วยงานของพนักงานสอดคล้องกันครบทุกระดับก่อนบันทึกข้อมูล
@@ -41,7 +21,7 @@ export async function validateEmployeeHierarchy(
   }
 }
 
-export async function findPlants(): Promise<PlantResponseDto[]> {
+export async function findPlants(): Promise<PlantResponse[]> {
   const plants = await db.plant.findMany({
     orderBy: { name: 'asc' },
   });
@@ -50,8 +30,8 @@ export async function findPlants(): Promise<PlantResponseDto[]> {
 }
 
 export async function createPlant(
-  createPlantDto: CreatePlantDto,
-): Promise<PlantResponseDto> {
+  createPlantDto: any,
+): Promise<PlantResponse> {
   const plant = await db.plant.create({
     data: {
       name: createPlantDto.name,
@@ -63,8 +43,8 @@ export async function createPlant(
 
 export async function updatePlant(
   id: string,
-  updatePlantDto: UpdatePlantDto,
-): Promise<PlantResponseDto> {
+  updatePlantDto: any,
+): Promise<PlantResponse> {
   await ensurePlantExists(id);
 
   const plant = await db.plant.update({
@@ -76,8 +56,8 @@ export async function updatePlant(
 }
 
 export async function findBusinessUnits(
-  query: BusinessUnitQueryDto,
-): Promise<BusinessUnitResponseDto[]> {
+  query: BusinessUnitQuery,
+): Promise<BusinessUnitResponse[]> {
   if (query.plantId) {
     await ensurePlantExists(query.plantId);
   }
@@ -91,8 +71,8 @@ export async function findBusinessUnits(
 }
 
 export async function createBusinessUnit(
-  createBusinessUnitDto: CreateBusinessUnitDto,
-): Promise<BusinessUnitResponseDto> {
+  createBusinessUnitDto: any,
+): Promise<BusinessUnitResponse> {
   await ensurePlantExists(createBusinessUnitDto.plantId);
 
   try {
@@ -112,8 +92,8 @@ export async function createBusinessUnit(
 
 export async function updateBusinessUnit(
   id: string,
-  updateBusinessUnitDto: UpdateBusinessUnitDto,
-): Promise<BusinessUnitResponseDto> {
+  updateBusinessUnitDto: any,
+): Promise<BusinessUnitResponse> {
   await ensureBusinessUnitExists(id);
 
   if (updateBusinessUnitDto.plantId) {
@@ -134,8 +114,8 @@ export async function updateBusinessUnit(
 }
 
 export async function findFunctions(
-  query: OrgFunctionQueryDto,
-): Promise<OrgFunctionResponseDto[]> {
+  query: OrgFunctionQuery,
+): Promise<OrgFunctionResponse[]> {
   if (query.businessUnitId) {
     await ensureBusinessUnitExists(query.businessUnitId);
   }
@@ -151,8 +131,8 @@ export async function findFunctions(
 }
 
 export async function createFunction(
-  createOrgFunctionDto: CreateOrgFunctionDto,
-): Promise<OrgFunctionResponseDto> {
+  createOrgFunctionDto: any,
+): Promise<OrgFunctionResponse> {
   await ensureBusinessUnitExists(createOrgFunctionDto.businessUnitId);
 
   try {
@@ -172,8 +152,8 @@ export async function createFunction(
 
 export async function updateFunction(
   id: string,
-  updateOrgFunctionDto: UpdateOrgFunctionDto,
-): Promise<OrgFunctionResponseDto> {
+  updateOrgFunctionDto: any,
+): Promise<OrgFunctionResponse> {
   await ensureFunctionExists(id);
 
   if (updateOrgFunctionDto.businessUnitId) {
@@ -194,8 +174,8 @@ export async function updateFunction(
 }
 
 export async function findDivisions(
-  query: DivisionQueryDto,
-): Promise<DivisionResponseDto[]> {
+  query: DivisionQuery,
+): Promise<DivisionResponse[]> {
   if (query.functionId) {
     await ensureFunctionExists(query.functionId);
   }
@@ -209,8 +189,8 @@ export async function findDivisions(
 }
 
 export async function createDivision(
-  createDivisionDto: CreateDivisionDto,
-): Promise<DivisionResponseDto> {
+  createDivisionDto: any,
+): Promise<DivisionResponse> {
   await ensureFunctionExists(createDivisionDto.functionId);
 
   try {
@@ -230,8 +210,8 @@ export async function createDivision(
 
 export async function updateDivision(
   id: string,
-  updateDivisionDto: UpdateDivisionDto,
-): Promise<DivisionResponseDto> {
+  updateDivisionDto: any,
+): Promise<DivisionResponse> {
   await ensureDivisionExists(id);
 
   if (updateDivisionDto.functionId) {
@@ -252,8 +232,8 @@ export async function updateDivision(
 }
 
 export async function findDepartments(
-  query: DepartmentQueryDto,
-): Promise<DepartmentResponseDto[]> {
+  query: DepartmentQuery,
+): Promise<DepartmentResponse[]> {
   if (query.divisionId) {
     await ensureDivisionExists(query.divisionId);
   }
@@ -267,8 +247,8 @@ export async function findDepartments(
 }
 
 export async function createDepartment(
-  createDepartmentDto: CreateDepartmentDto,
-): Promise<DepartmentResponseDto> {
+  createDepartmentDto: any,
+): Promise<DepartmentResponse> {
   await ensureDivisionExists(createDepartmentDto.divisionId);
 
   try {
@@ -288,8 +268,8 @@ export async function createDepartment(
 
 export async function updateDepartment(
   id: string,
-  updateDepartmentDto: UpdateDepartmentDto,
-): Promise<DepartmentResponseDto> {
+  updateDepartmentDto: any,
+): Promise<DepartmentResponse> {
   await ensureDepartmentExists(id);
 
   if (updateDepartmentDto.divisionId) {
@@ -443,7 +423,7 @@ function rethrowDuplicateNameError(error: unknown): void {
   }
 }
 
-function formatPlant(plant: Plant): PlantResponseDto {
+function formatPlant(plant: Plant): PlantResponse {
   return {
     id: plant.id,
     name: plant.name,
@@ -454,7 +434,7 @@ function formatPlant(plant: Plant): PlantResponseDto {
 
 function formatBusinessUnit(
   businessUnit: BusinessUnit,
-): BusinessUnitResponseDto {
+): BusinessUnitResponse {
   return {
     id: businessUnit.id,
     name: businessUnit.name,
@@ -464,7 +444,7 @@ function formatBusinessUnit(
   };
 }
 
-function formatOrgFunction(orgFunction: OrgFunction): OrgFunctionResponseDto {
+function formatOrgFunction(orgFunction: OrgFunction): OrgFunctionResponse {
   return {
     id: orgFunction.id,
     name: orgFunction.name,
@@ -474,7 +454,7 @@ function formatOrgFunction(orgFunction: OrgFunction): OrgFunctionResponseDto {
   };
 }
 
-function formatDivision(division: Division): DivisionResponseDto {
+function formatDivision(division: Division): DivisionResponse {
   return {
     id: division.id,
     name: division.name,
@@ -484,7 +464,7 @@ function formatDivision(division: Division): DivisionResponseDto {
   };
 }
 
-function formatDepartment(department: Department): DepartmentResponseDto {
+function formatDepartment(department: Department): DepartmentResponse {
   return {
     id: department.id,
     name: department.name,

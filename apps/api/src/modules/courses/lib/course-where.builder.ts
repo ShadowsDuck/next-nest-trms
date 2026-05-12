@@ -1,10 +1,11 @@
+import type { CourseQuery } from '@workspace/schemas';
 import { Prisma } from '@workspace/database';
 import { parseNumber } from '../../../lib/builder-utils';
 import { parseTimestamp } from '../../../lib/date-utils';
-import { CourseQueryDto } from '../dto/course-query.dto';
+import type {  } from '@workspace/schemas';
 
 export function buildCourseWhereInput(
-  queryDto: CourseQueryDto,
+  queryDto: CourseQuery,
 ): Prisma.CourseWhereInput {
   const {
     search,

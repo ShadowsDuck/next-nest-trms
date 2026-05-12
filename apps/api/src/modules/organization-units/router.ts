@@ -19,22 +19,16 @@ import {
   updatePlant,
 } from './organization-units.service';
 
-// Need to import/create validation schemas. In NestJS they used DTOs which had Zod validation,
-// so we should use schemas from @workspace/schemas if available, or just mock them out here if needed.
-// Wait, @workspace/schemas should have org units schemas? I will check or skip zValidator for org units for now
-// if schemas are not available. Actually, the DTOs used `createZodDto` but I'll import from `@workspace/schemas` if they exist.
-// For now, let's implement the router.
-
 import {
   businessUnitQuerySchema,
-  createBusinessUnitSchema,
-  createDepartmentSchema,
-  createDivisionSchema,
-  createOrgFunctionSchema,
-  createPlantSchema,
+  businessUnitSchema,
   departmentQuerySchema,
+  departmentSchema,
   divisionQuerySchema,
+  divisionSchema,
   orgFunctionQuerySchema,
+  orgFunctionSchema,
+  plantSchema,
   updateBusinessUnitSchema,
   updateDepartmentSchema,
   updateDivisionSchema,
@@ -52,7 +46,7 @@ orgUnitsRouter.get('/plants', async (c) => {
   return c.json(result, 200);
 });
 
-orgUnitsRouter.post('/plants', zValidator('json', createPlantSchema), async (c) => {
+orgUnitsRouter.post('/plants', zValidator('json', plantSchema), async (c) => {
   const body = c.req.valid('json');
   try {
     const result = await createPlant(body);
@@ -84,7 +78,7 @@ orgUnitsRouter.get('/business-units', zValidator('query', businessUnitQuerySchem
   }
 });
 
-orgUnitsRouter.post('/business-units', zValidator('json', createBusinessUnitSchema), async (c) => {
+orgUnitsRouter.post('/business-units', zValidator('json', businessUnitSchema), async (c) => {
   const body = c.req.valid('json');
   try {
     const result = await createBusinessUnit(body);
@@ -116,7 +110,7 @@ orgUnitsRouter.get('/functions', zValidator('query', orgFunctionQuerySchema), as
   }
 });
 
-orgUnitsRouter.post('/functions', zValidator('json', createOrgFunctionSchema), async (c) => {
+orgUnitsRouter.post('/functions', zValidator('json', orgFunctionSchema), async (c) => {
   const body = c.req.valid('json');
   try {
     const result = await createFunction(body);
@@ -148,7 +142,7 @@ orgUnitsRouter.get('/divisions', zValidator('query', divisionQuerySchema), async
   }
 });
 
-orgUnitsRouter.post('/divisions', zValidator('json', createDivisionSchema), async (c) => {
+orgUnitsRouter.post('/divisions', zValidator('json', divisionSchema), async (c) => {
   const body = c.req.valid('json');
   try {
     const result = await createDivision(body);
@@ -180,7 +174,7 @@ orgUnitsRouter.get('/departments', zValidator('query', departmentQuerySchema), a
   }
 });
 
-orgUnitsRouter.post('/departments', zValidator('json', createDepartmentSchema), async (c) => {
+orgUnitsRouter.post('/departments', zValidator('json', departmentSchema), async (c) => {
   const body = c.req.valid('json');
   try {
     const result = await createDepartment(body);
