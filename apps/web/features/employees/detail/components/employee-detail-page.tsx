@@ -25,16 +25,11 @@ import {
   Upload,
   UserRound,
   Workflow,
-  FileX,
-  Search,
-  Download,
   ChevronLeft,
 } from 'lucide-react'
 import { EmployeeCertificateDialog } from './employee-certificate-dialog'
 import {
-  buildCertificateFileUrl,
   buildEmployeeDetailStats,
-  formatCourseDateRange,
   formatThaiDate,
   getPrefixLabel,
   getStatusLabel,
