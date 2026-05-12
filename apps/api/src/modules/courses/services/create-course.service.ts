@@ -12,11 +12,11 @@ import type {
 } from '../courses.schema';
 import { formatCourse } from '../lib/courses.mapper';
 import { createCourseQuery } from '../queries/create-course.query';
-import type { CourseAttachmentUploadResult } from '../storage/course-attachment-storage.contract';
 import {
+  type CourseAttachmentUploadResult,
   deleteAttachment,
   uploadAttachment,
-} from '../storage/onedrive-course-attachment-storage.service';
+} from '../storage';
 
 /**
  * จัดการการสร้างหลักสูตรใหม่ (Validation, Upload, Audit)
