@@ -1,4 +1,3 @@
-
 import type { Request } from 'express';
 import type { AuditLogContext } from './audit-logs.types';
 

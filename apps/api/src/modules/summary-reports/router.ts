@@ -9,7 +9,9 @@ import {
   findSummaryReportByIdForUser,
 } from './summary-reports.service';
 
-const summaryReportsRouter = new Hono<{ Variables: { user: any; session: any } }>();
+const summaryReportsRouter = new Hono<{
+  Variables: { user: { id: string; [key: string]: any }; session: any };
+}>();
 
 summaryReportsRouter.use('/*', requireAuth);
 

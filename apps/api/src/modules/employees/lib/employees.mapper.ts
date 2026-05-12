@@ -1,4 +1,3 @@
-import type { EmployeeResponse } from '@workspace/schemas';
 import {
   BusinessUnit,
   Course,
@@ -10,8 +9,9 @@ import {
   Tag,
   TrainingRecord,
 } from '@workspace/database';
+import type { EmployeeResponse } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
-import type {  } from '@workspace/schemas';
 
 export type EmployeeWithRelations = Employee & {
   plant: Plant;

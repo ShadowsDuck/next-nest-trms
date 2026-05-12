@@ -14,7 +14,9 @@ import {
   findOneEmployeeByNo,
 } from './employees.service';
 
-const employeesRouter = new Hono<{ Variables: { user: any; session: any } }>();
+const employeesRouter = new Hono<{
+  Variables: { user: { id: string; [key: string]: any }; session: any };
+}>();
 
 employeesRouter.use('/*', requireAuth);
 
@@ -36,7 +38,7 @@ employeesRouter.post(
   zValidator('json', employeeImportRequestSchema),
   async (c) => {
     const user = c.get('user');
-    const session = c.get('session');
+    const _session = c.get('session'); // เก็บไว้เผื่อต้องการข้อมูลเซสชัน
     const auditContext = {
       userId: user.id,
       ipAddress: c.req.header('x-forwarded-for') || '127.0.0.1',
@@ -86,7 +88,7 @@ employeesRouter.get(
 
     const query = c.req.valid('query');
     try {
-      const result = await findAllEmployees(query as any, auditContext);
+      const result = await findAllEmployees(query, auditContext);
       return c.json(result, 200);
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);

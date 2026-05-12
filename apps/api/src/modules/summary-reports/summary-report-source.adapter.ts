@@ -28,9 +28,7 @@ async function buildEmployeeSummarySnapshot(
   dto: Extract<CreateSummaryReport, { source: 'employees' }>,
   generatedAt: string,
 ): Promise<EmployeeSummaryReportSnapshot> {
-  const employees = await findByEmployeeNosForReport(
-    dto.selectedIds,
-  );
+  const employees = await findByEmployeeNosForReport(dto.selectedIds);
 
   if (employees.length === 0) {
     throw new Error('ไม่พบข้อมูลพนักงานที่เลือกสำหรับสร้างรายงาน');
@@ -50,9 +48,7 @@ async function buildCourseSummarySnapshot(
   dto: Extract<CreateSummaryReport, { source: 'courses' }>,
   generatedAt: string,
 ): Promise<CourseSummaryReportSnapshot> {
-  const courses = await findByCourseIdsForReport(
-    dto.selectedIds,
-  );
+  const courses = await findByCourseIdsForReport(dto.selectedIds);
 
   if (courses.length === 0) {
     throw new Error('ไม่พบข้อมูลหลักสูตรที่เลือกสำหรับสร้างรายงาน');
@@ -91,4 +87,3 @@ export async function buildSummaryReportSnapshot(
 
   return adapters.courses.buildSnapshot(dto, generatedAt);
 }
-

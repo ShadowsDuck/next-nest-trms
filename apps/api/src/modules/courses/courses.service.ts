@@ -1,12 +1,16 @@
-import type { CourseResponse, CourseQuery, CoursePaginationResponse } from '@workspace/schemas';
-import { AuditAction } from '@workspace/database';
+import { AuditAction, CourseType } from '@workspace/database';
+import type {
+  CoursePaginationResponse,
+  CourseQuery,
+  CourseResponse,
+} from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { db } from '../../lib/db';
 import {
   createAuditLog,
   createFailureLog,
 } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import type {  } from '@workspace/schemas';
 import { buildCourseWhereInput } from './lib/course-where.builder';
 import { formatCourse } from './lib/courses.mapper';
 import type { CourseAttachmentUploadResult } from './storage/course-attachment-storage.contract';
@@ -15,7 +19,20 @@ import {
   uploadAttachment,
 } from './storage/onedrive-course-attachment-storage.service';
 
-type CreateCoursePayload = any; // Will be typed correctly from the router payload
+export type CreateCoursePayload = {
+  title: string;
+  type: CourseType;
+  tagId: string;
+  expense: number;
+  duration: number;
+  startDate: string | Date;
+  endDate: string | Date;
+  startTime?: string | null;
+  endTime?: string | null;
+  accreditationFile?: any;
+  attendanceFile?: any;
+  [key: string]: any;
+};
 
 type UploadableAttachment = {
   originalname: string;
@@ -29,8 +46,7 @@ export async function createCourse(
   createCourseDto: CreateCoursePayload,
   auditLogContext: AuditLogContext,
 ): Promise<CourseResponse> {
-  const attachmentPayload = createCourseDto as CreateCoursePayload &
-    Record<string, unknown>;
+  const attachmentPayload = createCourseDto;
   const accreditationFile = toUploadableAttachment(
     attachmentPayload.accreditationFile,
   );

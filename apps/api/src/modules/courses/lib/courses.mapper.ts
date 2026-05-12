@@ -1,4 +1,3 @@
-import type { CourseResponse } from '@workspace/schemas';
 import {
   BusinessUnit,
   Course,
@@ -9,8 +8,9 @@ import {
   Plant,
   Tag,
 } from '@workspace/database';
+import type { CourseResponse } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { toIsoDate, toIsoDateTime } from 'src/lib/date-utils';
-import type {  } from '@workspace/schemas';
 
 type CourseEmployee = Employee & {
   plant: Plant;

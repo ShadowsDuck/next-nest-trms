@@ -1,6 +1,6 @@
-import type { EmployeeQuery } from '@workspace/schemas';
 import { Prisma } from '@workspace/database';
-import type {  } from '@workspace/schemas';
+import type { EmployeeQuery } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 
 export function buildEmployeeWhereInput(
   queryDto: EmployeeQuery,

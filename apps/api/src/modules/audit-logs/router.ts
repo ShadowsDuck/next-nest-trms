@@ -25,7 +25,7 @@ auditLogsRouter.get(
   async (c) => {
     const query = c.req.valid('query');
     try {
-      const result = await findAllAuditLogs(query as any);
+      const result = await findAllAuditLogs(query);
       return c.json(result, 200);
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);

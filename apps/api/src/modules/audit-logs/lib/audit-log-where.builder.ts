@@ -1,7 +1,7 @@
-import type { AuditLogQuery } from '@workspace/schemas';
 import { AuditAction, Prisma } from '@workspace/database';
+import type { AuditLogQuery } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { parseTimestamp } from '../../../lib/date-utils';
-import type {  } from '@workspace/schemas';
 
 const AUDIT_ACTIONS = Object.values(AuditAction);
 

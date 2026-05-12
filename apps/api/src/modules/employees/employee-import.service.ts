@@ -1,5 +1,9 @@
-import type { EmployeeImportDryRunRequest, EmployeeImportDryRunResponse, EmployeeImportRequest } from '@workspace/schemas';
 import { AuditAction } from '@workspace/database';
+import type {
+  EmployeeImportDryRunRequest,
+  EmployeeImportDryRunResponse,
+  EmployeeImportRequest,
+} from '@workspace/schemas';
 import {
   type EmployeeImportRawRow,
   type EmployeeImportResponse,
@@ -13,7 +17,10 @@ import {
   createFailureLog,
 } from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
-import { createEmployee } from './employees.service';
+import {
+  type CreateEmployeePayload,
+  createEmployee,
+} from './employees.service';
 
 const importFieldLabelMap: Record<string, string> = {
   sourceRow: 'ลำดับแถว',
@@ -376,7 +383,9 @@ function normalizePrefix(value: unknown): EmployeeType['prefix'] | undefined {
 }
 
 // แปลงข้อมูลนำเข้าจาก CSV ให้พร้อมสำหรับ create employee โดย map ชื่อหน่วยงาน -> id
-async function toCreateEmployeePayload(row: EmployeeImportRow): Promise<any> {
+async function toCreateEmployeePayload(
+  row: EmployeeImportRow,
+): Promise<CreateEmployeePayload> {
   const nameParts = splitFullName(row.fullName);
   if (!nameParts) {
     throw new Error('ชื่อ-นามสกุลไม่ถูกต้อง (กรุณาระบุอย่างน้อย 2 คำ)');

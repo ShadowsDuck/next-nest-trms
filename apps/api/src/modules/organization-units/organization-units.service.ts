@@ -5,9 +5,19 @@ import {
   OrgFunction,
   Plant,
 } from '@workspace/database';
+import type {
+  BusinessUnitQuery,
+  BusinessUnitResponse,
+  DepartmentQuery,
+  DepartmentResponse,
+  DivisionQuery,
+  DivisionResponse,
+  OrgFunctionQuery,
+  OrgFunctionResponse,
+  PlantResponse,
+} from '@workspace/schemas';
 import { toIsoDateTime } from '../../lib/date-utils';
 import { db } from '../../lib/db';
-import type { PlantResponse, BusinessUnitResponse, OrgFunctionResponse, DivisionResponse, DepartmentResponse, BusinessUnitQuery, OrgFunctionQuery, DivisionQuery, DepartmentQuery } from '@workspace/schemas';
 import { EmployeeOrganizationHierarchyInput } from './organization-hierarchy.types';
 
 // ตรวจสอบว่า chain หน่วยงานของพนักงานสอดคล้องกันครบทุกระดับก่อนบันทึกข้อมูล
@@ -29,9 +39,9 @@ export async function findPlants(): Promise<PlantResponse[]> {
   return plants.map((plant) => formatPlant(plant));
 }
 
-export async function createPlant(
-  createPlantDto: any,
-): Promise<PlantResponse> {
+export async function createPlant(createPlantDto: {
+  name: string;
+}): Promise<PlantResponse> {
   const plant = await db.plant.create({
     data: {
       name: createPlantDto.name,
@@ -43,7 +53,7 @@ export async function createPlant(
 
 export async function updatePlant(
   id: string,
-  updatePlantDto: any,
+  updatePlantDto: { name?: string },
 ): Promise<PlantResponse> {
   await ensurePlantExists(id);
 
@@ -70,9 +80,10 @@ export async function findBusinessUnits(
   return businessUnits.map((businessUnit) => formatBusinessUnit(businessUnit));
 }
 
-export async function createBusinessUnit(
-  createBusinessUnitDto: any,
-): Promise<BusinessUnitResponse> {
+export async function createBusinessUnit(createBusinessUnitDto: {
+  name: string;
+  plantId: string;
+}): Promise<BusinessUnitResponse> {
   await ensurePlantExists(createBusinessUnitDto.plantId);
 
   try {
@@ -92,7 +103,7 @@ export async function createBusinessUnit(
 
 export async function updateBusinessUnit(
   id: string,
-  updateBusinessUnitDto: any,
+  updateBusinessUnitDto: { name?: string; plantId?: string },
 ): Promise<BusinessUnitResponse> {
   await ensureBusinessUnitExists(id);
 
@@ -130,9 +141,10 @@ export async function findFunctions(
   return orgFunctions.map((orgFunction) => formatOrgFunction(orgFunction));
 }
 
-export async function createFunction(
-  createOrgFunctionDto: any,
-): Promise<OrgFunctionResponse> {
+export async function createFunction(createOrgFunctionDto: {
+  name: string;
+  businessUnitId: string;
+}): Promise<OrgFunctionResponse> {
   await ensureBusinessUnitExists(createOrgFunctionDto.businessUnitId);
 
   try {
@@ -152,7 +164,7 @@ export async function createFunction(
 
 export async function updateFunction(
   id: string,
-  updateOrgFunctionDto: any,
+  updateOrgFunctionDto: { name?: string; businessUnitId?: string },
 ): Promise<OrgFunctionResponse> {
   await ensureFunctionExists(id);
 
@@ -188,9 +200,10 @@ export async function findDivisions(
   return divisions.map((division) => formatDivision(division));
 }
 
-export async function createDivision(
-  createDivisionDto: any,
-): Promise<DivisionResponse> {
+export async function createDivision(createDivisionDto: {
+  name: string;
+  functionId: string;
+}): Promise<DivisionResponse> {
   await ensureFunctionExists(createDivisionDto.functionId);
 
   try {
@@ -210,7 +223,7 @@ export async function createDivision(
 
 export async function updateDivision(
   id: string,
-  updateDivisionDto: any,
+  updateDivisionDto: { name?: string; functionId?: string },
 ): Promise<DivisionResponse> {
   await ensureDivisionExists(id);
 
@@ -246,9 +259,10 @@ export async function findDepartments(
   return departments.map((department) => formatDepartment(department));
 }
 
-export async function createDepartment(
-  createDepartmentDto: any,
-): Promise<DepartmentResponse> {
+export async function createDepartment(createDepartmentDto: {
+  name: string;
+  divisionId: string;
+}): Promise<DepartmentResponse> {
   await ensureDivisionExists(createDepartmentDto.divisionId);
 
   try {
@@ -268,7 +282,7 @@ export async function createDepartment(
 
 export async function updateDepartment(
   id: string,
-  updateDepartmentDto: any,
+  updateDepartmentDto: { name?: string; divisionId?: string },
 ): Promise<DepartmentResponse> {
   await ensureDepartmentExists(id);
 
@@ -333,19 +347,19 @@ async function getEmployeeHierarchyErrors(
     return errors;
   }
 
-  if (businessUnit!.plantId !== hierarchy.plantId) {
+  if (businessUnit.plantId !== hierarchy.plantId) {
     errors.push('Business Unit ที่ระบุไม่ได้อยู่ภายใต้ Plant เดียวกัน');
   }
 
-  if (orgFunction!.businessUnitId !== hierarchy.buId) {
+  if (orgFunction.businessUnitId !== hierarchy.buId) {
     errors.push('Function ที่ระบุไม่ได้อยู่ภายใต้ Business Unit เดียวกัน');
   }
 
-  if (division!.functionId !== hierarchy.functionId) {
+  if (division.functionId !== hierarchy.functionId) {
     errors.push('Division ที่ระบุไม่ได้อยู่ภายใต้ Function เดียวกัน');
   }
 
-  if (department!.divisionId !== hierarchy.divisionId) {
+  if (department.divisionId !== hierarchy.divisionId) {
     errors.push('Department ที่ระบุไม่ได้อยู่ภายใต้ Division เดียวกัน');
   }
 
@@ -432,9 +446,7 @@ function formatPlant(plant: Plant): PlantResponse {
   };
 }
 
-function formatBusinessUnit(
-  businessUnit: BusinessUnit,
-): BusinessUnitResponse {
+function formatBusinessUnit(businessUnit: BusinessUnit): BusinessUnitResponse {
   return {
     id: businessUnit.id,
     name: businessUnit.name,

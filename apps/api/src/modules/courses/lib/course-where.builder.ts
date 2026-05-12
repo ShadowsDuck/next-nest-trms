@@ -1,8 +1,8 @@
-import type { CourseQuery } from '@workspace/schemas';
 import { Prisma } from '@workspace/database';
+import type { CourseQuery } from '@workspace/schemas';
+import type {} from '@workspace/schemas';
 import { parseNumber } from '../../../lib/builder-utils';
 import { parseTimestamp } from '../../../lib/date-utils';
-import type {  } from '@workspace/schemas';
 
 export function buildCourseWhereInput(
   queryDto: CourseQuery,

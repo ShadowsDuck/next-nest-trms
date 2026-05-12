@@ -6,9 +6,12 @@ import {
   SummaryReportSnapshot,
   summaryReportResponseSchema,
 } from '@workspace/schemas';
-import { db } from '../../lib/db';
 import { toIsoDateTime } from '../../lib/date-utils';
-import { createAuditLog, createFailureLog } from '../audit-logs/audit-logs.service';
+import { db } from '../../lib/db';
+import {
+  createAuditLog,
+  createFailureLog,
+} from '../audit-logs/audit-logs.service';
 import type { AuditLogContext } from '../audit-logs/audit-logs.types';
 import {
   buildSummaryReportSnapshot,
@@ -93,7 +96,9 @@ export async function createSummaryReportForUser(
   }
 }
 
-export async function findLatestSummaryReportForUser(userId: string): Promise<SummaryReportResponse> {
+export async function findLatestSummaryReportForUser(
+  userId: string,
+): Promise<SummaryReportResponse> {
   const report = await db.summaryReport.findUnique({
     where: { userId },
   });

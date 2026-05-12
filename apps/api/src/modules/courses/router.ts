@@ -3,12 +3,15 @@ import { courseQuerySchema } from '@workspace/schemas';
 import { Hono } from 'hono';
 import { requireAuth } from '../../middlewares/auth';
 import {
+  type CreateCoursePayload,
   createCourse,
   findAllCourses,
   toUploadableAttachment,
 } from './courses.service';
 
-const coursesRouter = new Hono<{ Variables: { user: any; session: any } }>();
+const coursesRouter = new Hono<{
+  Variables: { user: { id: string; [key: string]: any }; session: any };
+}>();
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
@@ -55,7 +58,7 @@ coursesRouter.post('/', async (c) => {
 
   // แปลง parseBody() string fields ให้กลับเป็น types ตาม DTO ให้ถูกต้อง (ส่วนใหญ่น่าจะเป็น form-data)
   // แต่การใช้ parseBody() สำหรับ FormData จะได้ File objects ออกมาด้วย
-  const payload: any = { ...body };
+  const payload = { ...body } as unknown as CreateCoursePayload;
 
   // ถ้ามีการแปลงค่า number หรือ boolean อาจต้องพิจารณา parse จาก string เพิ่มเติม
   if (typeof payload.expense === 'string')
@@ -110,7 +113,7 @@ coursesRouter.get('/', zValidator('query', courseQuerySchema), async (c) => {
 
   const query = c.req.valid('query');
   try {
-    const result = await findAllCourses(query as any, auditContext);
+    const result = await findAllCourses(query, auditContext);
     return c.json(result, 200);
   } catch (error) {
     return c.json({ message: (error as Error).message }, 400);

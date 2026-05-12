@@ -1,5 +1,8 @@
 import { AuditAction, Prisma } from '@workspace/database';
-import type { AuditLogPaginationResponse, AuditLogQuery } from '@workspace/schemas';
+import type {
+  AuditLogPaginationResponse,
+  AuditLogQuery,
+} from '@workspace/schemas';
 import { db } from '../../lib/db';
 import type { CreateAuditLogInput } from './audit-logs.types';
 import { buildAuditLogWhereInput } from './lib/audit-log-where.builder';
