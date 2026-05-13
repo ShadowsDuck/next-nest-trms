@@ -1,4 +1,5 @@
-import { db } from '../../../lib/db';
+import { db } from '@/lib/db';
+import { throwNotFound } from '@/lib/http-errors';
 
 /**
  * ดึงรายการ Departments
@@ -36,7 +37,13 @@ export async function updateDepartmentQuery(
  * ตรวจสอบความมีอยู่ของ Department
  */
 export async function getDepartmentByIdQuery(id: string) {
-  return await db.department.findUnique({
+  const department = await db.department.findUnique({
     where: { id },
   });
+
+  if (!department) {
+    throwNotFound('ไม่พบ Department ที่ระบุ');
+  }
+
+  return department;
 }

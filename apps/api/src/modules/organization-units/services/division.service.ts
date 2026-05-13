@@ -1,6 +1,5 @@
 import { DivisionQuery, DivisionResponse } from '@workspace/schemas';
-import { throwNotFound } from '../../../lib/http-errors';
-import { toIsoDateTime } from '../../../utils/date-utils';
+import { mapDivision } from '../lib/organization-units.mapper';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createDivisionQuery,
@@ -21,13 +20,7 @@ export async function getDivisionsService(
   }
 
   const divisions = await getDivisionsQuery(query.functionId);
-  return divisions.map((division) => ({
-    id: division.id,
-    name: division.name,
-    functionId: division.functionId,
-    createdAt: toIsoDateTime(division.createdAt),
-    updatedAt: toIsoDateTime(division.updatedAt),
-  }));
+  return divisions.map(mapDivision);
 }
 
 /**
@@ -44,13 +37,7 @@ export async function createDivisionService(createDivisionDto: {
       createDivisionDto.name,
       createDivisionDto.functionId,
     );
-    return {
-      id: division.id,
-      name: division.name,
-      functionId: division.functionId,
-      createdAt: toIsoDateTime(division.createdAt),
-      updatedAt: toIsoDateTime(division.updatedAt),
-    };
+    return mapDivision(division);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -64,7 +51,7 @@ export async function updateDivisionService(
   id: string,
   updateDivisionDto: { name?: string; functionId?: string },
 ): Promise<DivisionResponse> {
-  await ensureDivisionExists(id);
+  await getDivisionByIdQuery(id);
 
   if (updateDivisionDto.functionId) {
     await ensureFunctionExists(updateDivisionDto.functionId);
@@ -72,13 +59,7 @@ export async function updateDivisionService(
 
   try {
     const division = await updateDivisionQuery(id, updateDivisionDto);
-    return {
-      id: division.id,
-      name: division.name,
-      functionId: division.functionId,
-      createdAt: toIsoDateTime(division.createdAt),
-      updatedAt: toIsoDateTime(division.updatedAt),
-    };
+    return mapDivision(division);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -87,11 +68,8 @@ export async function updateDivisionService(
 
 /**
  * ตรวจสอบว่า Division มีอยู่จริง
+ * @throws {HTTPException} 404 ถ้าไม่พบ
  */
 export async function ensureDivisionExists(id: string) {
-  const division = await getDivisionByIdQuery(id);
-  if (!division) {
-    throwNotFound('ไม่พบ Division ที่ระบุ');
-  }
-  return division;
+  return await getDivisionByIdQuery(id);
 }

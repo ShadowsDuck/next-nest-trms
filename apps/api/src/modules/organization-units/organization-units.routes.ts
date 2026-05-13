@@ -1,3 +1,6 @@
+import { requireAuth } from '@/middleware/auth.middleware';
+import { factory } from '@/types/hono';
+import { idParamSchema } from '@/utils/common-schemas';
 import { zValidator } from '@hono/zod-validator';
 import {
   businessUnitQuerySchema,
@@ -15,23 +18,21 @@ import {
   updateOrgFunctionSchema,
   updatePlantSchema,
 } from '@workspace/schemas';
-import { Hono } from 'hono';
-import { HTTPException } from 'hono/http-exception';
-import { requireAuth } from '../../middleware/auth.middleware';
-import { HonoEnv } from '../../types/hono';
 import * as businessUnitsHandlers from './handlers/business-units.handlers';
 import * as departmentsHandlers from './handlers/departments.handlers';
 import * as divisionsHandlers from './handlers/divisions.handlers';
 import * as functionsHandlers from './handlers/org-functions.handlers';
 import * as plantsHandlers from './handlers/plants.handlers';
 
-const routes = new Hono<HonoEnv>()
+const routes = factory
+  .createApp()
   .use('/*', requireAuth)
   // Plants
   .get('/plants', plantsHandlers.getPlants)
   .post('/plants', zValidator('json', plantSchema), plantsHandlers.createPlant)
   .patch(
     '/plants/:id',
+    zValidator('param', idParamSchema),
     zValidator('json', updatePlantSchema),
     plantsHandlers.updatePlant,
   )
@@ -48,6 +49,7 @@ const routes = new Hono<HonoEnv>()
   )
   .patch(
     '/business-units/:id',
+    zValidator('param', idParamSchema),
     zValidator('json', updateBusinessUnitSchema),
     businessUnitsHandlers.updateBusinessUnit,
   )
@@ -64,6 +66,7 @@ const routes = new Hono<HonoEnv>()
   )
   .patch(
     '/functions/:id',
+    zValidator('param', idParamSchema),
     zValidator('json', updateOrgFunctionSchema),
     functionsHandlers.updateFunction,
   )
@@ -80,6 +83,7 @@ const routes = new Hono<HonoEnv>()
   )
   .patch(
     '/divisions/:id',
+    zValidator('param', idParamSchema),
     zValidator('json', updateDivisionSchema),
     divisionsHandlers.updateDivision,
   )
@@ -96,15 +100,10 @@ const routes = new Hono<HonoEnv>()
   )
   .patch(
     '/departments/:id',
+    zValidator('param', idParamSchema),
     zValidator('json', updateDepartmentSchema),
     departmentsHandlers.updateDepartment,
-  )
-  .onError((err, c) => {
-    if (err instanceof HTTPException) {
-      return c.json({ message: err.message }, err.status);
-    }
-    return c.json({ message: err.message || 'Internal Server Error' }, 500);
-  });
+  );
 
-export default routes;
+export const organizationUnitsRoutes = routes;
 export type OrganizationUnitsRoute = typeof routes;

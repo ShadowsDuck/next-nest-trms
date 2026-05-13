@@ -1,4 +1,5 @@
-import { db } from '../../../lib/db';
+import { db } from '@/lib/db';
+import { throwNotFound } from '@/lib/http-errors';
 
 /**
  * ดึงรายการ Plants ทั้งหมด
@@ -32,7 +33,13 @@ export async function updatePlantQuery(id: string, name: string) {
  * ตรวจสอบความมีอยู่ของ Plant
  */
 export async function getPlantByIdQuery(id: string) {
-  return await db.plant.findUnique({
+  const plant = await db.plant.findUnique({
     where: { id },
   });
+
+  if (!plant) {
+    throwNotFound('ไม่พบ Plant ที่ระบุ');
+  }
+
+  return plant;
 }

@@ -1,4 +1,5 @@
-import { db } from '../../../lib/db';
+import { db } from '@/lib/db';
+import { throwNotFound } from '@/lib/http-errors';
 
 /**
  * ดึงรายการ Functions
@@ -39,7 +40,13 @@ export async function updateFunctionQuery(
  * ตรวจสอบความมีอยู่ของ Function
  */
 export async function getFunctionByIdQuery(id: string) {
-  return await db.orgFunction.findUnique({
+  const orgFunction = await db.orgFunction.findUnique({
     where: { id },
   });
+
+  if (!orgFunction) {
+    throwNotFound('ไม่พบ Function ที่ระบุ');
+  }
+
+  return orgFunction;
 }

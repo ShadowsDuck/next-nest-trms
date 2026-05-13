@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { createFactory } from 'hono/factory';
 
 /**
  * กำหนด type ของ Context Variables และ Environment สำหรับ Hono Instance ทั่วทั้งโปรเจกต์
@@ -19,6 +20,8 @@ export type HonoEnv = {
     };
   };
 };
+
+export const factory = createFactory<HonoEnv>();
 
 /**
  * Type helper สำหรับ handler ที่มี query validator

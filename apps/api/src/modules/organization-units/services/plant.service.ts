@@ -1,6 +1,5 @@
 import { PlantResponse } from '@workspace/schemas';
-import { throwNotFound } from '../../../lib/http-errors';
-import { toIsoDateTime } from '../../../utils/date-utils';
+import { mapPlant } from '../lib/organization-units.mapper';
 import {
   createPlantQuery,
   getPlantByIdQuery,
@@ -13,12 +12,7 @@ import {
  */
 export async function getPlantsService(): Promise<PlantResponse[]> {
   const plants = await getPlantsQuery();
-  return plants.map((plant) => ({
-    id: plant.id,
-    name: plant.name,
-    createdAt: toIsoDateTime(plant.createdAt),
-    updatedAt: toIsoDateTime(plant.updatedAt),
-  }));
+  return plants.map(mapPlant);
 }
 
 /**
@@ -28,12 +22,7 @@ export async function createPlantService(createPlantDto: {
   name: string;
 }): Promise<PlantResponse> {
   const plant = await createPlantQuery(createPlantDto.name);
-  return {
-    id: plant.id,
-    name: plant.name,
-    createdAt: toIsoDateTime(plant.createdAt),
-    updatedAt: toIsoDateTime(plant.updatedAt),
-  };
+  return mapPlant(plant);
 }
 
 /**
@@ -43,23 +32,15 @@ export async function updatePlantService(
   id: string,
   updatePlantDto: { name?: string },
 ): Promise<PlantResponse> {
-  await ensurePlantExists(id);
+  await getPlantByIdQuery(id);
   const plant = await updatePlantQuery(id, updatePlantDto.name ?? '');
-  return {
-    id: plant.id,
-    name: plant.name,
-    createdAt: toIsoDateTime(plant.createdAt),
-    updatedAt: toIsoDateTime(plant.updatedAt),
-  };
+  return mapPlant(plant);
 }
 
 /**
  * ตรวจสอบว่า Plant มีอยู่จริง
+ * @throws {HTTPException} 404 ถ้าไม่พบ
  */
 export async function ensurePlantExists(id: string) {
-  const plant = await getPlantByIdQuery(id);
-  if (!plant) {
-    throwNotFound('ไม่พบ Plant ที่ระบุ');
-  }
-  return plant;
+  return await getPlantByIdQuery(id);
 }

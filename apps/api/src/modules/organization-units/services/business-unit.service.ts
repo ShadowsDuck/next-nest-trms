@@ -1,6 +1,5 @@
 import { BusinessUnitQuery, BusinessUnitResponse } from '@workspace/schemas';
-import { throwNotFound } from '../../../lib/http-errors';
-import { toIsoDateTime } from '../../../utils/date-utils';
+import { mapBusinessUnit } from '../lib/organization-units.mapper';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createBusinessUnitQuery,
@@ -21,13 +20,7 @@ export async function getBusinessUnitsService(
   }
 
   const businessUnits = await getBusinessUnitsQuery(query.plantId);
-  return businessUnits.map((businessUnit) => ({
-    id: businessUnit.id,
-    name: businessUnit.name,
-    plantId: businessUnit.plantId,
-    createdAt: toIsoDateTime(businessUnit.createdAt),
-    updatedAt: toIsoDateTime(businessUnit.updatedAt),
-  }));
+  return businessUnits.map(mapBusinessUnit);
 }
 
 /**
@@ -44,13 +37,7 @@ export async function createBusinessUnitService(createBusinessUnitDto: {
       createBusinessUnitDto.name,
       createBusinessUnitDto.plantId,
     );
-    return {
-      id: businessUnit.id,
-      name: businessUnit.name,
-      plantId: businessUnit.plantId,
-      createdAt: toIsoDateTime(businessUnit.createdAt),
-      updatedAt: toIsoDateTime(businessUnit.updatedAt),
-    };
+    return mapBusinessUnit(businessUnit);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -64,7 +51,8 @@ export async function updateBusinessUnitService(
   id: string,
   updateBusinessUnitDto: { name?: string; plantId?: string },
 ): Promise<BusinessUnitResponse> {
-  await ensureBusinessUnitExists(id);
+  // getBusinessUnitByIdQuery จะ throw 404 ถ้าไม่พบ
+  await getBusinessUnitByIdQuery(id);
 
   if (updateBusinessUnitDto.plantId) {
     await ensurePlantExists(updateBusinessUnitDto.plantId);
@@ -75,13 +63,7 @@ export async function updateBusinessUnitService(
       id,
       updateBusinessUnitDto,
     );
-    return {
-      id: businessUnit.id,
-      name: businessUnit.name,
-      plantId: businessUnit.plantId,
-      createdAt: toIsoDateTime(businessUnit.createdAt),
-      updatedAt: toIsoDateTime(businessUnit.updatedAt),
-    };
+    return mapBusinessUnit(businessUnit);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -90,11 +72,8 @@ export async function updateBusinessUnitService(
 
 /**
  * ตรวจสอบว่า Business Unit มีอยู่จริง
+ * @throws {HTTPException} 404 ถ้าไม่พบ
  */
 export async function ensureBusinessUnitExists(id: string) {
-  const businessUnit = await getBusinessUnitByIdQuery(id);
-  if (!businessUnit) {
-    throwNotFound('ไม่พบ Business Unit ที่ระบุ');
-  }
-  return businessUnit;
+  return await getBusinessUnitByIdQuery(id);
 }

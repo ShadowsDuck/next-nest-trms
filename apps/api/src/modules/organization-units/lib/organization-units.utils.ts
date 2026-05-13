@@ -1,4 +1,4 @@
-import { throwConflict } from '../../../lib/http-errors';
+import { throwConflict } from '@/lib/http-errors';
 
 /**
  * แปลง error แจ้งเตือนเมื่อข้อมูลมีชื่อซ้ำ

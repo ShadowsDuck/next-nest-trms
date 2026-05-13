@@ -1,5 +1,5 @@
-import { db } from '../../../lib/db';
-import { throwBadRequest } from '../../../lib/http-errors';
+import { db } from '@/lib/db';
+import { throwBadRequest } from '@/lib/http-errors';
 import { EmployeeOrganizationHierarchyInput } from '../organization-hierarchy.types';
 
 /**

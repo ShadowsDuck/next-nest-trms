@@ -1,5 +1,4 @@
-import { Hono } from 'hono';
-import { HonoEnv } from '../types/hono';
+import { factory } from '@/types/hono';
 import auditLogsRouter from './audit-logs';
 import coursesRouter from './courses';
 import employeesRouter from './employees';
@@ -9,12 +8,11 @@ import summaryReportsRouter from './summary-reports';
 import tagsRouter from './tags';
 import usersRouter from './users';
 
-const router = new Hono<HonoEnv>();
-
 /**
  * รวม Router ของทุก Domain Module เข้าด้วยกัน
  */
-export const modules = router
+export const modules = factory
+  .createApp()
   .route('/health', healthRouter)
   .route('/users', usersRouter)
   .route('/tags', tagsRouter)
@@ -23,3 +21,5 @@ export const modules = router
   .route('/organization-units', organizationUnitsRouter)
   .route('/audit-logs', auditLogsRouter)
   .route('/summary-reports', summaryReportsRouter);
+
+export type AppType = typeof modules;

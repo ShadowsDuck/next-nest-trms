@@ -1,6 +1,5 @@
 import { DepartmentQuery, DepartmentResponse } from '@workspace/schemas';
-import { throwNotFound } from '../../../lib/http-errors';
-import { toIsoDateTime } from '../../../utils/date-utils';
+import { mapDepartment } from '../lib/organization-units.mapper';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createDepartmentQuery,
@@ -21,13 +20,7 @@ export async function getDepartmentsService(
   }
 
   const departments = await getDepartmentsQuery(query.divisionId);
-  return departments.map((department) => ({
-    id: department.id,
-    name: department.name,
-    divisionId: department.divisionId,
-    createdAt: toIsoDateTime(department.createdAt),
-    updatedAt: toIsoDateTime(department.updatedAt),
-  }));
+  return departments.map(mapDepartment);
 }
 
 /**
@@ -44,13 +37,7 @@ export async function createDepartmentService(createDepartmentDto: {
       createDepartmentDto.name,
       createDepartmentDto.divisionId,
     );
-    return {
-      id: department.id,
-      name: department.name,
-      divisionId: department.divisionId,
-      createdAt: toIsoDateTime(department.createdAt),
-      updatedAt: toIsoDateTime(department.updatedAt),
-    };
+    return mapDepartment(department);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -64,7 +51,7 @@ export async function updateDepartmentService(
   id: string,
   updateDepartmentDto: { name?: string; divisionId?: string },
 ): Promise<DepartmentResponse> {
-  await ensureDepartmentExists(id);
+  await getDepartmentByIdQuery(id);
 
   if (updateDepartmentDto.divisionId) {
     await ensureDivisionExists(updateDepartmentDto.divisionId);
@@ -72,13 +59,7 @@ export async function updateDepartmentService(
 
   try {
     const department = await updateDepartmentQuery(id, updateDepartmentDto);
-    return {
-      id: department.id,
-      name: department.name,
-      divisionId: department.divisionId,
-      createdAt: toIsoDateTime(department.createdAt),
-      updatedAt: toIsoDateTime(department.updatedAt),
-    };
+    return mapDepartment(department);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -87,11 +68,8 @@ export async function updateDepartmentService(
 
 /**
  * ตรวจสอบว่า Department มีอยู่จริง
+ * @throws {HTTPException} 404 ถ้าไม่พบ
  */
 export async function ensureDepartmentExists(id: string) {
-  const department = await getDepartmentByIdQuery(id);
-  if (!department) {
-    throwNotFound('ไม่พบ Department ที่ระบุ');
-  }
-  return department;
+  return await getDepartmentByIdQuery(id);
 }

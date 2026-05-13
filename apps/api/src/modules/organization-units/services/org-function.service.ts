@@ -1,6 +1,5 @@
 import { OrgFunctionQuery, OrgFunctionResponse } from '@workspace/schemas';
-import { throwNotFound } from '../../../lib/http-errors';
-import { toIsoDateTime } from '../../../utils/date-utils';
+import { mapOrgFunction } from '../lib/organization-units.mapper';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
   createFunctionQuery,
@@ -21,13 +20,7 @@ export async function getFunctionsService(
   }
 
   const orgFunctions = await getFunctionsQuery(query.businessUnitId);
-  return orgFunctions.map((orgFunction) => ({
-    id: orgFunction.id,
-    name: orgFunction.name,
-    businessUnitId: orgFunction.businessUnitId,
-    createdAt: toIsoDateTime(orgFunction.createdAt),
-    updatedAt: toIsoDateTime(orgFunction.updatedAt),
-  }));
+  return orgFunctions.map(mapOrgFunction);
 }
 
 /**
@@ -44,13 +37,7 @@ export async function createFunctionService(createOrgFunctionDto: {
       createOrgFunctionDto.name,
       createOrgFunctionDto.businessUnitId,
     );
-    return {
-      id: orgFunction.id,
-      name: orgFunction.name,
-      businessUnitId: orgFunction.businessUnitId,
-      createdAt: toIsoDateTime(orgFunction.createdAt),
-      updatedAt: toIsoDateTime(orgFunction.updatedAt),
-    };
+    return mapOrgFunction(orgFunction);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -64,7 +51,7 @@ export async function updateFunctionService(
   id: string,
   updateOrgFunctionDto: { name?: string; businessUnitId?: string },
 ): Promise<OrgFunctionResponse> {
-  await ensureFunctionExists(id);
+  await getFunctionByIdQuery(id);
 
   if (updateOrgFunctionDto.businessUnitId) {
     await ensureBusinessUnitExists(updateOrgFunctionDto.businessUnitId);
@@ -72,13 +59,7 @@ export async function updateFunctionService(
 
   try {
     const orgFunction = await updateFunctionQuery(id, updateOrgFunctionDto);
-    return {
-      id: orgFunction.id,
-      name: orgFunction.name,
-      businessUnitId: orgFunction.businessUnitId,
-      createdAt: toIsoDateTime(orgFunction.createdAt),
-      updatedAt: toIsoDateTime(orgFunction.updatedAt),
-    };
+    return mapOrgFunction(orgFunction);
   } catch (error) {
     rethrowDuplicateNameError(error);
     throw error;
@@ -87,11 +68,8 @@ export async function updateFunctionService(
 
 /**
  * ตรวจสอบว่า Function มีอยู่จริง
+ * @throws {HTTPException} 404 ถ้าไม่พบ
  */
 export async function ensureFunctionExists(id: string) {
-  const orgFunction = await getFunctionByIdQuery(id);
-  if (!orgFunction) {
-    throwNotFound('ไม่พบ Function ที่ระบุ');
-  }
-  return orgFunction;
+  return await getFunctionByIdQuery(id);
 }

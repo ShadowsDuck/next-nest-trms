@@ -1,4 +1,5 @@
-import { db } from '../../../lib/db';
+import { db } from '@/lib/db';
+import { throwNotFound } from '@/lib/http-errors';
 
 /**
  * ดึงรายการ Divisions
@@ -36,7 +37,13 @@ export async function updateDivisionQuery(
  * ตรวจสอบความมีอยู่ของ Division
  */
 export async function getDivisionByIdQuery(id: string) {
-  return await db.division.findUnique({
+  const division = await db.division.findUnique({
     where: { id },
   });
+
+  if (!division) {
+    throwNotFound('ไม่พบ Division ที่ระบุ');
+  }
+
+  return division;
 }

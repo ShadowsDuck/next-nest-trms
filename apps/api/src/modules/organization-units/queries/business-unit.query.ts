@@ -1,4 +1,5 @@
-import { db } from '../../../lib/db';
+import { db } from '@/lib/db';
+import { throwNotFound } from '@/lib/http-errors';
 
 /**
  * ดึงรายการ Business Units
@@ -33,10 +34,17 @@ export async function updateBusinessUnitQuery(
 }
 
 /**
- * ตรวจสอบความมีอยู่ของ Business Unit
+ * ดึงข้อมูล Business Unit ตาม ID
+ * @throws {HTTPException} 404 ถ้าไม่พบข้อมูล
  */
 export async function getBusinessUnitByIdQuery(id: string) {
-  return await db.businessUnit.findUnique({
+  const businessUnit = await db.businessUnit.findUnique({
     where: { id },
   });
+
+  if (!businessUnit) {
+    throwNotFound('ไม่พบ Business Unit ที่ระบุ');
+  }
+
+  return businessUnit;
 }
