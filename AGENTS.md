@@ -51,6 +51,35 @@ For multi-step tasks, state a brief plan with a verify step for each:
 2. [Step] → verify: [check]
 ```
 
+## 5. Code quality workflow
+
+After completing implementation, **always** run the following checks on modified files:
+
+```bash
+# 1. Type checking (Only the modified files)
+pnpm tsc --noEmit path/to/modified-file.ts
+
+# 2. Linting (Only the modified files)
+pnpm eslint path/to/modified-file.ts --fix
+
+# 3. Formatting (Only the modified files)
+pnpm prettier --write path/to/modified-file.ts
+```
+
+**Example for multiple files:**
+
+```bash
+pnpm tsc --noEmit src/modules/users/handlers/create.ts src/modules/users/handlers/update.ts
+pnpm eslint src/modules/users/handlers/*.ts --fix
+pnpm prettier --write "src/modules/users/handlers/*.ts"
+```
+
+If any step fails:
+
+- Fix the issues immediately
+- Re-run the checks
+- Don't consider the task complete until all checks pass
+
 ---
 
 ## Project Conventions
