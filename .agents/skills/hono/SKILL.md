@@ -1,579 +1,270 @@
 ---
 name: hono
-description: Use when building Hono web applications or when the user asks about Hono APIs, routing, middleware, JSX, validation, testing, or streaming. TRIGGER when code imports from 'hono' or 'hono/*', or user mentions Hono. Use `npx hono request` to test endpoints.
+description: Use when building, modifying, or reviewing any Hono API endpoint — covers both project file structure AND Hono-specific patterns for this project. TRIGGER on any of: new endpoint, new domain, refactoring handlers/queries/services, code review, route registration, middleware setup, or any question about where files belong in the backend. Also trigger when code imports from 'hono' or 'hono/*', or user mentions Hono routing, validation, RPC chaining, middleware, streaming, or testing. Use `npx hono request` to test endpoints.
 ---
 
-# Hono Skill
+# Hono Backend
 
-Build Hono web applications. This skill provides inline API knowledge for AI. Use `npx hono request` to test endpoints. If the `hono-docs` MCP server is configured, prefer its tools for the latest documentation over the inline reference.
+This skill covers **project-specific structure and patterns** for this Hono + Prisma backend.
 
-## Hono CLI Usage
+## Source of Truth
 
-### Request Testing
+| Source       | Owns                                                                                      |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| `rules/*.md` | **What to do and why** — architecture decisions, layer responsibilities, project patterns |
+| **context7** | **How to write it** — Hono API syntax, function signatures, import paths                  |
 
-Test endpoints without starting an HTTP server. Uses `app.request()` internally.
+- `rules/*.md` is the source of truth of project — if rules/ says pattern should be how, follow rules/ first
+- context7 is for verify syntax only — do not use to decide whether project architecture is correct or not
+- code examples in `rules/` show **pattern** not exact syntax — if you want the exact function signature, query context7
+
+---
+
+## Hono CLI — Testing Endpoints
 
 ```bash
-# GET request
+# GET — no HTTP server needed
 npx hono request [file] -P /path
 
-# POST request with JSON body
+# POST with JSON body
 npx hono request [file] -X POST -P /api/users -d '{"name": "test"}'
 ```
 
-**Note:** Do not pass credentials directly in CLI arguments. Use environment variables for sensitive values. `hono request` does not support Cloudflare Workers bindings (KV, D1, R2, etc.). When bindings are required, use `workers-fetch` instead:
+> Node.js projects with bindings → use `workers-fetch` instead.
 
-```bash
-npx workers-fetch /path
-npx workers-fetch -X POST -H "Content-Type:application/json" -d '{"name":"test"}' /api/users
+---
+
+## Project Layout
+
+```
+src/
+├── app.ts                  # Bootstrap: init Hono app, register global middleware, mount routes
+├── server.ts               # Node.js entry point
+├── env.ts                  # Zod-validated environment variables
+│
+├── modules/                # ← Domain modules (core of the app)
+│   ├── index.ts            # Mount all module routes + export AppType
+│   └── <domain>/
+│       ├── index.ts                        # Export routes for this domain
+│       ├── <domain>.schema.ts              # Zod schema + derived types
+│       ├── <domain>.routes.ts              # Chained factory route definitions
+│       ├── handlers/
+│       │   └── <domain>.handlers.ts        # All HTTP handlers in one file
+│       ├── queries/
+│       │   └── <domain>.query.ts           # All DB queries in one file
+│       ├── services/                       # Only when orchestration is needed
+│       │   └── <domain>.service.ts
+│       ├── lib/                            # Domain-specific helpers (mappers, builders)
+│       └── __tests__/
+│           ├── <domain>.handlers.test.ts
+│           ├── <domain>.queries.test.ts
+│           └── __fixtures__/
+│               └── make-fake-<domain>.ts
+│
+├── lib/db.ts               # Prisma client — export `db` ให้ทุก query ใช้
+├── middleware/             # Global middleware (auth, logging, error handling)
+├── lib/                    # Third-party integrations (e.g. better-auth, storage)
+├── types/
+│   └── hono.ts             # HonoEnv, JsonContext, JsonWithParamContext, QueryContext
+├── constants/              # App-wide constants
+└── utils/                  # Pure stateless helpers (errors, pagination, etc.)
 ```
 
 ---
 
-## Hono API Reference
+## Naming Conventions
 
-### App Constructor
+| Context                                  | Convention   | Example                          |
+| ---------------------------------------- | ------------ | -------------------------------- |
+| Folders & files                          | `kebab-case` | `summary-reports.handlers.ts`    |
+| Classes & Types                          | `PascalCase` | `CreateOrderBody`, `OrderSchema` |
+| Functions, Zod schemas                   | `camelCase`  | `createOrder`, `orderSchema`     |
+| DB tables, columns, request/query params | `snake_case` | `user_id`, `created_at`          |
 
-```ts
-import { Hono } from 'hono'
+File naming within a domain:
 
-const app = new Hono()
+- `<domain>.handlers.ts` — plural: a **collection** of handler functions
+- `<domain>.service.ts` — singular: the business logic **module**
+- `<domain>.query.ts` — singular: the data access **module**
+- `<domain>.schema.ts` — singular: single source of truth for types and validation
 
-// With TypeScript generics
-type Env = {
-  Bindings: { DATABASE: D1Database; KV: KVNamespace }
-  Variables: { user: User }
-}
-const app = new Hono<Env>()
+---
+
+## Decision Tree: Where Does New Code Go?
+
 ```
-
-### Routing Methods
-
-```ts
-app.get('/path', handler)
-app.post('/path', handler)
-app.put('/path', handler)
-app.delete('/path', handler)
-app.patch('/path', handler)
-app.options('/path', handler)
-app.all('/path', handler) // all HTTP methods
-app.on('PURGE', '/path', handler) // custom method
-app.on(['PUT', 'DELETE'], '/path', handler) // multiple methods
-```
-
-### Routing Patterns
-
-```ts
-// Path parameters
-app.get('/user/:name', (c) => {
-  const name = c.req.param('name')
-  return c.json({ name })
-})
-
-// Multiple params
-app.get('/posts/:id/comments/:commentId', (c) => {
-  const { id, commentId } = c.req.param()
-})
-
-// Optional parameters
-app.get('/api/animal/:type?', (c) => c.text('Animal!'))
-
-// Wildcards
-app.get('/wild/*/card', (c) => c.text('Wildcard'))
-
-// Regexp constraints
-app.get('/post/:date{[0-9]+}/:title{[a-z]+}', (c) => {
-  const { date, title } = c.req.param()
-})
-
-// Chained routes
-app
-  .get('/endpoint', (c) => c.text('GET'))
-  .post((c) => c.text('POST'))
-  .delete((c) => c.text('DELETE'))
-```
-
-### Route Grouping
-
-```ts
-// Using route()
-const api = new Hono()
-api.get('/users', (c) => c.json([]))
-
-const app = new Hono()
-app.route('/api', api) // mounts at /api/users
-
-// Using basePath()
-const app = new Hono().basePath('/api')
-app.get('/users', (c) => c.json([])) // GET /api/users
-```
-
-### Error Handling
-
-```ts
-app.notFound((c) => c.json({ message: 'Not Found' }, 404))
-
-app.onError((err, c) => {
-  console.error(err)
-  return c.json({ message: 'Internal Server Error' }, 500)
-})
+New code needed?
+│
+├─ Belongs to a specific domain? (user, order, product...)
+│   ├─ HTTP handler → src/modules/<domain>/handlers/<domain>.handlers.ts
+│   ├─ DB query → src/modules/<domain>/queries/<domain>.query.ts
+│   ├─ Multi-step logic (multiple queries / cross-domain) → src/modules/<domain>/services/<domain>.service.ts
+│   ├─ Zod schema / types → src/modules/<domain>/<domain>.schema.ts
+│   ├─ Domain-specific helper (mapper, builder) → src/modules/<domain>/lib/<helper-name>.ts
+│   │   (if 2+ domains need it → move to src/utils/)
+│   ├─ Domain concept with 3+ related files → src/modules/<domain>/<concept-name>/index.ts
+│   └─ Test or fake data → src/modules/<domain>/__tests__/
+│
+└─ No domain (truly shared)?
+    ├─ Global middleware → src/middleware/
+    ├─ Pure helper fn → src/utils/
+    ├─ 3rd party client → src/lib/
+    └─ App-wide constant → src/constants/
 ```
 
 ---
 
-## Context (c)
+## Responsibility of Each Layer
 
-### Response Methods
+### handlers/ — HTTP only
 
-```ts
-c.text('Hello') // text/plain
-c.json({ message: 'Hello' }) // application/json
-c.html('<h1>Hello</h1>') // text/html
-c.redirect('/new-path') // 302 redirect
-c.redirect('/new-path', 301) // 301 redirect
-c.body('raw body', 200, headers) // raw response
-c.notFound() // 404 response
-```
+- Parse validated input: `c.req.valid(...)`
+- Call **query** (simple) or **service** (complex)
+- Return `c.json()` with the correct status code
+- **No business logic. No raw Prisma calls. No try-catch.**
+- Let errors bubble to the global `.onError()` handler
+- Use `JsonContext<T>`, `JsonWithParamContext<T, P>`, `QueryContext<T>` from `@/types/hono`
 
-### Headers & Status
+### queries/ — DB only
 
-```ts
-c.status(201)
-c.header('X-Custom', 'value')
-c.header('Cache-Control', 'no-store')
-```
+- Pure Prisma queries — no HTTP context (`c`, `req`, `res`)
+- Prisma does not throw on not-found → check `null` after `findUnique`, throw `NotFoundError` yourself
+- Use precise `select` / `include` — avoid over-fetching
+- Export a `Response` type: `export type GetOrderResponse = Awaited<ReturnType<typeof getOrder>>`
 
-### Variables (request-scoped data)
+### services/ — Orchestration only
 
-```ts
-// In middleware
-c.set('user', { id: 1, name: 'Alice' })
+- Use **only** when a handler needs multiple queries or cross-domain logic
+- If the operation is a single query → call the query directly from the handler; skip the service layer
+- Throw `HTTPException` or custom error classes — not raw `Error`
 
-// In handler
-const user = c.get('user')
-// or
-const user = c.var.user
-```
+### `<domain>.schema.ts` — Single source of truth
 
-### Environment (Cloudflare Workers)
-
-```ts
-const value = await c.env.KV.get('key')
-const db = c.env.DATABASE
-c.executionCtx.waitUntil(promise)
-```
-
-### Renderer
-
-```ts
-app.use(async (c, next) => {
-  c.setRenderer((content) =>
-    c.html(
-      <html><body>{content}</body></html>
-    )
-  )
-  await next()
-})
-
-app.get('/', (c) => c.render(<h1>Hello</h1>))
-```
+- Zod schemas for request validation
+- Derived TypeScript types: `Create<Domain>`, `Update<Domain>`, `<Domain>Response`
 
 ---
 
-## HonoRequest (c.req)
+## The Grouped-File Default
+
+Files are **navigation units**, not operation units.
+
+All handlers for a domain belong in **one file** by default. All queries belong in **one file** by default.
 
 ```ts
-c.req.param('id') // path parameter
-c.req.param() // all path params as object
-c.req.query('page') // query string parameter
-c.req.query() // all query params as object
-c.req.queries('tags') // multiple values: ?tags=A&tags=B → ['A', 'B']
-c.req.header('Authorization') // request header
-c.req.header() // all headers (keys are lowercase)
-
-// Body parsing
-await c.req.json() // parse JSON body
-await c.req.text() // parse text body
-await c.req.formData() // parse as FormData
-await c.req.parseBody() // parse multipart/form-data or urlencoded
-await c.req.arrayBuffer() // parse as ArrayBuffer
-await c.req.blob() // parse as Blob
-
-// Validated data (used with validator middleware)
-c.req.valid('json')
-c.req.valid('query')
-c.req.valid('form')
-c.req.valid('param')
-
-// Properties
-c.req.url // full URL string
-c.req.path // pathname
-c.req.method // HTTP method
-c.req.raw // underlying Request object
+// handlers/order.handlers.ts — one file, all operations
+export async function getOrderById(c: ...) {}
+export async function createOrder(c: ...) {}
+export async function updateOrder(c: ...) {}
+export async function deleteOrder(c: ...) {}
 ```
+
+Split into multiple files **only when**:
+
+- File exceeds ~200 lines of actual logic
+- There are distinct subdomains (e.g. `order-fulfillment.handlers.ts` vs `order-returns.handlers.ts`)
 
 ---
 
-## Middleware
+## Project-Specific Hono Rules
 
-### Using Built-in Middleware
-
-```ts
-import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
-import { basicAuth } from 'hono/basic-auth'
-import { prettyJSON } from 'hono/pretty-json'
-import { secureHeaders } from 'hono/secure-headers'
-import { etag } from 'hono/etag'
-import { compress } from 'hono/compress'
-import { poweredBy } from 'hono/powered-by'
-import { timing } from 'hono/timing'
-import { cache } from 'hono/cache'
-import { bearerAuth } from 'hono/bearer-auth'
-import { jwt } from 'hono/jwt'
-import { csrf } from 'hono/csrf'
-import { ipRestriction } from 'hono/ip-restriction'
-import { bodyLimit } from 'hono/body-limit'
-import { requestId } from 'hono/request-id'
-import { methodOverride } from 'hono/method-override'
-import { trailingSlash, trimTrailingSlash } from 'hono/trailing-slash'
-
-// Registration
-app.use(logger()) // all routes
-app.use('/api/*', cors()) // specific path
-app.post('/api/*', basicAuth({ username: 'admin', password: 'secret' }))
-```
-
-### Custom Middleware
+### Factory Pattern — Always use this
 
 ```ts
-// Inline
-app.use(async (c, next) => {
-  const start = Date.now()
-  await next()
-  const elapsed = Date.now() - start
-  c.res.headers.set('X-Response-Time', `${elapsed}ms`)
-})
-
-// Reusable with createMiddleware
-import { createMiddleware } from 'hono/factory'
-
-const auth = createMiddleware(async (c, next) => {
-  const token = c.req.header('Authorization')
-  if (!token) return c.json({ error: 'Unauthorized' }, 401)
-  await next()
-})
-
-app.use('/api/*', auth)
-```
-
-### Middleware Execution Order
-
-Middleware executes in registration order. `await next()` calls the next middleware/handler, and code after `next()` runs on the way back:
-
-```
-Request → mw1 before → mw2 before → handler → mw2 after → mw1 after → Response
-```
-
-```ts
-app.use(async (c, next) => {
-  // before handler
-  await next()
-  // after handler
-})
-```
-
----
-
-## Validation
-
-Validation targets: `json`, `form`, `query`, `header`, `param`, `cookie`.
-
-### Zod Validator
-
-```ts
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-
-const schema = z.object({
-  title: z.string().min(1),
-  body: z.string()
-})
-
-app.post('/posts', zValidator('json', schema), (c) => {
-  const data = c.req.valid('json') // fully typed
-  return c.json(data, 201)
-})
-```
-
-### Valibot / Standard Schema Validator
-
-```ts
-import { sValidator } from '@hono/standard-validator'
-import * as v from 'valibot'
-
-const schema = v.object({ name: v.string(), age: v.number() })
-
-app.post('/users', sValidator('json', schema), (c) => {
-  const data = c.req.valid('json')
-  return c.json(data, 201)
-})
-```
-
----
-
-## JSX
-
-### Setup
-
-In `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
-  }
-}
-```
-
-Or use pragma: `/** @jsxImportSource hono/jsx */`
-
-**Important:** Files using JSX must have a `.tsx` extension. Rename `.ts` to `.tsx` or the compiler will fail.
-
-### Components
-
-```tsx
-import type { PropsWithChildren } from 'hono/jsx'
-
-const Layout = (props: PropsWithChildren) => (
-  <html>
-    <head>
-      <title>My App</title>
-    </head>
-    <body>{props.children}</body>
-  </html>
-)
-
-const UserCard = ({ name }: { name: string }) => (
-  <div class="card">
-    <h2>{name}</h2>
-  </div>
-)
-
-app.get('/', (c) => {
-  return c.html(
-    <Layout>
-      <UserCard name="Alice" />
-    </Layout>
-  )
-})
-```
-
-### jsxRenderer Middleware
-
-Use `jsxRenderer` middleware for layouts. See `npx hono docs /docs/middleware/builtin/jsx-renderer` for details.
-
-### Async Components
-
-```tsx
-const UserList = async () => {
-  const users = await fetchUsers()
-  return (
-    <ul>
-      {users.map((u) => (
-        <li>{u.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-### Fragments
-
-```tsx
-const Items = () => (
-  <>
-    <li>Item 1</li>
-    <li>Item 2</li>
-  </>
-)
-```
-
----
-
-## Streaming
-
-```ts
-import { stream, streamText, streamSSE } from 'hono/streaming'
-
-// Basic stream
-app.get('/stream', (c) => {
-  return stream(c, async (stream) => {
-    stream.onAbort(() => console.log('Aborted'))
-    await stream.write(new Uint8Array([0x48, 0x65]))
-    await stream.pipe(readableStream)
-  })
-})
-
-// Text stream
-app.get('/stream-text', (c) => {
-  return streamText(c, async (stream) => {
-    await stream.writeln('Hello')
-    await stream.sleep(1000)
-    await stream.write('World')
-  })
-})
-
-// Server-Sent Events
-app.get('/sse', (c) => {
-  return streamSSE(c, async (stream) => {
-    let id = 0
-    while (true) {
-      await stream.writeSSE({
-        data: JSON.stringify({ time: new Date().toISOString() }),
-        event: 'time-update',
-        id: String(id++)
-      })
-      await stream.sleep(1000)
-    }
-  })
-})
-```
-
----
-
-## Testing with app.request()
-
-Test endpoints without starting an HTTP server:
-
-```ts
-// GET
-const res = await app.request('/posts')
-expect(res.status).toBe(200)
-expect(await res.json()).toEqual({ posts: [] })
-
-// POST with JSON
-const res = await app.request('/posts', {
-  method: 'POST',
-  body: JSON.stringify({ title: 'Hello' }),
-  headers: { 'Content-Type': 'application/json' }
-})
-
-// POST with FormData
-const formData = new FormData()
-formData.append('name', 'Alice')
-const res = await app.request('/users', { method: 'POST', body: formData })
-
-// With mock env (Cloudflare Workers bindings)
-const res = await app.request('/api/data', {}, { KV: mockKV, DATABASE: mockDB })
-
-// Using Request object
-const req = new Request('http://localhost/api', { method: 'DELETE' })
-const res = await app.request(req)
-```
-
----
-
-## Hono Client (RPC)
-
-Type-safe API client using shared types between server and client.
-
-**IMPORTANT: Routes MUST be chained for type inference to work. Without chaining, the client cannot infer route types.**
-
-```ts
-// Server: routes MUST be chained to preserve types
-const route = app
-  .post('/posts', zValidator('json', schema), (c) => {
-    return c.json({ ok: true }, 201)
-  })
-  .get('/posts', (c) => {
-    return c.json({ posts: [] })
-  })
-export type AppType = typeof route
-
-// Client: use hc() with the exported type
-import { hc } from 'hono/client'
-import type { AppType } from './server'
-
-const client = hc<AppType>('http://localhost:8787/')
-const res = await client.posts.$post({ json: { title: 'Hello' } })
-const data = await res.json() // fully typed
-```
-
-Type utilities:
-
-```ts
-import type { InferRequestType, InferResponseType } from 'hono/client'
-
-type ReqType = InferRequestType<typeof client.posts.$post>
-type ResType = InferResponseType<typeof client.posts.$post, 200>
-```
-
----
-
-## Helpers
-
-Helpers are utility functions imported from `hono/<helper-name>`:
-
-```ts
-import { getConnInfo } from 'hono/conninfo'
-import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
-import { css, Style } from 'hono/css'
-import { createFactory } from 'hono/factory'
-import { html, raw } from 'hono/html'
-import { stream, streamText, streamSSE } from 'hono/streaming'
-import { testClient } from 'hono/testing'
-import { upgradeWebSocket } from 'hono/cloudflare-workers' // or other adapter
-```
-
-Available helpers: Accepts, Adapter, ConnInfo, Cookie, css, Dev, Factory, html, JWT, Proxy, Route, SSG, Streaming, Testing, WebSocket.
-
-For details, use `npx hono docs /docs/helpers/<helper-name>`.
-
-### Factory
-
-Use `createFactory` to define `Env` once and share it across app, middleware, and handlers:
-
-```ts
-import { createFactory } from 'hono/factory'
-
-const factory = createFactory<Env>()
-
-// Create app (Env type is inherited)
+// ❌ Never
+const app = new Hono<HonoEnv>()
+
+// ✅ Always
+const factory = createFactory<HonoEnv>()
 const app = factory.createApp()
-
-// Create middleware (Env type is inherited, no need to pass generics)
-const mw = factory.createMiddleware(async (c, next) => {
-  await next()
-})
-
-// Create handlers separately (preserves type inference)
-const handlers = factory.createHandlers(logger(), (c) => c.json({ message: 'Hello' }))
-app.get('/api', ...handlers)
+const mw = factory.createMiddleware(async (c, next) => { await next() })
 ```
 
----
+`createFactory` from `@/types/hono` ensures `HonoEnv` is shared across the app, middleware, and handlers without re-typing generics.
 
-## Best Practices
-
-- Write handlers inline in route definitions for proper type inference of path params.
-- Use `app.route()` to organize large apps by feature, not Rails-style controllers.
-- Use `createFactory()` to share Env type across app, middleware, and handlers.
-- Use `c.set()`/`c.get()` to pass data between middleware and handlers.
-- Chain validators for multiple request parts (param + query + json).
-- Export app type for RPC: `export type AppType = typeof routes`
-- Use `app.request()` for testing — no server startup needed.
-
-## Adapters
-
-Hono runs on multiple runtimes. The default export works for Cloudflare Workers, Deno, and Bun. For Node.js, use the Node adapter:
+### RPC Chaining — Must be a single chained expression
 
 ```ts
-// Cloudflare Workers / Deno / Bun
-export default app
+// ✅ Correct — type inference works
+const route = app
+  .get('/posts', listPosts)
+  .post('/posts', zValidator('json', createPostSchema), createPost)
 
-// Node.js
+export type AppType = typeof route
+```
+
+Broken chains lose `AppType` inference. Export `AppType` from `modules/index.ts` for the frontend RPC client.
+
+### Path Param Validation — At the router boundary
+
+```ts
+.get('/:order_id',
+  zValidator('param', z.object({ order_id: z.string().uuid() })),
+  getOrderById
+)
+```
+
+Malformed IDs must fail at the router — they must not reach services or DB queries.
+
+### Node.js Adapter
+
+```ts
 import { serve } from '@hono/node-server'
 serve(app)
 ```
+
+### Named Exports Only
+
+```ts
+// ✅ Preferred
+export async function getOrderById(c: ...) {}
+
+// ❌ Avoid
+export default function getOrderById() {}
+```
+
+Named exports are safer to refactor, better for IDE auto-imports, and easier to barrel-export.
+
+---
+
+## What Goes in Global Folders
+
+| Folder        | Belongs Here                                        | Does NOT Belong Here      |
+| ------------- | --------------------------------------------------- | ------------------------- |
+| `middleware/` | Auth check, request logging, error handler          | Order-specific validation |
+| `utils/`      | `paginate()`, `toISOString()`, custom Error classes | Any domain concept        |
+| `lib/`        | Stripe client init, S3 client init                  | Payment business logic    |
+| `constants/`  | HTTP status codes, env keys                         | Domain-specific enums     |
+| `lib/db.ts`   | Prisma client init (`new PrismaClient()`)           | Any query                 |
+
+> If you find yourself importing a domain module into `utils/`, the code is in the wrong place.
+
+---
+
+## Checklist: Adding a New Domain
+
+- [ ] Create `src/modules/<domain>/` folder
+- [ ] `<domain>.schema.ts` — Zod schema, types
+- [ ] `queries/<domain>.query.ts` — grouped query functions
+- [ ] `handlers/<domain>.handlers.ts` — grouped handler functions
+- [ ] `<domain>.routes.ts` — chained factory route definitions with param validators
+- [ ] `index.ts` — export routes
+- [ ] Register routes in `src/modules/index.ts`
+- [ ] `__tests__/__fixtures__/make-fake-<domain>.ts` — fake data factory
+- [ ] `__tests__/` — add handler + query tests
+- [ ] `services/<domain>.service.ts` — add only if orchestration is needed
+
+---
+
+## Implementation Details — Read Before Writing Code
+
+When the task involves a specific layer, read the corresponding file **before writing any code**:
+
+| Need                     | File                           |
+| ------------------------ | ------------------------------ |
+| Handler + route patterns | `rules/handlers-and-routes.md` |
+| Query patterns (Prisma)  | `rules/queries.md`             |
+| Service layer patterns   | `rules/services.md`            |
+| Schema + type patterns   | `rules/schema.md`              |
+| DB client + Prisma types | `rules/db-schema.md`           |
+| Testing patterns         | `rules/testing.md`             |

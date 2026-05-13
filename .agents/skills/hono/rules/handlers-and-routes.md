@@ -100,7 +100,7 @@ import { type JsonContext, type JsonWithParamContext, type QueryContext } from '
 
 ## Route Registration (Project Rules)
 
-For `factory`, `zValidator`, and route chaining syntax → see the `hono` skill (Factory + Hono Client sections).
+For `factory`, `zValidator`, and route chaining syntax → see the **Project-Specific Hono Rules** section above, or use context7 to query Hono docs.
 
 Project-specific rules:
 
@@ -115,7 +115,7 @@ Project-specific rules:
 
 Validate path params with `zValidator('param', ...)` at the router level, before the handler.
 Malformed IDs should fail at the router — they must not reach services or DB queries.
-(For `zValidator` syntax → see the `hono` skill, Validation section.)
+(For `zValidator` syntax → use context7 to query Hono docs.)
 
 ---
 
@@ -123,4 +123,4 @@ Malformed IDs should fail at the router — they must not reach services or DB q
 
 Do not try-catch in handlers. Let errors bubble to the global `.onError()` handler.
 Services and queries throw `HTTPException` or custom error classes — the global handler formats the response.
-(For `onError` syntax → see the `hono` skill, Error Handling section.)
+(For `onError` syntax → use context7 to query Hono docs.)
