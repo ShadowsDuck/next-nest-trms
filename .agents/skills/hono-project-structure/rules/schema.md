@@ -4,8 +4,7 @@
 
 `<domain>.schema.ts` is the single source of truth for a domain's types:
 
-- Zod schema for validation
-- OpenAPI registration for docs
+- Zod schema for request/response validation
 - Derived TypeScript types for handlers and queries
 
 ---
@@ -22,34 +21,36 @@ src/modules/<domain>/<domain>.schema.ts
 
 ```typescript
 // modules/order/order.schema.ts
-import { z } from '@hono/zod-openapi'
-import { type Order } from '@/db/schema'
+import { z } from 'zod'
+import { type Order } from '@workspace/database'
 
-// --- Zod schema (matches DB type) ---
-export const orderSchemaObject = {
+// --- Entity schema (matches DB type) ---
+export const orderSchema = z.object({
   id: z.string().uuid(),
-  user_id: z.string().uuid(),
+  userId: z.string().uuid(),
   status: z.enum(['pending', 'confirmed', 'shipped', 'cancelled']),
-  total_amount: z.number(),
-  created_at: z.union([z.coerce.date(), z.string()]).openapi({
-    example: new Date().toISOString(),
-  }),
-  updated_at: z.union([z.coerce.date(), z.string()]).openapi({
-    example: new Date().toISOString(),
-  }),
-  deleted_at: z.union([z.coerce.date(), z.string()]).nullable().openapi({
-    example: null,
-  }),
-}
+  totalAmount: z.number(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  deletedAt: z.coerce.date().nullable(),
+}) satisfies z.ZodType<Order>
 
-export const orderSchema = z.object(orderSchemaObject) satisfies z.ZodType<Order>
+// --- Request input schemas ---
+export const createOrderSchema = z.object({
+  userId: z.string().uuid(),
+  productId: z.string().uuid(),
+  quantity: z.number().int().positive(),
+})
 
-// --- OpenAPI registration ---
-export const orderSchemaOpenApi = orderSchema.openapi('Order')
+export const updateOrderSchema = z.object({
+  status: z.enum(['pending', 'confirmed', 'shipped', 'cancelled']).optional(),
+  quantity: z.number().int().positive().optional(),
+})
 
 // --- Derived types ---
-export type CreateOrder = Omit<Order, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
-export type UpdateOrder = Partial<Omit<Order, 'id' | 'created_at'>>
+export type CreateOrder = z.infer<typeof createOrderSchema>
+export type UpdateOrder = z.infer<typeof updateOrderSchema>
+export type Order = z.infer<typeof orderSchema>
 ```
 
 ---
@@ -57,6 +58,6 @@ export type UpdateOrder = Partial<Omit<Order, 'id' | 'created_at'>>
 ## Rules
 
 - `satisfies z.ZodType<Entity>` — ensures the schema stays in sync with the DB type; TypeScript will error if they drift
-- OpenAPI registration goes here, not in handlers
-- Export `Create<Domain>` and `Update<Domain>` types for use in queries
-- Do not import anything from `handlers/` or `queries/` — this file has no dependencies within the domain
+- Export `Create<Domain>` and `Update<Domain>` types for use in queries and handlers
+- Do not import anything from `handlers/` or `queries/` — this file has zero inward dependencies
+- Keep entity schema and request schemas in the same file; split only if the file becomes very large

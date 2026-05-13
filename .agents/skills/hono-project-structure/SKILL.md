@@ -19,12 +19,19 @@ services, schema, and tests — without jumping across the codebase.
 
 ## Naming Conventions
 
-| Context                                  | Convention   | Example                             |
-| ---------------------------------------- | ------------ | ----------------------------------- |
-| Folders & files                          | `kebab-case` | `create-order.ts`                   |
-| Classes & Types                          | `PascalCase` | `CreateOrderBody`, `OrderSchema`    |
-| Functions, Zod schemas                   | `camelCase`  | `createOrderHandler`, `orderSchema` |
-| DB tables, columns, request/query params | `snake_case` | `user_id`, `created_at`             |
+| Context                                  | Convention   | Example                          |
+| ---------------------------------------- | ------------ | -------------------------------- |
+| Folders & files                          | `kebab-case` | `summary-reports.handlers.ts`    |
+| Classes & Types                          | `PascalCase` | `CreateOrderBody`, `OrderSchema` |
+| Functions, Zod schemas                   | `camelCase`  | `createOrder`, `orderSchema`     |
+| DB tables, columns, request/query params | `snake_case` | `user_id`, `created_at`          |
+
+### File naming within a domain
+
+- `<domain>.handlers.ts` — plural: contains a **collection** of handler functions
+- `<domain>.service.ts` — singular: represents the business logic **module** for this domain
+- `<domain>.query.ts` — singular: represents the data access **module** for this domain
+- `<domain>.schema.ts` — singular: the single source of truth for types and validation
 
 ---
 
@@ -41,26 +48,17 @@ src/
 │   └── <domain>/           # One folder per business domain
 │       ├── index.ts        # Export: routes for this domain
 │       ├── <domain>.schema.ts      # Zod schema, types, OpenAPI registration
-│       ├── <domain>.routes.ts      # Register all handlers for this domain
-│       ├── handlers/               # HTTP layer — one file per endpoint
-│       │   ├── create-<domain>.ts
-│       │   ├── get-<domain>.ts
-│       │   ├── get-<domain>s.ts
-│       │   ├── update-<domain>.ts
-│       │   ├── delete-<domain>.ts
-│       │   └── search-<domain>s.ts
-│       ├── queries/                # DB queries — one file per operation
-│       │   ├── create-<domain>.query.ts
-│       │   ├── get-<domain>.query.ts
-│       │   ├── update-<domain>.query.ts
-│       │   ├── delete-<domain>.query.ts
-│       │   └── search-<domain>s.query.ts
-│       ├── services/               # Business logic — only when needed
-│       │   └── <operation>-<domain>.service.ts
-│       ├── lib/                    # Domain-specific helpers (mappers, builders, etc.)
-│       │   ├── <domain>.mapper.ts  # Format DB rows → response types
+│       ├── <domain>.routes.ts      # Chained route definitions for this domain
+│       ├── handlers/
+│       │   └── <domain>.handlers.ts    # All HTTP handlers grouped in one file
+│       ├── queries/
+│       │   └── <domain>.query.ts       # All DB queries grouped in one file
+│       ├── services/                   # Only when orchestration is needed
+│       │   └── <domain>.service.ts     # Business logic for this domain
+│       ├── lib/                        # Domain-specific helpers (mappers, builders)
+│       │   ├── <domain>.mapper.ts      # Format DB rows → response types
 │       │   └── <domain>-where.builder.ts  # Build Prisma `where` from query params
-│       ├── <feature>/              # Named sub-folder when logic has 3+ related files
+│       ├── <concept>/              # Named sub-folder when a complex concept has 3+ related files
 │       │   ├── index.ts            # Single export point for the sub-module
 │       │   └── ...                 # Internal helpers, kept private to this folder
 │       └── __tests__/              # All tests for this domain
@@ -76,7 +74,7 @@ src/
 │
 ├── lib/                    # Third-party integrations (e.g. better-auth, storage)
 ├── types/
-│   └── hono.ts             # HonoEnv, AppRouteHandler — always import from here
+│   └── hono.ts             # HonoEnv, JsonContext, JsonWithParamContext, QueryContext
 ├── constants/              # App-wide constants
 └── utils/                  # Pure stateless helpers (errors, pagination, etc.)
 ```
@@ -85,26 +83,19 @@ src/
 
 ## Anatomy of a Domain Module
 
-Every domain is self-contained. Example: `modules/order/`
+Every domain is self-contained. Default layout for a CRUD domain: `modules/order/`
 
 ```
 modules/order/
 ├── index.ts                    # export { orderRoutes } from './order.routes'
-├── order.schema.ts             # Zod schema + OpenAPI + derived types
-├── order.routes.ts             # .openapi(createOrderRoute, createOrderHandler) ...
+├── order.schema.ts             # Zod schema + derived types
+├── order.routes.ts             # Chained factory route definitions
 ├── handlers/
-│   ├── create-order.ts         # parse → call query or service → return JSON
-│   ├── get-order.ts
-│   ├── get-orders.ts
-│   ├── update-order.ts
-│   └── delete-order.ts
+│   └── order.handlers.ts       # getOrder, createOrder, updateOrder, deleteOrder
 ├── queries/
-│   ├── create-order.query.ts   # Prisma create
-│   ├── get-order.query.ts      # Prisma findUnique / findFirst
-│   ├── update-order.query.ts
-│   └── delete-order.query.ts
-├── services/
-│   └── place-order.service.ts  # orchestrates: validate stock → create order → notify
+│   └── order.query.ts          # getOrderById, createOrder, updateOrder, deleteOrder
+├── services/                   # Add only when orchestration is needed
+│   └── order.service.ts        # placeOrder — orchestrates: validate stock → create → notify
 ├── lib/                        # Domain-specific helpers — NOT shared globally
 │   ├── order.mapper.ts         # DB row → OrderResponse
 │   └── order-where.builder.ts  # query params → Prisma WhereInput
@@ -120,6 +111,35 @@ modules/order/
         └── make-fake-order.ts
 ```
 
+### The grouped-file default
+
+**Files are navigation units — not operation units.**
+
+For a standard CRUD domain, all handlers belong in one file and all queries belong in one file:
+
+```ts
+// handlers/order.handlers.ts
+export async function getOrderById(c: ...) {}
+export async function createOrder(c: ...) {}
+export async function updateOrder(c: ...) {}
+export async function deleteOrder(c: ...) {}
+```
+
+Splitting into `create-order.ts`, `get-order.ts`, `delete-order.ts` is premature fragmentation.
+It increases context-switching, multiplies import lines, and provides no benefit until the file
+becomes genuinely hard to navigate (> ~200 lines is a reasonable signal).
+
+**When to split a grouped file into multiple files:**
+
+- The file is growing beyond ~200 lines of actual logic
+- There are distinct subdomains (e.g. `order-fulfillment.handlers.ts` vs `order-returns.handlers.ts`)
+- The operations have fundamentally different concerns that don't benefit from being co-located
+
+---
+
+> **Hono Syntax:** For `createFactory`, `zValidator`, RPC chaining, and all Hono API syntax → use the `hono` skill.
+> This skill covers only project-specific structural rules.
+
 ---
 
 ## Responsibility of Each Layer
@@ -128,52 +148,91 @@ modules/order/
 
 - Parse validated input (`c.req.valid(...)`)
 - Call **query** (simple) or **service** (complex)
-- Return typed JSON with correct status code
-- **No business logic, no raw DB calls**
+- Return `c.json()` with correct status code
+- **No business logic, no raw Prisma calls**
+
+Handlers should be thin. No try-catch. Let errors bubble to the global `.onError()` handler.
+Services and queries throw `HTTPException` or custom error classes — the global handler formats the response.
+
+Prefer `JsonContext<T>`, `JsonWithParamContext<T, P>`, `QueryContext<T>` from `@/types/hono`
+over the generic `Context<HonoEnv>` when the handler has a validated input shape.
 
 ### queries/ — DB only
 
-- Pure Prisma queries, no HTTP context
-- One function per operation, always export a `Response` type
-- `findUnique` แล้วตรวจ `null` → throw `NotFoundError` เอง (Prisma ไม่ throw เองเมื่อหาไม่เจอ)
+- Pure Prisma queries — no HTTP context
+- Prisma does not throw on not-found — check `null` after `findUnique` and throw `NotFoundError` yourself
+- Use precise `select` or `include` — avoid over-fetching
+- Export reusable functions; services and handlers import from here
 
 ### services/ — Orchestration only
 
-- Use when a handler needs **multiple queries** or **cross-domain logic**
-- Receive dependencies as injected args (easier to test)
-- If the operation is one query → skip service, call query directly from handler
+- Use only when a handler needs **multiple queries** or **cross-domain logic**
+- Services throw `HTTPException` or custom errors — not raw `Error`
+- If the operation is one query → call the query directly from the handler; skip the service layer
 
 ### `<domain>.schema.ts` — Single source of truth for types
 
-- Zod schema for the entity
-- OpenAPI registration
-- Derived types: `Create<Domain>`, `Update<Domain>`, `<Domain>Response`
+- Zod schemas for validation
+- Derived TypeScript types: `Create<Domain>`, `Update<Domain>`, `<Domain>Response`
+
+### Path param validation
+
+Validate path params at the router boundary using `zValidator('param', ...)`:
+
+```ts
+.get('/:order_id', zValidator('param', z.object({ order_id: z.string().uuid() })), getOrderById)
+```
+
+Malformed or invalid IDs should fail at the routing layer, not inside services or DB queries.
 
 ### `lib/` inside a domain — Domain-specific helpers
 
-- Mappers (`<domain>.mapper.ts`) and query builders (`<domain>-where.builder.ts`) belong here
-- **Only used by this domain** — the moment two domains import the same helper, move it to global `src/utils/`
+- Mappers and query builders belong here
+- **Only used by this domain** — if two domains need the same helper, move it to `src/utils/`
 - Do not confuse with global `src/lib/` (third-party client inits); domain `lib/` has zero external dependencies
 
 ### Named sub-folders — Grouping related helpers
 
-When a single concept spawns 3+ files, group them into a named sub-folder with an `index.ts` entry point:
+When a single concept spawns 3+ related files, create a named sub-folder with an `index.ts`:
 
 ```
-courses/
-└── storage/          # Named sub-folder for OneDrive attachment logic
-    ├── index.ts      # exports uploadAttachment(), deleteAttachment()
-    ├── onedrive-course-attachment-storage.service.ts
-    ├── course-attachment-storage.contract.ts
-    └── onedrive-course-attachment.contract.ts
+summary-reports/
+├── analytics/          # analytics pipeline: 3+ files, complex enough to isolate
+├── export/             # report export engine
+└── scheduling/         # async scheduling system
 ```
 
-The rule: **locate code close to where it is used.** If it is only used in one module, keep it there. If more than one module needs it, move it up a level.
+Valid reasons to create a sub-folder: async workflows, analytics pipelines, report generation,
+scheduling systems, isolated subdomains, or when a file group becomes hard to navigate.
+
+Do NOT create sub-folders for standard CRUD operations with 1–2 files each.
 
 ### `__tests__/` — Co-located with the domain
 
 - Tests live next to the code they test, not in a separate top-level `tests/` folder
 - `__fixtures__/make-fake-<domain>.ts` creates realistic fake data for tests
+
+---
+
+## Export Conventions
+
+Prefer named exports everywhere:
+
+```ts
+// ✅ Preferred
+export async function getOrderById(c: ...) {}
+export const createOrder = async (c: ...) => {}
+
+// ❌ Avoid
+export default function getOrderById() {}
+```
+
+Named exports are:
+
+- Safer to refactor (TypeScript finds all references)
+- Better for IDE auto-imports (predictable symbol names)
+- Easier to barrel-export from `index.ts`
+- More explicit when reading import statements
 
 ---
 
@@ -201,13 +260,15 @@ New code needed?
 ├─ Belongs to a specific domain? (user, order, product...)
 │   │
 │   ├─ HTTP handler (parse input, return response)?
-│   │   └─ src/modules/<domain>/handlers/<operation>-<domain>.ts
+│   │   └─ src/modules/<domain>/handlers/<domain>.handlers.ts
+│   │       (split into multiple files only when size/complexity justifies it)
 │   │
 │   ├─ DB query?
-│   │   └─ src/modules/<domain>/queries/<operation>-<domain>.query.ts
+│   │   └─ src/modules/<domain>/queries/<domain>.query.ts
+│   │       (split when distinct subdomains emerge)
 │   │
 │   ├─ Multi-step business logic (multiple queries / cross-domain)?
-│   │   └─ src/modules/<domain>/services/<operation>-<domain>.service.ts
+│   │   └─ src/modules/<domain>/services/<domain>.service.ts
 │   │
 │   ├─ Zod schema / types for this domain?
 │   │   └─ src/modules/<domain>/<domain>.schema.ts
@@ -234,28 +295,15 @@ New code needed?
 ## Checklist: Adding a New Domain
 
 - [ ] Create `src/modules/<domain>/` folder
-- [ ] `<domain>.schema.ts` — Zod schema, types, OpenAPI registration
-- [ ] `queries/` — create operation files
-- [ ] `handlers/` — create handler files
-- [ ] `<domain>.routes.ts` — register handlers via `.openapi()`
+- [ ] `<domain>.schema.ts` — Zod schema, types
+- [ ] `queries/<domain>.query.ts` — grouped query functions
+- [ ] `handlers/<domain>.handlers.ts` — grouped handler functions
+- [ ] `<domain>.routes.ts` — chained factory route definitions with param validators
 - [ ] `index.ts` — export routes
 - [ ] Register routes in `src/modules/index.ts`
 - [ ] `__tests__/__fixtures__/make-fake-<domain>.ts` — fake data factory
 - [ ] `__tests__/` — add handler + query tests
-- [ ] `services/` — add only if orchestration is needed
-
----
-
-## Key Types
-
-```typescript
-// Always import from here
-import type { HonoEnv } from "@/types/hono";
-import type { AppRouteHandler } from "@/types/hono";
-
-// HonoEnv:         provides session via Hono context
-// AppRouteHandler: full type-safety for c.req / c.json()
-```
+- [ ] `services/<domain>.service.ts` — add only if orchestration is needed
 
 ---
 

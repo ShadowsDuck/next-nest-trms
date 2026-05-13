@@ -4,11 +4,13 @@
 
 Handlers deal with HTTP only:
 
-- Parse validated input from request
+- Parse validated input from request (`c.req.valid(...)`)
 - Call query (simple) or service (complex)
-- Return JSON with correct status code
+- Return `c.json()` with correct status code
 
-No business logic. No raw DB calls. No `if/else` about domain rules.
+No business logic. No raw Prisma calls. No try-catch. No domain rules.
+Let errors bubble to the global `.onError()` handler — services and queries throw,
+the global handler formats the response.
 
 ---
 
@@ -16,179 +18,109 @@ No business logic. No raw DB calls. No `if/else` about domain rules.
 
 ```
 src/modules/<domain>/
-├── <domain>.routes.ts          # registers all handlers for this domain
+├── <domain>.routes.ts            # chained factory route definitions
 └── handlers/
-    ├── create-<domain>.ts
-    ├── get-<domain>.ts
-    ├── get-<domain>s.ts
-    ├── update-<domain>.ts
-    ├── delete-<domain>.ts
-    └── search-<domain>s.ts
+    └── <domain>.handlers.ts      # all handler functions for this domain
 ```
+
+All handlers for a domain live in one file by default.
+Only split when a file genuinely becomes hard to navigate (signal: > ~200 lines of logic
+or the domain has distinct sub-areas like `order-fulfillment` vs `order-returns`).
 
 ---
 
-## Schema & Types (defined inside each handler file)
+## Grouped Handler File
 
-Each handler file owns its request/response schema:
+```ts
+// handlers/order.handlers.ts
+import { db } from '@/lib/db'
+import { type JsonContext, type JsonWithParamContext } from '@/types/hono'
+import { type CreateOrder, type UpdateOrder } from '../order.schema'
+import { getOrderById as getOrderByIdQuery } from '../queries/order.query'
+import { createOrder as createOrderQuery } from '../queries/order.query'
+import { deleteOrder as deleteOrderQuery } from '../queries/order.query'
+import { placeOrderService } from '../services/order.service'
 
-```typescript
-// handlers/create-order.ts
-import { createRoute, z } from '@hono/zod-openapi'
-import { orderSchemaOpenApi } from '../order.schema'
-import { type AppRouteHandler } from '@/types/hono'
-import { createOrderQuery } from '../queries/create-order.query'
+// --- Get single ---
+export async function getOrderById(c: JsonWithParamContext<never, { order_id: string }>) {
+  const { order_id } = c.req.valid('param')
+  const order = await getOrderByIdQuery(order_id)
+  return c.json(order, 200)
+}
 
-// --- Schemas ---
-const createOrderBodySchema = z.object({
-  user_id: z.string().uuid(),
-  items: z.array(z.object({
-    product_id: z.string().uuid(),
-    quantity: z.number().int().positive(),
-  })),
-})
-
-// --- Route definition ---
-export const createOrderRoute = createRoute({
-  method: 'post',
-  path: '/orders',
-  tags: ['Orders'],
-  summary: 'Create an order',
-  security: [{ bearerAuth: [] }],
-  request: {
-    body: {
-      content: { 'application/json': { schema: createOrderBodySchema } },
-    },
-  },
-  responses: {
-    201: {
-      content: { 'application/json': { schema: orderSchemaOpenApi } },
-      description: 'Order created',
-    },
-  },
-})
-
-// --- Handler ---
-export const createOrderHandler: AppRouteHandler<typeof createOrderRoute> = async c => {
-  const dbClient = c.get('dbClient')
+// --- Create (simple: one query, no service needed) ---
+export async function createOrder(c: JsonContext<CreateOrder>) {
   const body = c.req.valid('json')
-
-  const order = await createOrderQuery({ dbClient, values: body })
-
-  return c.json(order, { status: 201 })
+  const order = await createOrderQuery(body)
+  return c.json(order, 201)
 }
-```
 
----
-
-## Route Registration
-
-All handlers for a domain register in `<domain>.routes.ts`:
-
-```typescript
-// order.routes.ts
-import { OpenAPIHono } from '@hono/zod-openapi'
-import { type HonoEnv } from '@/types/hono'
-import { createOrderRoute, createOrderHandler } from './handlers/create-order'
-import { getOrderRoute, getOrderHandler } from './handlers/get-order'
-import { getOrdersRoute, getOrdersHandler } from './handlers/get-orders'
-import { updateOrderRoute, updateOrderHandler } from './handlers/update-order'
-import { deleteOrderRoute, deleteOrderHandler } from './handlers/delete-order'
-
-export const orderRoutes = new OpenAPIHono<HonoEnv>()
-  .openapi(createOrderRoute, createOrderHandler)
-  .openapi(getOrderRoute, getOrderHandler)
-  .openapi(getOrdersRoute, getOrdersHandler)
-  .openapi(updateOrderRoute, updateOrderHandler)
-  .openapi(deleteOrderRoute, deleteOrderHandler)
-```
-
-Then export from `modules/index.ts`:
-
-```typescript
-// modules/index.ts
-import { type HonoEnv } from '@/types/hono'
-import { OpenAPIHono } from '@hono/zod-openapi'
-import { orderRoutes } from './order'
-import { userRoutes } from './user'
-
-export function mountRoutes(app: OpenAPIHono<HonoEnv>) {
-  app.route('/orders', orderRoutes)
-  app.route('/users', userRoutes)
-}
-```
-
----
-
-## Common Handler Patterns
-
-### Get single resource
-
-```typescript
-export const getOrderHandler: AppRouteHandler<typeof getOrderRoute> = async c => {
-  const dbClient = c.get('dbClient')
-  const { order_id } = c.req.valid('param')
-
-  const order = await getOrderQuery({ dbClient, id: order_id })
-
-  return c.json(order, { status: 200 })
-}
-```
-
-### Get list with pagination
-
-```typescript
-export const getOrdersHandler: AppRouteHandler<typeof getOrdersRoute> = async c => {
-  const dbClient = c.get('dbClient')
-  const { limit, page, sort_by, order_by } = c.req.valid('query')
-
-  const result = await searchOrdersQuery({
-    dbClient,
-    limit: Number(limit) || 25,
-    page: Number(page) || 1,
-    sortBy: sort_by,
-    orderBy: order_by,
-  })
-
-  return c.json(result, { status: 200 })
-}
-```
-
-### Archive (soft delete)
-
-```typescript
-export const archiveOrderHandler: AppRouteHandler<typeof archiveOrderRoute> = async c => {
-  const dbClient = c.get('dbClient')
-  const { order_id } = c.req.valid('param')
-
-  const order = await updateOrderQuery({
-    dbClient,
-    id: order_id,
-    values: { deleted_at: new Date() },
-  })
-
-  return c.json(order, { status: 200 })
-}
-```
-
-### When business logic is needed — call service instead
-
-```typescript
-export const placeOrderHandler: AppRouteHandler<typeof placeOrderRoute> = async c => {
-  const dbClient = c.get('dbClient')
+// --- Create (complex: delegates to service) ---
+export async function placeOrder(c: JsonContext<CreateOrder>) {
   const body = c.req.valid('json')
   const session = c.get('session')
+  const order = await placeOrderService({ payload: { ...body, session } })
+  return c.json(order, 201)
+}
 
-  // Complex logic → delegate to service
-  const order = await placeOrderService({ dbClient, payload: { ...body, session } })
+// --- Update ---
+export async function updateOrder(c: JsonWithParamContext<UpdateOrder, { order_id: string }>) {
+  const { order_id } = c.req.valid('param')
+  const body = c.req.valid('json')
+  const order = await updateOrderQuery({ id: order_id, values: body })
+  return c.json(order, 200)
+}
 
-  return c.json(order, { status: 201 })
+// --- Delete ---
+export async function deleteOrder(c: JsonWithParamContext<never, { order_id: string }>) {
+  const { order_id } = c.req.valid('param')
+  await deleteOrderQuery(order_id)
+  return c.json({ success: true }, 200)
 }
 ```
+
+---
+
+## Context Type Helpers
+
+Always import from `@/types/hono`. Prefer specific helpers over the generic `Context<HonoEnv>`:
+
+| Helper                       | Use when...                                    |
+| ---------------------------- | ---------------------------------------------- |
+| `JsonContext<T>`             | Handler has a validated JSON body              |
+| `JsonWithParamContext<T, P>` | Handler has both JSON body and path params     |
+| `QueryContext<T>`            | Handler has validated query params             |
+| `Context<HonoEnv>`           | Handler has no validated input (e.g. GET list) |
+
+```ts
+import { type JsonContext, type JsonWithParamContext, type QueryContext } from '@/types/hono'
+```
+
+---
+
+## Route Registration (Project Rules)
+
+For `factory`, `zValidator`, and route chaining syntax → see the `hono` skill (Factory + Hono Client sections).
+
+Project-specific rules:
+
+- Use `factory.createApp()` from `@/types/hono` — never `new Hono<HonoEnv>()` directly
+- Routes in `<domain>.routes.ts` must be a **single chained expression** — broken chains lose `AppType` inference
+- Always place `zValidator('param', ...)` before handlers on routes with path params
+- Export `AppType` from `modules/index.ts` for the frontend RPC client
+
+---
+
+## Path Param Validation
+
+Validate path params with `zValidator('param', ...)` at the router level, before the handler.
+Malformed IDs should fail at the router — they must not reach services or DB queries.
+(For `zValidator` syntax → see the `hono` skill, Validation section.)
 
 ---
 
 ## Error Handling
 
-Do not catch errors in handlers. Let them bubble up to the global error middleware.
-Use `NotFoundError` and other custom error classes from `@/utils/errors` inside queries/services — the global handler will format the response.
+Do not try-catch in handlers. Let errors bubble to the global `.onError()` handler.
+Services and queries throw `HTTPException` or custom error classes — the global handler formats the response.
+(For `onError` syntax → see the `hono` skill, Error Handling section.)

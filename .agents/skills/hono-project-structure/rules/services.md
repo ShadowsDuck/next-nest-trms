@@ -6,7 +6,7 @@ Create a service only when a handler needs:
 
 - Multiple queries (e.g. validate stock → create order → send notification)
 - Logic that spans more than one domain
-- Business rules that would clutter the handler
+- Business rules too complex to be an inline query call
 
 If the operation is one query → call the query directly from the handler. No service needed.
 
@@ -16,70 +16,63 @@ If the operation is one query → call the query directly from the handler. No s
 
 ```
 src/modules/<domain>/services/
-└── <operation>-<domain>.service.ts
+└── <domain>.service.ts       # ← all service functions for this domain in one file
 ```
+
+Filename is `<domain>.service.ts`, not `<operation>-<domain>.service.ts`.
+This is because a service is the abstraction layer of a domain, not of an individual operation.
 
 ---
 
 ## Pattern
 
-Dependencies are injected as function arguments with defaults. This makes services testable without mocking modules.
+Services are plain async functions. Throw `HTTPException` (from `hono/http-exception`) or
+custom error classes — not raw `Error`. The global `.onError()` handler catches and formats them.
+
+Dependencies are injected as function arguments with defaults, making services testable without
+module-level mocking.
 
 ```typescript
-// modules/order/services/place-order.service.ts
-import { type DbClient } from '@/db/create-db-client'
+// modules/order/services/order.service.ts
+import { HTTPException } from 'hono/http-exception'
+import { getProductById } from '@/modules/product/queries/product.query'
+import { createOrder } from '../queries/order.query'
 import { type Session } from '@/types/hono'
-import { getProductQuery } from '@/modules/product/queries/get-product.query'
-import { createOrderQuery } from '../queries/create-order.query'
-import { NotFoundError } from '@/utils/errors'
 
-export type PlaceOrderServiceDependencies = {
-  getProductQuery: typeof getProductQuery
-  createOrderQuery: typeof createOrderQuery
+export type PlaceOrderPayload = {
+  session: Session
+  product_id: string
+  quantity: number
 }
 
-export type PlaceOrderServiceArgs = {
-  dbClient: DbClient
-  payload: {
-    session: Session
-    product_id: string
-    quantity: number
-  }
-  dependencies?: PlaceOrderServiceDependencies
+export type PlaceOrderDeps = {
+  getProductById: typeof getProductById
+  createOrder: typeof createOrder
 }
 
-export async function placeOrderService({
-  dbClient,
-  payload,
-  dependencies = {
-    getProductQuery,
-    createOrderQuery,
-  },
-}: PlaceOrderServiceArgs) {
-  const product = await dependencies.getProductQuery({
-    dbClient,
-    id: payload.product_id,
-  })
+// วางคำสั่งซื้อ — orchestrate: ตรวจสต็อก → สร้าง order → คืน order
+export async function placeOrder(
+  payload: PlaceOrderPayload,
+  deps: PlaceOrderDeps = { getProductById, createOrder }
+) {
+  const product = await deps.getProductById(payload.product_id)
 
   if (product.stock < payload.quantity) {
-    throw new Error('Insufficient stock.')
+    throw new HTTPException(422, { message: 'สต็อกสินค้าไม่เพียงพอ' })
   }
 
-  const order = await dependencies.createOrderQuery({
-    dbClient,
-    values: {
-      user_id: payload.session.accountId,
-      product_id: product.id,
-      quantity: payload.quantity,
-      total_amount: product.price * payload.quantity,
-      status: 'pending',
-    },
+  const order = await deps.createOrder({
+    userId: payload.session.userId,
+    productId: product.id,
+    quantity: payload.quantity,
+    totalAmount: product.price * payload.quantity,
+    status: 'pending',
   })
 
   return order
 }
 
-export type PlaceOrderServiceResponse = Awaited<ReturnType<typeof placeOrderService>>
+export type PlaceOrderResponse = Awaited<ReturnType<typeof placeOrder>>
 ```
 
 ---
@@ -88,49 +81,44 @@ export type PlaceOrderServiceResponse = Awaited<ReturnType<typeof placeOrderServ
 
 ```typescript
 // __tests__/order.service.test.ts
-import { placeOrderService } from '../services/place-order.service'
+import { placeOrder } from '../services/order.service'
 import { makeFakeProduct } from '@/modules/product/__tests__/__fixtures__/make-fake-product'
-import { mockDbClient } from '@/db/__test-utils__/mock-db-client'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-const { dbClient } = mockDbClient
-
-const mockDependencies = {
-  getProductQuery: vi.fn(),
-  createOrderQuery: vi.fn(),
+const mockDeps = {
+  getProductById: vi.fn(),
+  createOrder: vi.fn(),
 }
 
-describe('placeOrderService', () => {
+describe('placeOrder', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('should create an order when stock is sufficient', async () => {
     const fakeProduct = makeFakeProduct({ stock: 10, price: 100 })
-    mockDependencies.getProductQuery.mockResolvedValue(fakeProduct)
-    mockDependencies.createOrderQuery.mockResolvedValue({ id: 'order-1', total_amount: 200 })
+    mockDeps.getProductById.mockResolvedValue(fakeProduct)
+    mockDeps.createOrder.mockResolvedValue({ id: 'order-1', totalAmount: 200 })
 
-    const result = await placeOrderService({
-      dbClient,
-      payload: { session: { accountId: 'user-1' }, product_id: fakeProduct.id, quantity: 2 },
-      dependencies: mockDependencies,
-    })
+    const result = await placeOrder(
+      { session: { userId: 'user-1' }, product_id: fakeProduct.id, quantity: 2 },
+      mockDeps
+    )
 
-    expect(result.total_amount).toBe(200)
-    expect(mockDependencies.createOrderQuery).toHaveBeenCalledOnce()
+    expect(result.totalAmount).toBe(200)
+    expect(mockDeps.createOrder).toHaveBeenCalledOnce()
   })
 
-  it('should throw when stock is insufficient', async () => {
+  it('should throw 422 when stock is insufficient', async () => {
     const fakeProduct = makeFakeProduct({ stock: 1 })
-    mockDependencies.getProductQuery.mockResolvedValue(fakeProduct)
+    mockDeps.getProductById.mockResolvedValue(fakeProduct)
 
     await expect(
-      placeOrderService({
-        dbClient,
-        payload: { session: { accountId: 'user-1' }, product_id: fakeProduct.id, quantity: 5 },
-        dependencies: mockDependencies,
-      })
-    ).rejects.toThrow('Insufficient stock.')
+      placeOrder(
+        { session: { userId: 'user-1' }, product_id: fakeProduct.id, quantity: 5 },
+        mockDeps
+      )
+    ).rejects.toMatchObject({ status: 422 })
 
-    expect(mockDependencies.createOrderQuery).not.toHaveBeenCalled()
+    expect(mockDeps.createOrder).not.toHaveBeenCalled()
   })
 })
 ```
@@ -139,6 +127,8 @@ describe('placeOrderService', () => {
 
 ## Rules
 
-- Inject all external dependencies — never import queries directly and call them without injection
-- Always export a `Response` type: `export type <Operation><Domain>ServiceResponse = Awaited<ReturnType<typeof ...>>`
-- Services can import queries from other domains — that's the point. But they should not import handlers from other domains
+- Inject all external dependencies as function args with real defaults — makes testing trivial
+- Throw `HTTPException` or custom error classes, not raw `Error`
+- Always export a `Response` type: `export type <Operation>Response = Awaited<ReturnType<typeof ...>>`
+- Services can call queries from other domains — that's the point. But they must not import handlers
+- Services orchestrate; queries own Prisma access; handlers own HTTP
