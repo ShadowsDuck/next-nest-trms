@@ -1,4 +1,5 @@
 import { OrgFunctionQuery, OrgFunctionResponse } from '@workspace/schemas';
+import { throwNotFound } from '../../../lib/http-errors';
 import { toIsoDateTime } from '../../../utils/date-utils';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
@@ -90,7 +91,7 @@ export async function updateFunctionService(
 export async function ensureFunctionExists(id: string) {
   const orgFunction = await getFunctionByIdQuery(id);
   if (!orgFunction) {
-    throw new Error('ไม่พบ Function ที่ระบุ');
+    throwNotFound('ไม่พบ Function ที่ระบุ');
   }
   return orgFunction;
 }

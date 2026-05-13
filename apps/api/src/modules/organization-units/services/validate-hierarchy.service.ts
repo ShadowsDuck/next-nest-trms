@@ -1,4 +1,5 @@
 import { db } from '../../../lib/db';
+import { throwBadRequest } from '../../../lib/http-errors';
 import { EmployeeOrganizationHierarchyInput } from '../organization-hierarchy.types';
 
 /**
@@ -10,7 +11,7 @@ export async function validateEmployeeHierarchyService(
   const errors = await getEmployeeHierarchyErrors(hierarchy);
 
   if (errors.length > 0) {
-    throw new Error(errors[0]);
+    throwBadRequest(errors[0]);
   }
 }
 

@@ -1,3 +1,5 @@
+import { throwConflict } from '../../../lib/http-errors';
+
 /**
  * แปลง error แจ้งเตือนเมื่อข้อมูลมีชื่อซ้ำ
  */
@@ -8,6 +10,6 @@ export function rethrowDuplicateNameError(error: unknown): void {
     'code' in error &&
     error.code === 'P2002'
   ) {
-    throw new Error('ชื่อหน่วยงานซ้ำภายใต้หน่วยงานแม่เดียวกัน');
+    throwConflict('ชื่อหน่วยงานซ้ำภายใต้หน่วยงานแม่เดียวกัน');
   }
 }

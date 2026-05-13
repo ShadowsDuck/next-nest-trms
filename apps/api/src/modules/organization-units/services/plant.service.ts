@@ -1,4 +1,5 @@
 import { PlantResponse } from '@workspace/schemas';
+import { throwNotFound } from '../../../lib/http-errors';
 import { toIsoDateTime } from '../../../utils/date-utils';
 import {
   createPlantQuery,
@@ -58,7 +59,7 @@ export async function updatePlantService(
 export async function ensurePlantExists(id: string) {
   const plant = await getPlantByIdQuery(id);
   if (!plant) {
-    throw new Error('ไม่พบ Plant ที่ระบุ');
+    throwNotFound('ไม่พบ Plant ที่ระบุ');
   }
   return plant;
 }
