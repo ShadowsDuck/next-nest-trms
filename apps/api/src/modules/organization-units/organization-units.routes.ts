@@ -16,6 +16,7 @@ import {
   updatePlantSchema,
 } from '@workspace/schemas';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { requireAuth } from '../../middleware/auth.middleware';
 import { HonoEnv } from '../../types/hono';
 import * as businessUnitsHandlers from './handlers/business-units.handlers';
@@ -97,7 +98,13 @@ const routes = new Hono<HonoEnv>()
     '/departments/:id',
     zValidator('json', updateDepartmentSchema),
     departmentsHandlers.updateDepartment,
-  );
+  )
+  .onError((err, c) => {
+    if (err instanceof HTTPException) {
+      return c.json({ message: err.message }, err.status);
+    }
+    return c.json({ message: err.message || 'Internal Server Error' }, 500);
+  });
 
 export default routes;
 export type OrganizationUnitsRoute = typeof routes;
