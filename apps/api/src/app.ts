@@ -1,13 +1,13 @@
+import { env } from '@/env';
+import { auth } from '@/lib/auth';
+import { modules } from '@/modules';
+import { factory } from '@/types/hono';
 import { serveStatic } from '@hono/node-server/serve-static';
-import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
-import { env } from './env';
-import { auth } from './lib/auth';
-import { modules } from './modules';
-import { HonoEnv } from './types/hono';
 
-const app = new Hono<HonoEnv>();
+const app = factory.createApp();
 
 // Global Middlewares
 app.use(logger());
@@ -32,8 +32,21 @@ export const routes = app.basePath('/api').route('/', modules);
 
 // Global Error Handler — จัดการ error ที่หลุดออกมาจาก handler ทุกตัวให้เป็น JSON เสมอ
 app.onError((err, c) => {
+  // ถ้าเป็น HTTPException ให้คืนค่าตามที่ Error กำหนดมา (เช่น 404, 401)
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+
+  // กรณี Error อื่นๆ ให้ส่ง 500 กลับไป
   console.error('[API Error]', err);
-  return c.json({ message: err.message || 'Internal Server Error' }, 500);
+  return c.json(
+    {
+      message: err.message || 'Internal Server Error',
+      // ส่ง stack trace เฉพาะในโหมด development เท่านั้น
+      stack: env.NODE_ENV === 'development' ? err.stack : undefined,
+    },
+    500,
+  );
 });
 
 // Global Not Found Handler — จัดการ 404 ให้เป็น JSON แทน HTML default ของ Hono
