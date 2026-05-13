@@ -4,8 +4,8 @@ import type {
   EmployeeSummaryReportSnapshot,
   SummaryReportSnapshot,
 } from '@workspace/schemas';
-import { findByCourseIdsForReport } from '../courses/courses.service';
-import { findByEmployeeNosForReport } from '../employees/employees.service';
+import { getCoursesByIdsService as findByCourseIdsForReport } from '../courses/services/get-courses-by-ids.service';
+import { getEmployeesByNosService as findByEmployeeNosForReport } from '../employees/services/get-employees-by-nos.service';
 
 type SummaryReportSourceAdapterMap = {
   employees: {

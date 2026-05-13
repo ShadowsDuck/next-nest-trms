@@ -1,0 +1,25 @@
+import { Hono } from 'hono';
+import { HonoEnv } from '../types/hono';
+import auditLogsRouter from './audit-logs';
+import coursesRouter from './courses';
+import employeesRouter from './employees';
+import healthRouter from './health';
+import organizationUnitsRouter from './organization-units';
+import summaryReportsRouter from './summary-reports';
+import tagsRouter from './tags';
+import usersRouter from './users';
+
+const router = new Hono<HonoEnv>();
+
+/**
+ * รวม Router ของทุก Domain Module เข้าด้วยกัน
+ */
+export const modules = router
+  .route('/health', healthRouter)
+  .route('/users', usersRouter)
+  .route('/tags', tagsRouter)
+  .route('/courses', coursesRouter)
+  .route('/employees', employeesRouter)
+  .route('/organization-units', organizationUnitsRouter)
+  .route('/audit-logs', auditLogsRouter)
+  .route('/summary-reports', summaryReportsRouter);
