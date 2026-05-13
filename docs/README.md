@@ -26,3 +26,4 @@ This directory contains the product and technical specifications for the feature
 - [x] **Dependency Cleanup** (`Completed`) — [View Spec](./specs/dependency-cleanup.md) — 2026-05-12
 - [x] **Migrate to Hono** (`Completed`) — [View Spec](./specs/migrate-to-hono.md) — 2026-05-12
 - [x] **Hono Structure Refactor** (`Completed`) — [View Spec](./specs/hono-structure-refactor.md) — 2026-05-13
+- [x] **Hono Org Units Best Practices** (`Completed`) — [View Spec](./specs/hono-org-units-best-practices.md) — 2026-05-13

@@ -1,4 +1,5 @@
 import { BusinessUnitQuery, BusinessUnitResponse } from '@workspace/schemas';
+import { throwNotFound } from '../../../lib/http-errors';
 import { toIsoDateTime } from '../../../utils/date-utils';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
@@ -93,7 +94,7 @@ export async function updateBusinessUnitService(
 export async function ensureBusinessUnitExists(id: string) {
   const businessUnit = await getBusinessUnitByIdQuery(id);
   if (!businessUnit) {
-    throw new Error('ไม่พบ Business Unit ที่ระบุ');
+    throwNotFound('ไม่พบ Business Unit ที่ระบุ');
   }
   return businessUnit;
 }

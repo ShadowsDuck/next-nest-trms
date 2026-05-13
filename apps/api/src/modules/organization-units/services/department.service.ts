@@ -1,4 +1,5 @@
 import { DepartmentQuery, DepartmentResponse } from '@workspace/schemas';
+import { throwNotFound } from '../../../lib/http-errors';
 import { toIsoDateTime } from '../../../utils/date-utils';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
@@ -90,7 +91,7 @@ export async function updateDepartmentService(
 export async function ensureDepartmentExists(id: string) {
   const department = await getDepartmentByIdQuery(id);
   if (!department) {
-    throw new Error('ไม่พบ Department ที่ระบุ');
+    throwNotFound('ไม่พบ Department ที่ระบุ');
   }
   return department;
 }

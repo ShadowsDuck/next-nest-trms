@@ -1,4 +1,5 @@
 import { DivisionQuery, DivisionResponse } from '@workspace/schemas';
+import { throwNotFound } from '../../../lib/http-errors';
 import { toIsoDateTime } from '../../../utils/date-utils';
 import { rethrowDuplicateNameError } from '../lib/organization-units.utils';
 import {
@@ -90,7 +91,7 @@ export async function updateDivisionService(
 export async function ensureDivisionExists(id: string) {
   const division = await getDivisionByIdQuery(id);
   if (!division) {
-    throw new Error('ไม่พบ Division ที่ระบุ');
+    throwNotFound('ไม่พบ Division ที่ระบุ');
   }
   return division;
 }
