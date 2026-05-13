@@ -13,13 +13,13 @@ import {
 } from '../services/business-unit.service';
 
 const factory = createFactory<HonoEnv>();
+const app = factory.createApp();
 
-/**
- * Handler สำหรับดึง Business Units
- */
-export const getBusinessUnitsHandler = factory.createHandlers(
-  zValidator('query', businessUnitQuerySchema),
-  async (c) => {
+export const businessUnitsRoutes = app
+  /**
+   * Handler สำหรับดึง Business Units
+   */
+  .get('/', zValidator('query', businessUnitQuerySchema), async (c) => {
     const query = c.req.valid('query');
     try {
       const result = await getBusinessUnitsService(query);
@@ -27,15 +27,11 @@ export const getBusinessUnitsHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับสร้าง Business Unit
- */
-export const createBusinessUnitHandler = factory.createHandlers(
-  zValidator('json', businessUnitSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับสร้าง Business Unit
+   */
+  .post('/', zValidator('json', businessUnitSchema), async (c) => {
     const body = c.req.valid('json');
     try {
       const result = await createBusinessUnitService(body);
@@ -43,15 +39,11 @@ export const createBusinessUnitHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับอัปเดต Business Unit
- */
-export const updateBusinessUnitHandler = factory.createHandlers(
-  zValidator('json', updateBusinessUnitSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับอัปเดต Business Unit
+   */
+  .patch('/:id', zValidator('json', updateBusinessUnitSchema), async (c) => {
     const id = c.req.param('id');
     const body = c.req.valid('json');
     try {
@@ -60,5 +52,4 @@ export const updateBusinessUnitHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
+  });

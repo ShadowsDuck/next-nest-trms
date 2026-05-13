@@ -9,21 +9,20 @@ import {
 } from '../services/plant.service';
 
 const factory = createFactory<HonoEnv>();
+const app = factory.createApp();
 
-/**
- * Handler สำหรับดึง Plants
- */
-export const getPlantsHandler = factory.createHandlers(async (c) => {
-  const result = await getPlantsService();
-  return c.json(result, 200);
-});
-
-/**
- * Handler สำหรับสร้าง Plant
- */
-export const createPlantHandler = factory.createHandlers(
-  zValidator('json', plantSchema),
-  async (c) => {
+export const plantsRoutes = app
+  /**
+   * Handler สำหรับดึง Plants
+   */
+  .get('/', async (c) => {
+    const result = await getPlantsService();
+    return c.json(result, 200);
+  })
+  /**
+   * Handler สำหรับสร้าง Plant
+   */
+  .post('/', zValidator('json', plantSchema), async (c) => {
     const body = c.req.valid('json');
     try {
       const result = await createPlantService(body);
@@ -31,15 +30,11 @@ export const createPlantHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับอัปเดต Plant
- */
-export const updatePlantHandler = factory.createHandlers(
-  zValidator('json', updatePlantSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับอัปเดต Plant
+   */
+  .patch('/:id', zValidator('json', updatePlantSchema), async (c) => {
     const id = c.req.param('id');
     const body = c.req.valid('json');
     try {
@@ -48,5 +43,4 @@ export const updatePlantHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
+  });

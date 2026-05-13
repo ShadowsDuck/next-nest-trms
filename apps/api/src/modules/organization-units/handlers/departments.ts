@@ -13,13 +13,13 @@ import {
 } from '../services/department.service';
 
 const factory = createFactory<HonoEnv>();
+const app = factory.createApp();
 
-/**
- * Handler สำหรับดึง Departments
- */
-export const getDepartmentsHandler = factory.createHandlers(
-  zValidator('query', departmentQuerySchema),
-  async (c) => {
+export const departmentsRoutes = app
+  /**
+   * Handler สำหรับดึง Departments
+   */
+  .get('/', zValidator('query', departmentQuerySchema), async (c) => {
     const query = c.req.valid('query');
     try {
       const result = await getDepartmentsService(query);
@@ -27,15 +27,11 @@ export const getDepartmentsHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับสร้าง Department
- */
-export const createDepartmentHandler = factory.createHandlers(
-  zValidator('json', departmentSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับสร้าง Department
+   */
+  .post('/', zValidator('json', departmentSchema), async (c) => {
     const body = c.req.valid('json');
     try {
       const result = await createDepartmentService(body);
@@ -43,15 +39,11 @@ export const createDepartmentHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับอัปเดต Department
- */
-export const updateDepartmentHandler = factory.createHandlers(
-  zValidator('json', updateDepartmentSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับอัปเดต Department
+   */
+  .patch('/:id', zValidator('json', updateDepartmentSchema), async (c) => {
     const id = c.req.param('id');
     const body = c.req.valid('json');
     try {
@@ -60,5 +52,4 @@ export const updateDepartmentHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
+  });

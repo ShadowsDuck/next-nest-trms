@@ -13,13 +13,13 @@ import {
 } from '../services/division.service';
 
 const factory = createFactory<HonoEnv>();
+const app = factory.createApp();
 
-/**
- * Handler สำหรับดึง Divisions
- */
-export const getDivisionsHandler = factory.createHandlers(
-  zValidator('query', divisionQuerySchema),
-  async (c) => {
+export const divisionsRoutes = app
+  /**
+   * Handler สำหรับดึง Divisions
+   */
+  .get('/', zValidator('query', divisionQuerySchema), async (c) => {
     const query = c.req.valid('query');
     try {
       const result = await getDivisionsService(query);
@@ -27,15 +27,11 @@ export const getDivisionsHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับสร้าง Division
- */
-export const createDivisionHandler = factory.createHandlers(
-  zValidator('json', divisionSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับสร้าง Division
+   */
+  .post('/', zValidator('json', divisionSchema), async (c) => {
     const body = c.req.valid('json');
     try {
       const result = await createDivisionService(body);
@@ -43,15 +39,11 @@ export const createDivisionHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
-
-/**
- * Handler สำหรับอัปเดต Division
- */
-export const updateDivisionHandler = factory.createHandlers(
-  zValidator('json', updateDivisionSchema),
-  async (c) => {
+  })
+  /**
+   * Handler สำหรับอัปเดต Division
+   */
+  .patch('/:id', zValidator('json', updateDivisionSchema), async (c) => {
     const id = c.req.param('id');
     const body = c.req.valid('json');
     try {
@@ -60,5 +52,4 @@ export const updateDivisionHandler = factory.createHandlers(
     } catch (error) {
       return c.json({ message: (error as Error).message }, 400);
     }
-  },
-);
+  });
