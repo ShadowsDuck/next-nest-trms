@@ -23,6 +23,7 @@
     "@scalar/hono-api-reference": "^0.10.14",
     "@workspace/database": "workspace:*",
     "better-auth": "^1.6.9",
+    "dotenv": "^17.4.2",
     "hono": "^4.12.18",
     "zod": "^4.4.3"
   },

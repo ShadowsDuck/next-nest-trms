@@ -85,4 +85,19 @@ If any step fails:
 ## Project Conventions
 
 - Comments in new code: **Thai only**.
-- Every new function must have a Thai comment stating what it is responsible for.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as local markdown files under `.scratch/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Using default canonical triage roles. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout with `CONTEXT.md` at the root. See `docs/agents/domain.md`.

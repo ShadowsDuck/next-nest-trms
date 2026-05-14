@@ -1,106 +1,101 @@
 ---
 name: do
-description: The "Execute" phase. Implement tasks from a spec file with surgical precision. Trigger this skill whenever a user says "do T1", "implement task 3", "let's build this", "execute the spec", "do all tasks", or references any task number from a brief/spec. Reads the spec first, checks the branch, then implements and reports in Operational Handoff format. Scope never expands without explicit confirmation. Commit behavior: single task or named subset → propose message and wait; "do all tasks" → auto-commit and push after each task passes verify.
+description: "The 'Execute' phase. Implement phases from a spec file one at a time — surgical, reviewable, never committing until the user decides. Trigger when the user says 'do Phase 1', 'implement phase 2', 'next phase', 'start building', 'execute the spec', or references any phase from a spec. Always reads the spec first. Never stages or commits."
 ---
 
 # Do
 
-This skill assumes `brief` has already produced a spec in `docs/specs/<feature>.md`. Execution without that foundation creates drift — read the spec carefully before touching any code.
+This skill assumes `to-spec` has already produced a spec in `docs/specs/<feature>.md`. Read the spec carefully before touching any code — execution without that foundation creates drift.
 
 ## Code Convention
 
-Every new function must have a **Thai comment** stating what it is responsible for. This applies to all code written in this project, without exception.
+Every new function must have a **Thai comment** stating what it is responsible for. No exceptions.
 
-## Process
+---
 
-Work through these steps in order for each task:
+## Startup
 
-### 1. Context
+1. Find the spec in `docs/specs/`. If the user didn't specify which spec, ask — don't guess.
+2. If no spec exists: "No spec found in `docs/specs/`. Run `to-spec` first."
+3. **Branch check** — confirm current branch matches the spec. If mismatch, stop and report before writing anything.
+4. Confirm which phase to start (default: first incomplete phase). State it in one line and begin.
 
-Read `docs/specs/<feature>.md` and identify the target task. If the user didn't specify which task, ask — ambiguity at the start causes far more wasted work than a 30-second clarification.
+---
 
-### 2. Branch Check
+## Execution Loop
 
-Confirm the current branch matches `codex/<feature-slug>` from the spec. Writing on the wrong branch is genuinely hard to untangle — stop and confirm before writing anything if there's a mismatch.
+For each phase:
 
-### 3. Pre-flight
+### 1. Announce
 
-Read the target files before writing code. The spec describes intent; the codebase describes reality. Resolve gaps between them _before_ starting, not halfway through. Stop and ask the user if:
+One line: `Starting Phase N — <Name>: <goal>`
+
+### 2. Pre-flight
+
+Read every file the phase will touch before writing anything. The spec describes intent; the codebase describes reality. Resolve gaps before starting, not halfway through.
+
+Stop and report if:
 
 - A dependency is missing from the codebase
-- The spec conflicts with the current code state
-- The task instruction is ambiguous
+- The spec conflicts with current code state
+- A task instruction is ambiguous
 
-Also classify each required action as **Agent-doable now** or **User-required manual** — this shapes the report.
+### 3. Implement
 
-### 4. Implement
+Touch only the files listed in the phase. No unrelated refactors, no opportunistic cleanup. If you notice an improvement outside scope, note it in the report as future work — don't fix it now.
 
-Touch only the files listed in the task. No unrelated refactors, no opportunistic cleanup. If a change would improve something adjacent but wasn't asked for, note it in the report instead.
+**Scope creep is a blocker.** If implementing this phase requires changes scoped to a future phase, stop and flag the dependency instead of blending phases.
 
-### 5. Verify
+### 4. Verify
 
-Run the task's verification step. If the verify instruction is vague, define the smallest concrete check that proves completion _before_ writing any code — not after. Shipping without a defined verification step is how broken work gets merged silently.
+Run the phase's verify steps. If a verify instruction is vague, define the smallest concrete check that proves completion before writing code — not after.
 
-### 6. Commit
+If verify fails: report the failure and stop. Do not proceed.
 
-If verify passes:
+### 5. Report
 
-- **Single task** (`do T1`) — Propose a commit message. Wait for user confirmation before staging or committing anything.
-- **Explicit subset** (`do T1 T3`) — Propose a commit message after each task. Wait for confirmation before moving to the next.
-- **All tasks** (`do all tasks`) — Auto-stage, commit, and push after each task passes verify. Move immediately to the next task. After all tasks complete, print the final summary table (see below).
+Only include fields that have something to say — drop empty ones:
 
-If verify fails in any mode: report the failure and stop. Do not commit, do not push, do not proceed.
+```
+## ✅ Phase N done — <Name>
 
-### 7. Report
+**What changed**
+<1–3 sentences>
 
-Use the Operational Handoff format below. For a single task: report once at the end. For a subset or "do all tasks": report after each task. A failure report is the stopping point — never continue past it.
+**Files**
+- `path/to/file.ts` — <what changed and why>
+
+**Notes for reviewer**
+<non-obvious decisions, tradeoffs, things to watch in the diff>
+
+**Future work noted**
+<improvements spotted but out of scope>
+```
+
+Then stop. No "ready for Phase N+1?" — just stop. The user will proceed when ready.
 
 ---
 
-## Spec Mutability
+## Rules
 
-The spec is a living document, but changing it ripples into downstream tasks, the user's mental model, and commit history. Before touching the spec, ask: **does this change affect what the user signed off on?**
+**Never stage or commit.** No `git add`, `git commit`, `git stash`, or any git write operation. Read-only git only: `git status`, `git diff`, `git log`. The user owns all commit decisions.
 
-- ✅ **Implementation detail** — file path adjusted to match reality, function signature changed, library API differs.
-  - Update `spec.md` _only if_ leaving it wrong would cause a future task to misread it. Otherwise, log the deviation in the report only.
-- 🛑 **Scope change** — adding tasks, removing tasks, changing goals, violating constraints, or discovering the task is significantly larger than described.
-  - Stop at the nearest safe checkpoint. Do not implement. Do not update the spec. Request explicit user confirmation before proceeding.
+**One phase at a time.** Even if the next phase is trivial — stop and wait.
 
-Silently expanding scope is how features quietly become unshippable.
+**Surgical edits only.** If you wouldn't include it in this phase's diff, don't write it now.
+
+**No silent assumptions.** If the spec is ambiguous about something that affects how you write code, ask before writing.
+
+**Follow AGENTS.md.** Respect code style, naming conventions, import style. If absent, match existing code exactly.
 
 ---
 
-## Operational Handoff (Required)
+## Mid-phase Discoveries
 
-End every task with this report — even simple ones. It's how `ship` knows what happened and what still needs human attention:
+If something unexpected blocks the current approach:
 
-```
-Done by agent:
-- <what was implemented>
-
-Not done / blocked:
-- <anything left incomplete and why, or "none">
-
-User manual actions required:
-- <explicit steps the user must take — never implied, or "none">
-
-Spec deviations:
-- <implementation details that differed from spec, if spec was not updated, or "none">
-
-Commands intentionally not run:
-- <command> — <reason, or "none">
-
-Commit: <hash> — <conventional commit message>
-(write "Suggested commit: <message>" instead if waiting for user confirmation)
-```
-
-### Final Summary (do all tasks only)
-
-```
-All tasks complete.
-
-| Task | Commit  | Message      |
-|------|---------|--------------|
-| T1   | abc1234 | feat(x): ... |
-| T2   | def5678 | feat(y): ... |
-```
+1. Stop immediately — don't improvise
+2. State what the spec assumed vs. what's actually true
+3. State the impact — does this affect just this phase, or future phases too?
+4. Propose 2–3 concrete options
+5. Wait for a decision before writing any more code
