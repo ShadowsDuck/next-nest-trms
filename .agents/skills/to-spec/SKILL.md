@@ -115,6 +115,7 @@ Create `docs/specs/<feature-slug>.md`. Create `docs/specs/` if it doesn't exist.
 
 ## Execution Strategy
 
+- Branch: `<feature-slug>`
 - Commit Policy: one commit per phase; user stages and commits
 - Merge Policy: run `ship` only when all phases are done and committed
 
@@ -158,18 +159,18 @@ Create `docs/specs/<feature-slug>.md`. Create `docs/specs/` if it doesn't exist.
 
 After writing the spec, update `docs/README.md`. Create it if it doesn't exist.
 
-Add a `Draft` entry under the specs index:
-
-```
-- [Feature Name](./specs/<slug>.md) (`Draft`) — <Date>
-```
-
-If a section for specs doesn't exist yet, add one:
+Add an entry under the `## In Progress` section:
 
 ```md
-## Specs
+- **Feature Name** — [View Spec](./specs/<slug>.md) — <Date>
+```
 
-- [Feature Name](./specs/<slug>.md) (`Draft`) — <Date>
+If the `## In Progress` section doesn't exist yet, add it:
+
+```md
+## In Progress
+
+- **Feature Name** — [View Spec](./specs/<slug>.md) — <Date>
 ```
 
 ---

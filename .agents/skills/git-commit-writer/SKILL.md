@@ -1,174 +1,114 @@
 ---
 name: git-commit-writer
-description: Generate concise conventional commit messages by analyzing git diff. Use when the user asks to write a commit message, create a commit, generate commit text, or needs help with git commit format. Also trigger when user mentions "commit", "git message", or shows staged changes needing a commit message.
+description: Streamline git workflow by analyzing changes, matching repository style, staging files, and creating commits with AI-generated messages. Use when the user wants to commit changes, needs a commit message, or wants to automate the staging and committing process.
 ---
 
-# Git Commit Writer
+# Git Commit (Inspired by Anthropic /commit)
 
-Automatically generate concise, conventional commit messages by analyzing staged changes with `git diff`.
+Streamline your git workflow with a single process for analyzing, staging, and committing changes with AI-generated messages that match your repository's style.
 
 ## When to Use
 
 Trigger this skill when the user:
 
-- Asks to "write a commit message"
-- Says "commit this" or "create a commit"
-- Mentions "git commit" or "commit message"
-- Shows staged changes and asks what to commit
-- Wants help writing conventional commits
+- Asks to "commit changes" or "/commit"
+- Says "stage and commit this"
+- Needs a commit message for their work
+- Wants to ensure their commit message follows conventional standards and matches the project's existing style
 
 ## Workflow
 
-### Step 1: Check Git Status
+### Step 1: Analyze Repository Context
 
 ```bash
+# Check current status of all changes
 git status
+
+# Examine recent commit messages to match style
+git log -n 10 --pretty=format:%s
 ```
 
-Verify there are staged changes. If nothing is staged, inform the user and stop.
+Verify if there are any changes (staged or unstaged). If the repository is clean, inform the user.
 
 ### Step 2: Analyze Changes
 
 ```bash
+# Review staged changes
 git diff --cached
+
+# Review unstaged changes
+git diff
 ```
 
-Review the diff output to understand:
+Analyze both staged and unstaged changes to understand the full scope of work. Identify files that should be staged and those that should be ignored (e.g., secrets).
 
-- Which files changed
-- What kind of changes (new features, fixes, refactoring, etc.)
-- Scope of changes (which module/component)
+### Step 3: Propose Staging & Message
 
-### Step 3: Generate Commit Message
-
-Follow the **Conventional Commits** format:
+Draft a **Conventional Commit** message following the project's style:
 
 ```
 <type>(<scope>): <subject>
 ```
 
-**Rules:**
+**Security Rules:**
 
-- Keep it **SHORT** (ideally under 72 characters)
-- Use lowercase for type and scope
-- Subject starts with lowercase verb
-- No period at the end
-- Be specific but concise
+- **NEVER** stage or commit files containing secrets (e.g., `.env`, `*.pem`, `credentials.json`, `*.key`).
+- If such files are detected, warn the user and exclude them from staging.
 
-**Types:**
+**Staging Strategy:**
+
+- If the user has unstaged changes that are relevant to the work, propose staging them: `git add <files>`.
+- Always verify with the user before staging new files if there's any ambiguity.
+
+### Step 4: Generate the Commit Message
+
+**Rules for the message:**
+
+- **Short & Concise**: Ideally under 72 characters.
+- **Lowercase**: Use lowercase for type and scope.
+- **Imperative Mood**: "add feature" instead of "added feature".
+- **Match Style**: If the repo uses specific prefixes or emojis, follow that pattern.
+
+### Step 5: Execute Commit
+
+Once the user approves the message and the files to be staged:
+
+```bash
+git add <relevant_files>
+git commit -m "<generated_message>"
+```
+
+## Types (Conventional Commits)
 
 - `feat`: New feature
 - `fix`: Bug fix
 - `refactor`: Code restructuring (no behavior change)
-- `chore`: Maintenance tasks (deps, config, cleanup)
-- `docs`: Documentation changes
-- `style`: Formatting, missing semicolons (no code change)
-- `test`: Adding or fixing tests
-- `perf`: Performance improvements
-- `build`: Build system changes
-- `ci`: CI/CD changes
-
-**Scope Examples:**
-
-- Module name: `api`, `web`, `database`
-- Component: `auth`, `users`, `tags`
-- Area: `deps`, `config`, `types`
-
-### Step 4: Present Message
-
-Show the generated commit message to the user in a code block:
-
-```
-feat(api): add user authentication middleware
-```
-
-If the changes are complex or span multiple logical changes, suggest splitting into multiple commits.
+- `chore`: Maintenance (deps, config, cleanup)
+- `docs`: Documentation
+- `style`: Formatting (no code change)
+- `test`: Adding/fixing tests
+- `perf`: Performance
+- `build`: Build system
+- `ci`: CI/CD
 
 ## Examples
 
-### Example 1: New Feature
+### Example: Auto-Staging & Style Matching
 
-**Diff summary:** Added Prisma singleton and Hono auth middleware
+**Git Status**: `Modified: src/auth/login.ts` (unstaged), `Modified: README.md` (staged)
+**Recent Logs**: `feat(web): update dashboard`, `fix(api): handle timeout`
 
-**Output:**
+**Action**:
 
-```
-feat(api): setup prisma db singleton and hono auth middleware
-```
+1. Propose staging `src/auth/login.ts`.
+2. Generate message:
 
-### Example 2: Refactoring
-
-**Diff summary:** Converted health, users, tags routes from NestJS to Hono
-
-**Output:**
-
-```
-feat(api): refactor health, users, and tags to hono routers
-```
-
-### Example 3: Cleanup
-
-**Diff summary:** Removed NestJS decorators, controllers, modules
-
-**Output:**
-
-```
-chore(api): remove remaining nestjs artifacts
-```
-
-### Example 4: Bug Fix
-
-**Diff summary:** Fixed TypeScript errors and ESLint warnings
-
-**Output:**
-
-```
-fix(api): resolve all lint warnings and type errors
-```
-
-### Example 5: Code Quality
-
-**Diff summary:** Used Zod type inference, removed duplicate code
-
-**Output:**
-
-```
-refactor(api): use zod inference for service payloads and clean up redundant code
-```
-
-## Edge Cases
-
-**Multiple unrelated changes:**
-
-```
-You have changes in 3 different areas:
-1. New auth feature
-2. Bug fix in user service
-3. Updated dependencies
-
-Consider splitting into separate commits:
-- feat(api): add jwt authentication
-- fix(users): handle null email validation
-- chore(deps): update hono to v4.12.18
-```
-
-**Large refactoring:**
-For massive refactors, use a broader scope:
-
-```
-refactor(api): migrate from nestjs to hono framework
-```
-
-**Configuration changes:**
-
-```
-chore(config): update typescript compiler options
-```
+   ```
+   feat(auth): implement login validation logic
+   ```
 
 ## Notes
 
-- **Always run `git diff --cached` first** to see what's actually staged
-- If diff is too large (>500 lines), summarize the main theme
-- Don't include implementation details in the message
-- Focus on **what changed** and **why**, not **how**
-- When in doubt, prefer `feat` or `refactor` over vague types like `chore`
+- **Proactive Staging**: Unlike a simple writer, this skill helps the user stage their work.
+- **Style Consistency**: Always look at `git log` first to ensure we aren't introducing a different naming convention.
+- **Validation**: Always show the `git diff` summary to the user before finalizing.

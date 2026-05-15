@@ -61,11 +61,18 @@ Commands intentionally not run:
 
 ### 5. Dashboard Finalization
 
-Update `docs/README.md` status from `Draft` to `Completed` — but only when every spec phase is done and committed. Partial completion stays `Draft`.
+When every spec phase is done and committed, finalize the feature in the documentation. Partial completion means leaving things as they are.
 
-After updating, commit it immediately — leaving it uncommitted creates drift that confuses the next `ship` run:
+1. Move the spec file to the archive:
+   - Move `docs/specs/<slug>.md` to `docs/specs/archive/<slug>.md`
+2. Update `docs/README.md`:
+   - Move the feature entry from under `## In Progress` to under `## Completed`
+   - Update its link to point to `./specs/archive/<slug>.md`
 
-- Stage only `docs/README.md`.
+After updating, commit the changes immediately — leaving them uncommitted creates drift that confuses the next `ship` run:
+
+- Stage the moved spec file (both the new `docs/specs/archive/<slug>.md` and the removed `docs/specs/<slug>.md`).
+- Stage `docs/README.md`.
 - Commit message: `docs: complete <feature-slug>`.
 - Re-check `git status` after this commit before making your final readiness decision.
 

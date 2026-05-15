@@ -70,6 +70,9 @@ Only include fields that have something to say — drop empty ones:
 
 **Future work noted**
 <improvements spotted but out of scope>
+
+**Suggested commit**
+`<conventional commit message>`
 ```
 
 Then stop. No "ready for Phase N+1?" — just stop. The user will proceed when ready.
