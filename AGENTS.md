@@ -57,7 +57,7 @@ After completing implementation, **always** run the following checks on modified
 
 ```bash
 # 1. Type checking (Only the modified files)
-pnpm tsc --noEmit path/to/modified-file.ts
+pnpm tsc --noEmit --skipLibCheck path/to/modified-file.ts
 
 # 2. Linting (Only the modified files)
 pnpm eslint path/to/modified-file.ts --fix
@@ -69,7 +69,7 @@ pnpm prettier --write path/to/modified-file.ts
 **Example for multiple files:**
 
 ```bash
-pnpm tsc --noEmit src/modules/users/handlers/create.ts src/modules/users/handlers/update.ts
+pnpm tsc --noEmit --skipLibCheck src/modules/users/handlers/create.ts src/modules/users/handlers/update.ts
 pnpm eslint src/modules/users/handlers/*.ts --fix
 pnpm prettier --write "src/modules/users/handlers/*.ts"
 ```
